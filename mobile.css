@@ -1,0 +1,69 @@
+/* 手机 APP / 小屏触摸优化（桌面端也可安全加载） */
+
+html {
+  -webkit-text-size-adjust: 100%;
+  touch-action: manipulation;
+}
+
+body {
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  overscroll-behavior-y: contain;
+}
+
+.app {
+  padding-top: max(16px, env(safe-area-inset-top));
+  padding-bottom: max(48px, env(safe-area-inset-bottom));
+}
+
+.search-input,
+.form-row input,
+.form-row select,
+.form-row textarea,
+.chip,
+.btn,
+.item-card,
+.brand-product-row,
+.search-suggestion-item {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn,
+.chip,
+.star,
+.item-card,
+.brand-product-row {
+  min-height: 44px;
+}
+
+.dialog {
+  max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 24px);
+}
+
+.dialog-editing .dialog-body {
+  max-height: min(65dvh, 520px);
+  -webkit-overflow-scrolling: touch;
+}
+
+.search-suggestions {
+  max-height: min(40dvh, 320px);
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 520px) {
+  .item-header {
+    flex-wrap: wrap;
+  }
+
+  .brand-stock-preview {
+    flex-basis: 100%;
+    justify-content: flex-start;
+    margin-top: 6px;
+  }
+
+  .dialog-actions {
+    position: sticky;
+    bottom: 0;
+    background: var(--surface);
+    z-index: 1;
+  }
+}

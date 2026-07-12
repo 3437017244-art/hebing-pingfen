@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>恢复数据 · 购物与商店评分</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="mobile.css">
+  <style>
+    .recover-page { max-width: 720px; margin: 0 auto; padding: 24px 16px 48px; }
+    .recover-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px; }
+    .recover-card h2 { margin: 0 0 12px; font-size: 1.1rem; }
+    .result-box { padding: 12px 14px; border-radius: 8px; background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857; }
+    .result-box.error { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
+    .result-box.info { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+    .recover-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+    .recover-actions a { text-decoration: none; display: inline-block; line-height: 1.2; }
+    .paste-area { width: 100%; min-height: 120px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.9rem; resize: vertical; }
+    .stat-line { margin: 0 0 8px; }
+    .step-list { margin: 0; padding-left: 1.2rem; }
+    .step-list li { margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <div class="recover-page">
+    <header class="header">
+      <h1>恢复已登记的数据</h1>
+      <p class="subtitle">记录保存在浏览器里，不在网页文件夹中。删除「登记」页面不会删除这些数据。</p>
+    </header>
+
+    <div class="recover-card">
+      <h2>当前浏览器中的数据</h2>
+      <p class="stat-line" id="current-stats">正在检查…</p>
+      <p class="field-hint" id="storage-hint"></p>
+      <div class="recover-actions">
+        <button type="button" class="btn btn-primary" id="auto-recover-btn">自动找回待导入数据</button>
+        <button type="button" class="btn btn-secondary" id="export-btn">导出备份到文件</button>
+        <a class="btn btn-secondary" href="index.html">返回查一查</a>
+        <a class="btn btn-secondary" href="同步.html">云端同步</a>
+      </div>
+      <div id="auto-result" hidden style="margin-top:16px;"></div>
+    </div>
+
+    <div class="recover-card">
+      <h2>从 JSON 文件导入</h2>
+      <p class="field-hint">如果您以前导出过 JSON，或从别的电脑拷来了备份文件，可以在这里导入。</p>
+      <div class="form-row">
+        <label for="product-file">商品 JSON</label>
+        <input type="file" id="product-file" accept=".json,application/json">
+      </div>
+      <div class="form-row">
+        <label for="shop-file">商店 JSON</label>
+        <input type="file" id="shop-file" accept=".json,application/json">
+      </div>
+      <button type="button" class="btn btn-primary" id="import-file-btn">从文件导入</button>
+    </div>
+
+    <div class="recover-card">
+      <h2>直接粘贴 JSON 导入</h2>
+      <div class="form-row">
+        <label for="product-json">商品数据（数组 JSON）</label>
+        <textarea id="product-json" class="paste-area" placeholder='例如：[{"id":"abc","name":"某品牌","rating":4}]'></textarea>
+      </div>
+      <div class="form-row">
+        <label for="shop-json">商店数据（数组 JSON）</label>
+        <textarea id="shop-json" class="paste-area" placeholder='例如：[{"id":"xyz","name":"某店","location":"XX路","rating":5}]'></textarea>
+      </div>
+      <button type="button" class="btn btn-primary" id="import-paste-btn">粘贴内容导入</button>
+    </div>
+
+    <div class="recover-card">
+      <h2>如果还是找不到数据</h2>
+      <ol class="step-list">
+        <li>请用<strong>之前登记时使用的同一个浏览器</strong>打开本页面（如 Edge、Chrome、Firefox）。</li>
+        <li>不要换浏览器，也不要开无痕模式；不同浏览器的记录是分开的。</li>
+        <li>如果原网页「个人购物评分」「附近商店评分」还在，可先打开它们，再使用 <a href="迁移数据.html">迁移数据</a> 页面导入。</li>
+        <li>在浏览器按 F12 →「应用程序 / Application」→「本地存储 / Local Storage」，查看是否有 <code>shopping-ratings</code> 和 <code>nearbyShops</code>。</li>
+      </ol>
+    </div>
+  </div>
+
+  <script src="mobile-bridge.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      const PRODUCT_KEY = 'shopping-ratings';
+      const SHOP_KEY = 'nearbyShops';
+      const PENDING_PRODUCT_KEY = 'migrate-pending-product';
+      const PENDING_SHOP_KEY = 'migrate-pending-shop';
+
+      function countStored(key) {
+        try {
+          const raw = localStorage.getItem(key);
+          return raw ? JSON.parse(raw).length : 0;
+        } catch {
+          return 0;
+        }
+      }
+
+      function countJson(text) {
+        if (!text) return 0;
+        try { return JSON.parse(text).length; } catch { return 0; }
+      }
+
+      function mergeById(existing, incoming) {
+        const map = new Map();
+        (existing || []).forEach((item) => {
+          if (item && item.id != null) map.set(String(item.id), item);
+        });
+        (incoming || []).forEach((item) => {
+          if (item && item.id != null) map.set(String(item.id), item);
+        });
+        return Array.from(map.values());
+      }
+
+      function normalizeShops(list) {
+        return (list || []).map((shop) => {
+          if (shop.product && !shop.products) {
+            shop.products = [shop.product];
+            delete shop.product;
+          }
+          return shop;
+        });
+      }
+
+      function showResult(el, type, html) {
+        el.hidden = false;
+        el.className = 'result-box' + (type ? ' ' + type : '');
+        el.innerHTML = html;
+      }
+
+      function updateStats() {
+        const productCount = countStored(PRODUCT_KEY);
+        const shopCount = countStored(SHOP_KEY);
+        document.getElementById('current-stats').textContent =
+          '商品 ' + productCount + ' 条，商店 ' + shopCount + ' 家';
+
+        const pendingProduct =
+          sessionStorage.getItem(PENDING_PRODUCT_KEY) || sessionStorage.getItem('migrate-product-data');
+        const pendingShop =
+          sessionStorage.getItem(PENDING_SHOP_KEY) || sessionStorage.getItem('migrate-shop-data');
+        const pendingParts = [];
+        if (pendingProduct) pendingParts.push('待导入商品 ' + countJson(pendingProduct) + ' 条');
+        if (pendingShop) pendingParts.push('待导入商店 ' + countJson(pendingShop) + ' 家');
+        document.getElementById('storage-hint').textContent = pendingParts.length
+          ? '检测到浏览器中还有未导入的临时数据：' + pendingParts.join('，')
+          : '未检测到待导入的临时数据。';
+      }
+
+      function importData(productText, shopText) {
+        let changed = false;
+
+        if (productText) {
+          const incoming = JSON.parse(productText);
+          if (!Array.isArray(incoming)) throw new Error('商品数据必须是 JSON 数组');
+          const existing = JSON.parse(localStorage.getItem(PRODUCT_KEY) || '[]');
+          const merged = mergeById(existing, incoming);
+          localStorage.setItem(PRODUCT_KEY, JSON.stringify(merged));
+          changed = true;
+        }
+
+        if (shopText) {
+          const incoming = normalizeShops(JSON.parse(shopText));
+          if (!Array.isArray(incoming)) throw new Error('商店数据必须是 JSON 数组');
+          const existing = normalizeShops(JSON.parse(localStorage.getItem(SHOP_KEY) || '[]'));
+          const merged = mergeById(existing, incoming);
+          localStorage.setItem(SHOP_KEY, JSON.stringify(merged));
+          changed = true;
+        }
+
+        return changed;
+      }
+
+      function autoRecover() {
+        const resultEl = document.getElementById('auto-result');
+        const productText =
+          sessionStorage.getItem(PENDING_PRODUCT_KEY) || sessionStorage.getItem('migrate-product-data');
+        const shopText =
+          sessionStorage.getItem(PENDING_SHOP_KEY) || sessionStorage.getItem('migrate-shop-data');
+
+        if (!productText && !shopText) {
+          showResult(resultEl, 'error', '没有找到待导入的临时数据。请尝试下方文件导入，或用之前登记时的浏览器重新打开本页。');
+          return;
+        }
+
+        try {
+          importData(productText, shopText);
+          showResult(
+            resultEl,
+            '',
+            '恢复成功！当前共有商品 ' + countStored(PRODUCT_KEY) + ' 条、商店 ' + countStored(SHOP_KEY) + ' 家。<br><br><a href="index.html">点此返回查看</a>',
+          );
+          updateStats();
+        } catch (err) {
+          showResult(resultEl, 'error', '恢复失败：' + err.message);
+        }
+      }
+
+      function readFile(file) {
+        return new Promise(function (resolve, reject) {
+          const reader = new FileReader();
+          reader.onload = function () { resolve(reader.result); };
+          reader.onerror = function () { reject(reader.error); };
+          reader.readAsText(file, 'UTF-8');
+        });
+      }
+
+      document.getElementById('auto-recover-btn').addEventListener('click', autoRecover);
+
+      document.getElementById('export-btn').addEventListener('click', function () {
+        const payload = {
+          products: JSON.parse(localStorage.getItem(PRODUCT_KEY) || '[]'),
+          shops: JSON.parse(localStorage.getItem(SHOP_KEY) || '[]'),
+          exportedAt: new Date().toISOString(),
+        };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = '购物与商店评分-备份-' + new Date().toISOString().slice(0, 10) + '.json';
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      document.getElementById('import-file-btn').addEventListener('click', async function () {
+        const productFile = document.getElementById('product-file').files[0];
+        const shopFile = document.getElementById('shop-file').files[0];
+        const resultEl = document.getElementById('auto-result');
+        if (!productFile && !shopFile) {
+          showResult(resultEl, 'error', '请至少选择一个 JSON 文件。');
+          return;
+        }
+        try {
+          const productText = productFile ? await readFile(productFile) : '';
+          const shopText = shopFile ? await readFile(shopFile) : '';
+          importData(productText || null, shopText || null);
+          showResult(
+            resultEl,
+            '',
+            '导入成功！当前共有商品 ' + countStored(PRODUCT_KEY) + ' 条、商店 ' + countStored(SHOP_KEY) + ' 家。<br><br><a href="index.html">点此返回查看</a>',
+          );
+          updateStats();
+        } catch (err) {
+          showResult(resultEl, 'error', '导入失败：' + err.message);
+        }
+      });
+
+      document.getElementById('import-paste-btn').addEventListener('click', function () {
+        const resultEl = document.getElementById('auto-result');
+        const productText = document.getElementById('product-json').value.trim();
+        const shopText = document.getElementById('shop-json').value.trim();
+        if (!productText && !shopText) {
+          showResult(resultEl, 'error', '请至少粘贴一份 JSON 数据。');
+          return;
+        }
+        try {
+          importData(productText || null, shopText || null);
+          showResult(
+            resultEl,
+            '',
+            '导入成功！当前共有商品 ' + countStored(PRODUCT_KEY) + ' 条、商店 ' + countStored(SHOP_KEY) + ' 家。<br><br><a href="index.html">点此返回查看</a>',
+          );
+          updateStats();
+        } catch (err) {
+          showResult(resultEl, 'error', '导入失败：' + err.message);
+        }
+      });
+
+      updateStats();
+      autoRecover();
+    })();
+  </script>
+</body>
+</html>

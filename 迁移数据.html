@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数据迁移 · 合并网页</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .migrate-page { max-width: 640px; margin: 0 auto; padding: 24px 16px 48px; }
+    .migrate-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px; }
+    .migrate-card h2 { margin: 0 0 12px; font-size: 1.1rem; }
+    .step-list { margin: 0; padding-left: 1.2rem; }
+    .step-list li { margin-bottom: 8px; }
+    .file-row { margin-bottom: 12px; }
+    .file-row label { display: block; margin-bottom: 6px; font-weight: 500; }
+    .file-name { font-size: 0.9rem; color: var(--text-muted); margin-top: 4px; }
+    .result-box { padding: 12px 14px; border-radius: 8px; background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857; }
+    .result-box.error { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
+    .result-box.info { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+    .migrate-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+    .quick-links { display: flex; flex-direction: column; gap: 10px; }
+    .quick-links a { display: block; text-align: center; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="migrate-page">
+    <header class="header">
+      <h1>把原网页数据搬到合并网页</h1>
+      <p class="subtitle">数据保存在浏览器里，不在文件夹文件中。请从原网页路径读取一次。</p>
+    </header>
+
+    <div class="migrate-card">
+      <h2>推荐：一键同步（只需点 2 次）</h2>
+      <div class="quick-links">
+        <a class="btn btn-primary" href="../shangpin ji lu/导出数据.html">① 从「个人购物评分」读取商品数据</a>
+        <a class="btn btn-secondary" href="../FU JIN DA FEN/导出数据.html">② 从「附近商店评分」读取商店数据</a>
+      </div>
+      <p class="field-hint" style="margin-top:12px;">每点一次会自动读取该原网页里登记的数据，并跳回本页。两个都点完后，点下方「全部导入」。</p>
+    </div>
+
+    <div class="migrate-card">
+      <h2>已读取的数据</h2>
+      <p id="pending-stats">商品：未读取 · 商店：未读取</p>
+      <div class="migrate-actions">
+        <button type="button" class="btn btn-primary" id="import-all-btn">全部导入到合并网页</button>
+        <a class="btn btn-secondary" href="index.html" style="text-decoration:none;display:inline-block;line-height:1.2;">打开合并网页</a>
+      </div>
+      <div id="import-result" hidden style="margin-top:16px;"></div>
+    </div>
+
+    <div class="migrate-card">
+      <h2>手动选文件（备用）</h2>
+      <div class="file-row">
+        <label for="product-file">商品 JSON</label>
+        <input type="file" id="product-file" accept=".json,application/json">
+      </div>
+      <div class="file-row">
+        <label for="shop-file">商店 JSON</label>
+        <input type="file" id="shop-file" accept=".json,application/json">
+      </div>
+      <button type="button" class="btn btn-secondary" id="import-file-btn">从文件导入</button>
+    </div>
+
+    <div class="migrate-card">
+      <h2>合并网页当前数据</h2>
+      <p id="current-stats">正在检查…</p>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const PRODUCT_KEY = 'shopping-ratings';
+      const SHOP_KEY = 'nearbyShops';
+      const PENDING_PRODUCT_KEY = 'migrate-pending-product';
+      const PENDING_SHOP_KEY = 'migrate-pending-shop';
+
+      let productText = sessionStorage.getItem(PENDING_PRODUCT_KEY) || sessionStorage.getItem('migrate-product-data');
+      let shopText = sessionStorage.getItem(PENDING_SHOP_KEY) || sessionStorage.getItem('migrate-shop-data');
+
+      function countJson(text) {
+        if (!text) return 0;
+        try { return JSON.parse(text).length; } catch { return 0; }
+      }
+
+      function mergeById(existing, incoming) {
+        const map = new Map();
+        (existing || []).forEach((item) => {
+          if (item && item.id != null) map.set(String(item.id), item);
+        });
+        (incoming || []).forEach((item) => {
+          if (item && item.id != null) map.set(String(item.id), item);
+        });
+        return Array.from(map.values());
+      }
+
+      function normalizeShops(list) {
+        return (list || []).map((shop) => {
+          if (shop.product && !shop.products) {
+            shop.products = [shop.product];
+            delete shop.product;
+          }
+          return shop;
+        });
+      }
+
+      function countStored(key) {
+        try {
+          const raw = localStorage.getItem(key);
+          return raw ? JSON.parse(raw).length : 0;
+        } catch {
+          return 0;
+        }
+      }
+
+      function updateStats() {
+        document.getElementById('current-stats').textContent =
+          '商品 ' + countStored(PRODUCT_KEY) + ' 条，商店 ' + countStored(SHOP_KEY) + ' 家';
+      }
+
+      function updatePendingStats() {
+        const p = countJson(productText);
+        const s = countJson(shopText);
+        document.getElementById('pending-stats').textContent =
+          '商品：' + (productText ? p + ' 条（已读取）' : '未读取') +
+          ' · 商店：' + (shopText ? s + ' 家（已读取）' : '未读取');
+      }
+
+      function savePending() {
+        if (productText) sessionStorage.setItem(PENDING_PRODUCT_KEY, productText);
+        if (shopText) sessionStorage.setItem(PENDING_SHOP_KEY, shopText);
+      }
+
+      function importAll(showAlert) {
+        const resultEl = document.getElementById('import-result');
+        resultEl.hidden = false;
+
+        if (!productText && !shopText) {
+          resultEl.className = 'result-box error';
+          resultEl.textContent = '还没有读取到数据。请先点击上方两个原网页链接。';
+          return false;
+        }
+
+        try {
+          let productAdded = 0;
+          let shopAdded = 0;
+
+          if (productText) {
+            const incoming = JSON.parse(productText);
+            if (!Array.isArray(incoming)) throw new Error('商品数据格式不对');
+            const existing = JSON.parse(localStorage.getItem(PRODUCT_KEY) || '[]');
+            const existingIds = new Set(existing.map((item) => String(item.id)));
+            const merged = mergeById(existing, incoming);
+            localStorage.setItem(PRODUCT_KEY, JSON.stringify(merged));
+            productAdded = incoming.filter((item) => !existingIds.has(String(item.id))).length;
+          }
+
+          if (shopText) {
+            const incoming = normalizeShops(JSON.parse(shopText));
+            if (!Array.isArray(incoming)) throw new Error('商店数据格式不对');
+            const existing = normalizeShops(JSON.parse(localStorage.getItem(SHOP_KEY) || '[]'));
+            const existingIds = new Set(existing.map((item) => String(item.id)));
+            const merged = mergeById(existing, incoming);
+            localStorage.setItem(SHOP_KEY, JSON.stringify(merged));
+            shopAdded = incoming.filter((item) => !existingIds.has(String(item.id))).length;
+          }
+
+          sessionStorage.removeItem(PENDING_PRODUCT_KEY);
+          sessionStorage.removeItem(PENDING_SHOP_KEY);
+          sessionStorage.removeItem('migrate-product-data');
+          sessionStorage.removeItem('migrate-shop-data');
+
+          updateStats();
+          resultEl.className = 'result-box';
+          resultEl.innerHTML =
+            '导入成功！商品 ' + countStored(PRODUCT_KEY) + ' 条，商店 ' + countStored(SHOP_KEY) + ' 家。' +
+            '<br><br><a href="index.html">点此打开合并网页查看</a>';
+
+          if (showAlert !== false) {
+            setTimeout(function () {
+              if (confirm('数据已填充到合并网页，是否现在打开？')) {
+                window.location.href = 'index.html';
+              }
+            }, 200);
+          }
+          return true;
+        } catch (err) {
+          resultEl.className = 'result-box error';
+          resultEl.textContent = '导入失败：' + err.message;
+          return false;
+        }
+      }
+
+      function readFile(file) {
+        return new Promise(function (resolve, reject) {
+          const reader = new FileReader();
+          reader.onload = function () { resolve(reader.result); };
+          reader.onerror = function () { reject(reader.error); };
+          reader.readAsText(file, 'UTF-8');
+        });
+      }
+
+      document.getElementById('import-all-btn').addEventListener('click', function () {
+        importAll(true);
+      });
+
+      document.getElementById('import-file-btn').addEventListener('click', async function () {
+        const productFile = document.getElementById('product-file').files[0];
+        const shopFile = document.getElementById('shop-file').files[0];
+        if (productFile) productText = await readFile(productFile);
+        if (shopFile) shopText = await readFile(shopFile);
+        savePending();
+        updatePendingStats();
+        importAll(true);
+      });
+
+      const params = new URLSearchParams(window.location.search);
+      const step = params.get('step');
+
+      if (step === 'product') {
+        productText = sessionStorage.getItem('migrate-product-data') || productText;
+        if (productText) sessionStorage.setItem(PENDING_PRODUCT_KEY, productText);
+        savePending();
+        updatePendingStats();
+        const resultEl = document.getElementById('import-result');
+        resultEl.hidden = false;
+        resultEl.className = 'result-box info';
+        resultEl.innerHTML = '商品数据已读取（' + countJson(productText) + ' 条）。请继续点击「附近商店评分」读取商店数据，然后点「全部导入」。';
+      }
+
+      if (step === 'shop') {
+        shopText = sessionStorage.getItem('migrate-shop-data') || shopText;
+        if (shopText) sessionStorage.setItem(PENDING_SHOP_KEY, shopText);
+        savePending();
+        updatePendingStats();
+        if (productText && shopText) {
+          importAll(false);
+        } else {
+          const resultEl = document.getElementById('import-result');
+          resultEl.hidden = false;
+          resultEl.className = 'result-box info';
+          resultEl.innerHTML = '商店数据已读取（' + countJson(shopText) + ' 家）。如果还没读商品数据，请先点商品链接，再点「全部导入」。';
+        }
+      }
+
+      updatePendingStats();
+      updateStats();
+    })();
+  </script>
+</body>
+</html>

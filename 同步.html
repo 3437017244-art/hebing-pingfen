@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>云端同步 · 购物与商店评分</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="mobile.css">
+  <style>
+    .sync-page { max-width: 720px; margin: 0 auto; padding: 24px 16px 48px; }
+    .sync-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px; }
+    .sync-card h2 { margin: 0 0 12px; font-size: 1.1rem; }
+    .result-box { padding: 12px 14px; border-radius: 8px; background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857; }
+    .result-box.error { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
+    .result-box.info { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+    .sync-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+    .sync-actions a { text-decoration: none; display: inline-block; line-height: 1.2; }
+    .sync-code-input { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.95rem; }
+    .sync-code-display { padding: 12px 14px; border-radius: 8px; background: #f8fafc; border: 1px dashed var(--border); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; word-break: break-all; }
+    .step-list { margin: 0; padding-left: 1.2rem; }
+    .step-list li { margin-bottom: 8px; }
+    .sync-check { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <div class="sync-page">
+    <header class="header">
+      <h1>手机与网页云端同步</h1>
+      <p class="subtitle">两端输入同一个同步码，点「立即同步」即可合并商品和商店数据。需要联网。</p>
+    </header>
+
+    <div class="sync-card">
+      <h2>当前本地数据</h2>
+      <p id="local-stats">正在检查…</p>
+      <p class="field-hint" id="sync-status-hint"></p>
+    </div>
+
+    <div class="sync-card">
+      <h2>第一步：设置同步码</h2>
+      <p class="field-hint">如果这是第一台设备，点「生成同步码」；如果另一台已经生成过，把同步码粘贴到下面并保存。</p>
+      <div class="form-row">
+        <label for="sync-code-input">同步码</label>
+        <input type="text" id="sync-code-input" class="sync-code-input" placeholder="例如：1054938906322286336" autocomplete="off">
+      </div>
+      <div class="sync-actions">
+        <button type="button" class="btn btn-secondary" id="save-code-btn">保存同步码</button>
+        <button type="button" class="btn btn-primary" id="create-code-btn">生成新同步码</button>
+      </div>
+      <div id="code-result" hidden style="margin-top:16px;"></div>
+    </div>
+
+    <div class="sync-card">
+      <h2>第二步：立即同步</h2>
+      <p class="field-hint">会把云端数据与本地数据合并（相同记录保留较新的修改），再上传回云端。</p>
+      <div class="sync-actions">
+        <button type="button" class="btn btn-primary" id="sync-now-btn">立即同步</button>
+        <a class="btn btn-secondary" href="index.html">返回查一查</a>
+        <a class="btn btn-secondary" href="恢复数据.html">恢复数据</a>
+        <a class="btn btn-secondary" href="在线部署.html">在线部署</a>
+      </div>
+      <label class="sync-check">
+        <input type="checkbox" id="auto-sync-checkbox">
+        打开页面时自动同步（需已保存同步码）
+      </label>
+      <div id="sync-result" hidden style="margin-top:16px;"></div>
+    </div>
+
+    <div class="sync-card">
+      <h2>使用说明</h2>
+      <ol class="step-list">
+        <li>在<strong>电脑网页版</strong>或<strong>手机 APP</strong>任意一端，点「生成新同步码」。</li>
+        <li>把同步码复制到另一端，粘贴后点「保存同步码」。</li>
+        <li>任意一端有新增或修改后，点「立即同步」，另一端再点一次即可看到最新数据。</li>
+        <li>同步码相当于钥匙，请勿分享给他人。</li>
+      </ol>
+    </div>
+  </div>
+
+  <script src="site-config.js"></script>
+  <script src="mobile-bridge.js"></script>
+  <script src="sync-service.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      const codeInput = document.getElementById('sync-code-input');
+      const codeResult = document.getElementById('code-result');
+      const syncResult = document.getElementById('sync-result');
+      const autoSyncCheckbox = document.getElementById('auto-sync-checkbox');
+
+      function showBox(el, type, html) {
+        el.hidden = false;
+        el.className = 'result-box' + (type ? ' ' + type : '');
+        el.innerHTML = html;
+      }
+
+      function updateStats() {
+        const payload = HebingSync.getLocalPayload();
+        const stats = HebingSync.countPayload(payload);
+        document.getElementById('local-stats').textContent =
+          '商品 ' + stats.products + ' 条，商店 ' + stats.shops + ' 家';
+
+        const syncCode = HebingSync.getSyncCode();
+        document.getElementById('sync-status-hint').textContent = syncCode
+          ? '当前已保存同步码：' + syncCode
+          : '尚未保存同步码。';
+      }
+
+      function setBusy(button, busy) {
+        button.disabled = busy;
+        button.dataset.originalText = button.dataset.originalText || button.textContent;
+        button.textContent = busy ? '处理中…' : button.dataset.originalText;
+      }
+
+      document.getElementById('save-code-btn').addEventListener('click', function () {
+        const code = HebingSync.setSyncCode(codeInput.value);
+        if (!code) {
+          showBox(codeResult, 'error', '请输入同步码。');
+          return;
+        }
+        showBox(codeResult, 'info', '同步码已保存。');
+        updateStats();
+      });
+
+      document.getElementById('create-code-btn').addEventListener('click', async function () {
+        const button = this;
+        setBusy(button, true);
+        try {
+          const code = await HebingSync.createSyncCode();
+          codeInput.value = code;
+          showBox(
+            codeResult,
+            '',
+            '已生成并保存同步码：<div class="sync-code-display" style="margin-top:8px;">' + code + '</div>' +
+              '<p class="field-hint" style="margin-top:8px;">请把这段同步码复制到另一台设备保存。</p>',
+          );
+          updateStats();
+        } catch (err) {
+          showBox(codeResult, 'error', '生成失败：' + err.message);
+        } finally {
+          setBusy(button, false);
+        }
+      });
+
+      document.getElementById('sync-now-btn').addEventListener('click', async function () {
+        const button = this;
+        const code = codeInput.value.trim() || HebingSync.getSyncCode();
+        if (!code) {
+          showBox(syncResult, 'error', '请先生成或输入同步码。');
+          return;
+        }
+        HebingSync.setSyncCode(code);
+        setBusy(button, true);
+        try {
+          const result = await HebingSync.syncNow(code);
+          const actionText = result.action === 'uploaded' ? '已上传到云端' : '已与云端合并';
+          showBox(
+            syncResult,
+            '',
+            actionText + '。当前共有商品 ' + result.products + ' 条、商店 ' + result.shops + ' 家。<br>' +
+              '同步时间：' + (result.syncedAt || '') + '<br><br><a href="index.html">点此返回查看</a>',
+          );
+          updateStats();
+        } catch (err) {
+          showBox(syncResult, 'error', '同步失败：' + err.message);
+        } finally {
+          setBusy(button, false);
+        }
+      });
+
+      autoSyncCheckbox.checked = HebingSync.isAutoSyncEnabled();
+      autoSyncCheckbox.addEventListener('change', function () {
+        HebingSync.setAutoSyncEnabled(autoSyncCheckbox.checked);
+      });
+
+      codeInput.value = HebingSync.getSyncCode();
+      updateStats();
+
+      if (HebingSync.isAutoSyncEnabled() && HebingSync.getSyncCode()) {
+        HebingSync.tryAutoSync().then(function (result) {
+          if (!result || result.error) return;
+          const actionText = result.action === 'uploaded' ? '已自动上传到云端' : '已自动与云端合并';
+          showBox(
+            syncResult,
+            'info',
+            actionText + '。当前共有商品 ' + result.products + ' 条、商店 ' + result.shops + ' 家。',
+          );
+          updateStats();
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

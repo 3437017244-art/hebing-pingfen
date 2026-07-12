@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>在线部署 · 购物与商店评分</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="mobile.css">
+  <style>
+    .deploy-page { max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; }
+    .deploy-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px; }
+    .deploy-card h2 { margin: 0 0 12px; font-size: 1.1rem; }
+    .step-list { margin: 0; padding-left: 1.2rem; }
+    .step-list li { margin-bottom: 10px; line-height: 1.6; }
+    .code-box {
+      margin-top: 10px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.85rem;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .url-display {
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+      word-break: break-all;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    .deploy-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+    .deploy-actions a { text-decoration: none; display: inline-block; line-height: 1.2; }
+    .result-box { padding: 12px 14px; border-radius: 8px; background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857; }
+    .result-box.info { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+  </style>
+</head>
+<body>
+  <div class="deploy-page">
+    <header class="header">
+      <h1>在线部署（方案 A）</h1>
+      <p class="subtitle">网页部署到 GitHub Pages 后，电脑浏览器和手机 APP 都访问同一网址，改完上传即自动更新。</p>
+    </header>
+
+    <div class="deploy-card">
+      <h2>你的在线地址</h2>
+      <p class="field-hint">部署成功后，地址格式如下（把用户名换成你的 GitHub 账号）：</p>
+      <div class="url-display" id="site-url-preview">https://YOUR_GITHUB_USERNAME.github.io/hebing-pingfen/</div>
+      <p class="field-hint" id="site-version-hint" style="margin-top:12px;"></p>
+    </div>
+
+    <div class="deploy-card">
+      <h2>第一次部署（只需做一次）</h2>
+      <ol class="step-list">
+        <li>注册 <a href="https://github.com/" target="_blank" rel="noopener">GitHub</a> 账号（若已有可跳过）。</li>
+        <li>在 GitHub 新建仓库，名称填 <strong>hebing-pingfen</strong>，选 Public，不要勾选 README。</li>
+        <li>在本文件夹打开 PowerShell，运行下面命令（把用户名和邮箱换成你的）：</li>
+      </ol>
+      <div class="code-box" id="first-deploy-cmd">cd D:\RuanJian\合并评分
+git init
+git branch -M main
+git add .
+git commit -m "首次部署在线版"
+git remote add origin https://github.com/YOUR_GITHUB_USERNAME/hebing-pingfen.git
+git push -u origin main</div>
+      <ol class="step-list" start="4">
+        <li>打开 GitHub 仓库 → Settings → Pages → Build and deployment 选 <strong>GitHub Actions</strong>。</li>
+        <li>等 1～2 分钟，访问上面的在线地址，能看到本页面即部署成功。</li>
+      </ol>
+    </div>
+
+    <div class="deploy-card">
+      <h2>以后每次改完网页</h2>
+      <p class="field-hint">在本文件夹双击或在 PowerShell 运行：</p>
+      <div class="code-box">.\deploy.ps1</div>
+      <p class="field-hint">脚本会自动提交并推送到 GitHub，约 1 分钟后 APP 和浏览器都会是最新版。</p>
+    </div>
+
+    <div class="deploy-card">
+      <h2>让手机 APP 加载在线地址</h2>
+      <ol class="step-list">
+        <li>打开 <code>D:\RuanJian\合并评分-app\online-site.json</code>，把 <code>siteUrl</code> 改成你的真实在线地址。</li>
+        <li>在 APP 项目目录运行：</li>
+      </ol>
+      <div class="code-box">cd D:\RuanJian\合并评分-app
+npm run apply-online-url
+npx cap sync android</div>
+      <ol class="step-list" start="3">
+        <li>用 Android Studio 重新打包 APK 并安装到手机（<strong>只需做一次</strong>，之后改网页不用再装 APP）。</li>
+        <li>数据仍用「云端同步」里的同步码在两台设备间合并。</li>
+      </ol>
+    </div>
+
+    <div class="deploy-card">
+      <h2>工作原理</h2>
+      <div class="result-box info">
+        电脑改网页 → deploy.ps1 上传 → GitHub Pages 更新 → 浏览器打开在线地址即最新版；手机 APP 内嵌浏览器也打开同一地址，因此软件版本自动一致。同步码只负责商品/商店数据，不负责网页文件。
+      </div>
+      <div class="deploy-actions">
+        <a class="btn btn-primary" href="index.html">返回查一查</a>
+        <a class="btn btn-secondary" href="同步.html">云端同步</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="site-config.js"></script>
+  <script>
+    (function () {
+      if (!window.HEBING_SITE) return;
+      document.getElementById('site-version-hint').textContent =
+        '当前网页版本：v' + HEBING_SITE.version + ' · ' + HEBING_SITE.updatedAt;
+    })();
+  </script>
+</body>
+</html>
