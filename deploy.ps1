@@ -135,4 +135,4 @@ if ($siteUrl) {
   Write-Host "  https://$githubUser.github.io/$repoName/" -ForegroundColor Green
 }
 Write-Host "GitHub Actions 会自动发布到 Pages。" -ForegroundColor Green
-Write-Host "手机 APP 会在打开时自动检测新版本（无需重装 APK）。" -ForegroundColor Green
+Write-Host "电脑与手机 APP 会在打开时自动刷新到最新版（无需重装 APK）。" -ForegroundColor Green

@@ -1,8 +1,9 @@
 (function (global) {
   'use strict';
 
-  const STORAGE_KEY = 'hebing-app-version-seen';
   const CHECK_INTERVAL_MS = 5 * 60 * 1000;
+  const RELOAD_GUARD_KEY = 'hebing-update-reload-attempt';
+  const INITIAL_CHECK_DELAY_MS = 1500;
 
   function getLocalSiteInfo() {
     const site = global.HEBING_SITE || {};
@@ -56,22 +57,6 @@
     return false;
   }
 
-  function rememberSeen(info) {
-    try {
-      localStorage.setItem(STORAGE_KEY, versionKey(info));
-    } catch (_err) {
-      /* ignore */
-    }
-  }
-
-  function hasDismissed(info) {
-    try {
-      return localStorage.getItem(STORAGE_KEY) === versionKey(info);
-    } catch (_err) {
-      return false;
-    }
-  }
-
   async function fetchRemoteSiteInfo() {
     if (!isRemoteCheckAvailable()) {
       return { error: '当前环境无法检查在线版本' };
@@ -105,8 +90,7 @@
     global.location.reload();
   }
 
-  async function checkForUpdate(options) {
-    const force = Boolean(options && options.force);
+  async function checkForUpdate() {
     const localInfo = getLocalSiteInfo();
 
     if (!isRemoteCheckAvailable()) {
@@ -120,14 +104,10 @@
 
     try {
       const remoteInfo = await fetchRemoteSiteInfo();
-      const hasUpdate = isRemoteNewer(localInfo, remoteInfo);
-      const dismissed = !force && hasUpdate && hasDismissed(remoteInfo);
-
       return {
         local: localInfo,
         remote: remoteInfo,
-        hasUpdate: hasUpdate,
-        dismissed: dismissed,
+        hasUpdate: isRemoteNewer(localInfo, remoteInfo),
       };
     } catch (err) {
       return {
@@ -139,110 +119,58 @@
     }
   }
 
-  function formatVersionLine(info, prefix) {
+  function formatVersionLine(info) {
     if (!info) return '';
     const parts = [];
     if (info.version) parts.push('v' + info.version);
     if (info.updatedAt) parts.push(info.updatedAt);
-    if (info.buildId) parts.push(info.buildId);
-    return (prefix || '') + parts.join(' · ');
-  }
-
-  function ensureBannerElements() {
-    let banner = document.getElementById('app-update-banner');
-    if (banner) {
-      return {
-        banner: banner,
-        text: document.getElementById('app-update-text'),
-        reloadBtn: document.getElementById('app-update-reload-btn'),
-        dismissBtn: document.getElementById('app-update-dismiss-btn'),
-      };
-    }
-
-    banner = document.createElement('div');
-    banner.id = 'app-update-banner';
-    banner.className = 'app-update-banner';
-    banner.hidden = true;
-    banner.innerHTML =
-      '<span id="app-update-text"></span>' +
-      '<span class="app-update-actions">' +
-      '<button type="button" class="btn btn-sm btn-primary" id="app-update-reload-btn">立即更新</button>' +
-      '<button type="button" class="btn btn-sm btn-secondary" id="app-update-dismiss-btn">稍后</button>' +
-      '</span>';
-
-    const appRoot = document.querySelector('.app') || document.body;
-    appRoot.insertBefore(banner, appRoot.firstChild);
-
-    return {
-      banner: banner,
-      text: banner.querySelector('#app-update-text'),
-      reloadBtn: banner.querySelector('#app-update-reload-btn'),
-      dismissBtn: banner.querySelector('#app-update-dismiss-btn'),
-    };
-  }
-
-  function bindBannerActions(elements) {
-    if (!elements || elements.banner.dataset.bound) return;
-    elements.banner.dataset.bound = '1';
-
-    elements.reloadBtn.addEventListener('click', function () {
-      reloadForUpdate();
-    });
-
-    elements.dismissBtn.addEventListener('click', function () {
-      const remoteKey = elements.banner.dataset.remoteKey;
-      if (remoteKey) {
-        try {
-          localStorage.setItem(STORAGE_KEY, remoteKey);
-        } catch (_err) {
-          /* ignore */
-        }
-      }
-      elements.banner.hidden = true;
-    });
-  }
-
-  function showUpdateBanner(result) {
-    if (!result || !result.hasUpdate || result.dismissed) return;
-
-    const elements = ensureBannerElements();
-    bindBannerActions(elements);
-
-    const remote = result.remote || {};
-    elements.text.textContent =
-      '发现新版本 ' +
-      formatVersionLine(remote).trim() +
-      '。电脑端已更新，点此刷新即可同步最新界面与功能。';
-    elements.banner.dataset.remoteKey = versionKey(remote);
-    elements.banner.hidden = false;
-  }
-
-  function hideUpdateBanner() {
-    const banner = document.getElementById('app-update-banner');
-    if (banner) banner.hidden = true;
+    return parts.join(' · ');
   }
 
   let autoCheckTimer = null;
+  let checkInFlight = null;
 
-  async function runAutoCheck(options) {
-    const result = await checkForUpdate(options);
-    if (result.hasUpdate && !result.dismissed) {
-      showUpdateBanner(result);
-    } else if (!result.hasUpdate) {
-      hideUpdateBanner();
+  async function applyUpdateIfNeeded(result) {
+    if (!result || result.error || !result.hasUpdate || !result.remote) {
+      try {
+        sessionStorage.removeItem(RELOAD_GUARD_KEY);
+      } catch (_err) {
+        /* ignore */
+      }
+      return result;
     }
+
+    const remoteKey = versionKey(result.remote);
+    try {
+      if (sessionStorage.getItem(RELOAD_GUARD_KEY) === remoteKey) {
+        return result;
+      }
+      sessionStorage.setItem(RELOAD_GUARD_KEY, remoteKey);
+    } catch (_err) {
+      /* ignore */
+    }
+
+    reloadForUpdate();
     return result;
+  }
+
+  async function runAutoCheck() {
+    if (checkInFlight) return checkInFlight;
+    checkInFlight = checkForUpdate()
+      .then(applyUpdateIfNeeded)
+      .finally(function () {
+        checkInFlight = null;
+      });
+    return checkInFlight;
   }
 
   function startAutoCheck() {
     if (!isRemoteCheckAvailable()) return;
 
-    runAutoCheck();
+    setTimeout(runAutoCheck, INITIAL_CHECK_DELAY_MS);
 
     if (autoCheckTimer) clearInterval(autoCheckTimer);
-    autoCheckTimer = setInterval(function () {
-      runAutoCheck();
-    }, CHECK_INTERVAL_MS);
+    autoCheckTimer = setInterval(runAutoCheck, CHECK_INTERVAL_MS);
 
     document.addEventListener('visibilitychange', function () {
       if (document.visibilityState === 'visible') {
@@ -251,25 +179,15 @@
     });
   }
 
-  function markCurrentVersionSeen() {
-    rememberSeen(getLocalSiteInfo());
-  }
-
   global.AppUpdate = {
     checkForUpdate: checkForUpdate,
     runAutoCheck: runAutoCheck,
     startAutoCheck: startAutoCheck,
     reloadForUpdate: reloadForUpdate,
-    showUpdateBanner: showUpdateBanner,
-    hideUpdateBanner: hideUpdateBanner,
-    markCurrentVersionSeen: markCurrentVersionSeen,
     formatVersionLine: formatVersionLine,
     getLocalSiteInfo: getLocalSiteInfo,
     isRemoteCheckAvailable: isRemoteCheckAvailable,
   };
 
-  document.addEventListener('DOMContentLoaded', function () {
-    bindBannerActions(ensureBannerElements());
-    startAutoCheck();
-  });
+  document.addEventListener('DOMContentLoaded', startAutoCheck);
 })(window);
