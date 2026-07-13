@@ -6,9 +6,11 @@
   const SYNC_CODE_KEY = 'hebing-sync-code';
   const SYNC_AUTO_KEY = 'hebing-sync-auto';
   const SYNC_API = 'https://jsonblob.com/api/jsonBlob';
+  const BUNDLED_CLOUD_FILE = 'cloud-data.json';
   const SYNC_DEBOUNCE_MS = 2000;
   let syncTimer = null;
   let syncInFlight = null;
+  let lastPullSource = '';
 
   function normalizeShops(list) {
     return (list || []).map(function (shop) {
@@ -52,8 +54,30 @@
   }
 
   function saveLocalPayload(payload) {
-    localStorage.setItem(PRODUCT_KEY, JSON.stringify(payload.products || []));
-    localStorage.setItem(SHOP_KEY, JSON.stringify(normalizeShops(payload.shops || [])));
+    try {
+      localStorage.setItem(PRODUCT_KEY, JSON.stringify(payload.products || []));
+      localStorage.setItem(SHOP_KEY, JSON.stringify(normalizeShops(payload.shops || [])));
+    } catch (err) {
+      throw new Error('无法写入本机存储：' + (err && err.message ? err.message : err));
+    }
+  }
+
+  function getBundledCloudUrl() {
+    const site = global.HEBING_SITE;
+    const base = site?.getSiteUrl ? site.getSiteUrl() : (site?.siteUrl || '');
+    if (base) {
+      return new URL(BUNDLED_CLOUD_FILE, base).href;
+    }
+    return new URL(BUNDLED_CLOUD_FILE, global.location.href).href;
+  }
+
+  async function pullBundledCloudData() {
+    const result = await requestJson(getBundledCloudUrl() + '?_=' + Date.now(), {
+      headers: { Accept: 'application/json' },
+      cache: 'no-store',
+    });
+    if (result.notFound) return null;
+    return result.data;
   }
 
   function countPayload(payload) {
@@ -103,11 +127,34 @@
   }
 
   async function pullRemote(syncCode) {
-    const result = await requestJson(SYNC_API + '/' + encodeURIComponent(syncCode), {
-      headers: { Accept: 'application/json' },
-    });
-    if (result.notFound) return null;
-    return result.data;
+    let lastError = null;
+
+    try {
+      const result = await requestJson(SYNC_API + '/' + encodeURIComponent(syncCode), {
+        headers: { Accept: 'application/json' },
+      });
+      if (!result.notFound && result.data) {
+        lastPullSource = 'jsonblob';
+        return result.data;
+      }
+    } catch (err) {
+      lastError = err;
+    }
+
+    try {
+      const bundled = await pullBundledCloudData();
+      const stats = countPayload(bundled || {});
+      if (bundled && (stats.products > 0 || stats.shops > 0)) {
+        lastPullSource = 'bundled';
+        return bundled;
+      }
+    } catch (err) {
+      if (!lastError) lastError = err;
+    }
+
+    if (lastError) throw lastError;
+    lastPullSource = '';
+    return null;
   }
 
   async function pushRemote(syncCode, payload) {
@@ -131,15 +178,19 @@
     const remote = await pullRemote(code);
 
     if (!remote) {
+      const localStats = countPayload(local);
+      if (localStats.products === 0 && localStats.shops === 0) {
+        throw new Error('无法获取云端数据，且本机也没有可上传的记录');
+      }
       await pushRemote(code, local);
       localStorage.setItem(SYNC_CODE_KEY, code);
-      const stats = countPayload(local);
       return {
         action: 'uploaded',
         syncCode: code,
-        products: stats.products,
-        shops: stats.shops,
+        products: localStats.products,
+        shops: localStats.shops,
         syncedAt: local.syncedAt,
+        source: 'jsonblob',
       };
     }
 
@@ -160,7 +211,35 @@
       products: stats.products,
       shops: stats.shops,
       syncedAt: merged.syncedAt,
+      source: lastPullSource || 'jsonblob',
     };
+  }
+
+  async function peekRemote(syncCode) {
+    const code = (syncCode || getSyncCode() || '').trim();
+    if (!code) {
+      return { error: '未配置同步码', products: 0, shops: 0, source: 'none' };
+    }
+    try {
+      const remote = await pullRemote(code);
+      if (!remote) {
+        return { products: 0, shops: 0, source: 'none' };
+      }
+      const stats = countPayload(remote);
+      return {
+        products: stats.products,
+        shops: stats.shops,
+        source: lastPullSource || 'cloud',
+        syncedAt: remote.syncedAt || '',
+      };
+    } catch (err) {
+      return {
+        error: String(err && err.message ? err.message : err),
+        products: 0,
+        shops: 0,
+        source: 'error',
+      };
+    }
   }
 
   function getConfiguredSyncCode() {
@@ -259,6 +338,8 @@
     tryAutoSync: tryAutoSync,
     scheduleCloudSync: scheduleCloudSync,
     bootstrap: bootstrap,
+    peekRemote: peekRemote,
+    getLastPullSource: function () { return lastPullSource; },
     getLocalPayload: getLocalPayload,
     countPayload: countPayload,
   };

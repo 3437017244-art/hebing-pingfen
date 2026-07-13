@@ -1713,15 +1713,42 @@
     $('#unified-suggestions').classList.add('hidden');
   }
 
+  function updateSyncStatusBanner(result) {
+    const banner = $('#sync-status-banner');
+    if (!banner) return;
+    if (!result) {
+      banner.hidden = true;
+      banner.textContent = '';
+      return;
+    }
+    if (result.error) {
+      banner.hidden = false;
+      banner.textContent = '自动同步失败：' + result.error + '。请打开「云端同步」重试。';
+      const failHint = $('#sync-fail-hint');
+      const failSep = $('#sync-fail-sep');
+      if (failHint) failHint.hidden = false;
+      if (failSep) failSep.hidden = false;
+      return;
+    }
+    if (result.action === 'merged' || result.action === 'uploaded') {
+      banner.hidden = false;
+      banner.textContent =
+        '已从' + (result.source === 'bundled' ? '网页备份' : '云端') +
+        '同步：商品 ' + result.products + ' 条，商店 ' + result.shops + ' 家。';
+    }
+  }
+
   /* ========== Init ========== */
   async function init() {
     tryRecoverPendingData();
     ensureUnifiedFormat();
 
+    let bootstrapResult = null;
     if (window.HebingSync?.bootstrap) {
-      await HebingSync.bootstrap();
+      bootstrapResult = await HebingSync.bootstrap();
       items = loadItems();
       loadShops();
+      updateSyncStatusBanner(bootstrapResult);
     }
 
     productEls.dialogClose.addEventListener('click', closeDetailDialog);

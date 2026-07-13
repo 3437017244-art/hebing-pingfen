@@ -32,6 +32,7 @@
     <div class="sync-card">
       <h2>当前本地数据</h2>
       <p id="local-stats">正在检查…</p>
+      <p id="remote-stats" class="field-hint">正在检查云端…</p>
       <p class="field-hint" id="sync-status-hint"></p>
     </div>
 
@@ -101,11 +102,17 @@
         el.innerHTML = html;
       }
 
+      function formatSource(source) {
+        if (source === 'jsonblob') return 'jsonblob 云端';
+        if (source === 'bundled') return 'GitHub 网页备份';
+        return '云端';
+      }
+
       function updateStats() {
         const payload = HebingSync.getLocalPayload();
         const stats = HebingSync.countPayload(payload);
         document.getElementById('local-stats').textContent =
-          '商品 ' + stats.products + ' 条，商店 ' + stats.shops + ' 家';
+          '本机：商品 ' + stats.products + ' 条，商店 ' + stats.shops + ' 家';
 
         const syncCode = HebingSync.getSyncCode();
         const configured = HebingSync.getConfiguredSyncCode();
@@ -130,6 +137,19 @@
           autoSyncCheckbox.disabled = false;
           autoHint.hidden = true;
         }
+      }
+
+      async function updateRemoteStats() {
+        const remoteEl = document.getElementById('remote-stats');
+        remoteEl.textContent = '云端：正在检查…';
+        const remote = await HebingSync.peekRemote();
+        if (remote.error) {
+          remoteEl.textContent = '云端：读取失败（' + remote.error + '）';
+          return;
+        }
+        remoteEl.textContent =
+          '云端：商品 ' + remote.products + ' 条，商店 ' + remote.shops + ' 家' +
+          (remote.source && remote.source !== 'none' ? ' · 来源 ' + formatSource(remote.source) : '');
       }
 
       function setBusy(button, busy) {
@@ -183,10 +203,12 @@
           showBox(
             syncResult,
             '',
-            actionText + '。当前共有商品 ' + result.products + ' 条、商店 ' + result.shops + ' 家。<br>' +
+            actionText + '。当前共有商品 ' + result.products + ' 条、商店 ' + result.shops + ' 家。' +
+              (result.source ? '（来源 ' + formatSource(result.source) + '）' : '') + '<br>' +
               '同步时间：' + (result.syncedAt || '') + '<br><br><a href="index.html">点此返回查看</a>',
           );
           updateStats();
+          updateRemoteStats();
         } catch (err) {
           showBox(syncResult, 'error', '同步失败：' + err.message);
         } finally {
@@ -202,17 +224,25 @@
 
       codeInput.value = HebingSync.getSyncCode();
       updateStats();
+      updateRemoteStats();
 
       if (HebingSync.isAutoSyncEnabled() && HebingSync.getSyncCode()) {
         HebingSync.bootstrap().then(function (result) {
-          if (!result || result.error) return;
+          if (!result) return;
+          if (result.error) {
+            showBox(syncResult, 'error', '自动同步失败：' + result.error);
+            updateRemoteStats();
+            return;
+          }
           const actionText = result.action === 'uploaded' ? '已自动上传到云端' : '已自动与云端合并';
           showBox(
             syncResult,
             'info',
-            actionText + '。当前共有商品 ' + result.products + ' 条、商店 ' + result.shops + ' 家。',
+            actionText + '。当前共有商品 ' + result.products + ' 条、商店 ' + result.shops + ' 家。' +
+              (result.source ? '（来源 ' + formatSource(result.source) + '）' : ''),
           );
           updateStats();
+          updateRemoteStats();
         });
       }
     })();

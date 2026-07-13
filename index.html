@@ -42,10 +42,13 @@
       </div>
 
       <div id="no-data-banner" class="form-banner" hidden>
-        当前浏览器里没有找到已登记的数据。修改网页文件不会删除记录，数据通常仍保存在您之前使用的浏览器中。
+        当前浏览器里没有找到已登记的数据。
+        <span id="sync-fail-hint" hidden>自动同步未成功，请点 <a href="同步.html">云端同步</a> 查看原因。</span>
+        <span id="sync-fail-sep" hidden> </span>
         <a href="恢复数据.html">点此恢复或导入数据</a>
         或 <a href="同步.html">云端同步</a>
       </div>
+      <div id="sync-status-banner" class="form-banner" hidden style="background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8;"></div>
 
       <div id="browse-results">
         <ul class="item-list" id="unified-list"></ul>

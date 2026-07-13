@@ -47,8 +47,33 @@ function Get-SiteConfigValue {
   return $null
 }
 
+function Update-CloudDataFile {
+  $syncCode = Get-SiteConfigValue "defaultSyncCode:\s*'([^']*)'"
+  if (-not $syncCode) { return }
+
+  $outPath = Join-Path $Root "cloud-data.json"
+  $uri = "https://jsonblob.com/api/jsonBlob/$syncCode"
+  try {
+    $response = Invoke-RestMethod -Uri $uri -Headers @{ Accept = "application/json" } -TimeoutSec 30
+    if (-not $response) { return }
+    $payload = [ordered]@{
+      products = @($response.products)
+      shops    = @($response.shops)
+      syncedAt = if ($response.syncedAt) { $response.syncedAt } else { (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ") }
+    }
+    $json = $payload | ConvertTo-Json -Depth 20
+    $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+    [System.IO.File]::WriteAllText($outPath, $json, $utf8NoBom)
+    Write-Host "已更新 cloud-data.json（供手机读取的网页备份）。" -ForegroundColor Green
+  } catch {
+    Write-Host "未能从 jsonblob 更新 cloud-data.json：$($_.Exception.Message)" -ForegroundColor Yellow
+    Write-Host "手机仍可能通过 cloud-data.json 读取上次部署时的数据。" -ForegroundColor Yellow
+  }
+}
+
 Ensure-Git
 Update-SiteVersion
+Update-CloudDataFile
 
 git add .
 
