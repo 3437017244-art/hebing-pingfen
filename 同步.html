@@ -103,9 +103,24 @@
       }
 
       function formatSource(source) {
-        if (source === 'jsonblob') return 'jsonblob 云端';
+        if (window.HebingSync?.formatSyncSource) return HebingSync.formatSyncSource(source);
         if (source === 'bundled') return 'GitHub 网页备份';
+        if (source === 'jsonblob') return 'jsonblob 云端';
         return '云端';
+      }
+
+      function formatSyncSuccess(result) {
+        const actionText = result.action === 'uploaded' ? '同步成功，已保存到本机' : '同步成功，已与云端合并';
+        let html =
+          actionText + '。当前共有商品 ' + result.products + ' 条、商店 ' + result.shops + ' 家。' +
+          (result.source ? '（来源：' + formatSource(result.source) + '）' : '');
+        if (result.uploadWarning) {
+          html += '<br><span class="field-hint">' + result.uploadWarning + '</span>';
+        } else if (window.HEBING_SITE?.syncMode === 'github-backup') {
+          html +=
+            '<br><span class="field-hint">电脑改完数据后，在本机运行 deploy.ps1 并 push，手机刷新即可看到最新内容。</span>';
+        }
+        return html;
       }
 
       function updateStats() {
@@ -199,13 +214,11 @@
         setBusy(button, true);
         try {
           const result = await HebingSync.syncNow(code);
-          const actionText = result.action === 'uploaded' ? '已上传到云端' : '已与云端合并';
           showBox(
             syncResult,
             '',
-            actionText + '。当前共有商品 ' + result.products + ' 条、商店 ' + result.shops + ' 家。' +
-              (result.source ? '（来源 ' + formatSource(result.source) + '）' : '') + '<br>' +
-              '同步时间：' + (result.syncedAt || '') + '<br><br><a href="index.html">点此返回查看</a>',
+            formatSyncSuccess(result) + '<br><br>同步时间：' + (result.syncedAt || '') +
+              '<br><br><a href="index.html">点此返回查看</a>',
           );
           updateStats();
           updateRemoteStats();
@@ -234,13 +247,11 @@
             updateRemoteStats();
             return;
           }
-          const actionText = result.action === 'uploaded' ? '已自动上传到云端' : '已自动与云端合并';
+          const actionText = result.action === 'uploaded' ? '已自动同步到本机' : '已自动与云端合并';
           showBox(
             syncResult,
-            result.uploadWarning ? 'info' : '',
-            actionText + '。当前共有商品 ' + result.products + ' 条、商店 ' + result.shops + ' 家。' +
-              (result.source ? '（来源 ' + formatSource(result.source) + '）' : '') +
-              (result.uploadWarning ? '<br><span class="field-hint">' + result.uploadWarning + '</span>' : ''),
+            '',
+            formatSyncSuccess(result),
           );
           updateStats();
           updateRemoteStats();

@@ -1716,27 +1716,22 @@
   function updateSyncStatusBanner(result) {
     const banner = $('#sync-status-banner');
     if (!banner) return;
-    if (!result) {
+    if (!result || !result.error) {
       banner.hidden = true;
       banner.textContent = '';
-      return;
-    }
-    if (result.error) {
-      banner.hidden = false;
-      banner.textContent = '自动同步失败：' + result.error + '。请打开「云端同步」重试。';
+      if (result?.error) return;
       const failHint = $('#sync-fail-hint');
       const failSep = $('#sync-fail-sep');
-      if (failHint) failHint.hidden = false;
-      if (failSep) failSep.hidden = false;
+      if (failHint) failHint.hidden = true;
+      if (failSep) failSep.hidden = true;
       return;
     }
-    if (result.action === 'merged' || result.action === 'uploaded') {
-      banner.hidden = false;
-      banner.textContent =
-        '已从' + (result.source === 'bundled' ? '网页备份' : '云端') +
-        '同步：商品 ' + result.products + ' 条，商店 ' + result.shops + ' 家。' +
-        (result.uploadWarning ? '（' + result.uploadWarning + '）' : '');
-    }
+    banner.hidden = false;
+    banner.textContent = '自动同步失败：' + result.error + '。请打开「云端同步」重试。';
+    const failHint = $('#sync-fail-hint');
+    const failSep = $('#sync-fail-sep');
+    if (failHint) failHint.hidden = false;
+    if (failSep) failSep.hidden = false;
   }
 
   /* ========== Init ========== */

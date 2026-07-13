@@ -157,6 +157,22 @@
     return null;
   }
 
+  function shouldPushToJsonblob() {
+    return global.HEBING_SITE?.syncMode !== 'github-backup';
+  }
+
+  function formatSyncSource(source) {
+    if (source === 'bundled') return 'GitHub 网页备份';
+    if (source === 'jsonblob') return 'jsonblob 云端';
+    return '云端';
+  }
+
+  async function pushRemoteIfEnabled(syncCode, payload) {
+    if (!shouldPushToJsonblob()) return { skipped: true, reason: 'github-backup' };
+    await pushRemote(syncCode, payload);
+    return { skipped: false };
+  }
+
   async function pushRemote(syncCode, payload) {
     await requestJson(SYNC_API + '/' + encodeURIComponent(syncCode), {
       method: 'PUT',
@@ -182,7 +198,7 @@
       if (localStats.products === 0 && localStats.shops === 0) {
         throw new Error('无法获取云端数据，且本机也没有可上传的记录');
       }
-      await pushRemote(code, local);
+      await pushRemoteIfEnabled(code, local);
       localStorage.setItem(SYNC_CODE_KEY, code);
       return {
         action: 'uploaded',
@@ -190,7 +206,7 @@
         products: localStats.products,
         shops: localStats.shops,
         syncedAt: local.syncedAt,
-        source: 'jsonblob',
+        source: shouldPushToJsonblob() ? 'jsonblob' : 'bundled',
       };
     }
 
@@ -203,13 +219,12 @@
     saveLocalPayload(merged);
 
     let uploadWarning = '';
-    try {
-      await pushRemote(code, merged);
-    } catch (pushErr) {
+    const pushResult = await pushRemoteIfEnabled(code, merged).catch(function (pushErr) {
       uploadWarning =
-        '数据已下载到本机，但上传到 jsonblob 失败：' +
+        '数据已同步到本机，但实时云端备份暂不可用：' +
         (pushErr && pushErr.message ? pushErr.message : pushErr);
-    }
+      return { skipped: false, failed: true };
+    });
 
     localStorage.setItem(SYNC_CODE_KEY, code);
 
@@ -221,7 +236,7 @@
       shops: stats.shops,
       syncedAt: merged.syncedAt,
       source: lastPullSource || 'jsonblob',
-      uploadWarning: uploadWarning || undefined,
+      uploadWarning: pushResult && pushResult.skipped ? undefined : (uploadWarning || undefined),
     };
   }
 
@@ -347,6 +362,8 @@
     setAutoSyncEnabled: setAutoSyncEnabled,
     tryAutoSync: tryAutoSync,
     scheduleCloudSync: scheduleCloudSync,
+    formatSyncSource: formatSyncSource,
+    shouldPushToJsonblob: shouldPushToJsonblob,
     bootstrap: bootstrap,
     peekRemote: peekRemote,
     getLastPullSource: function () { return lastPullSource; },

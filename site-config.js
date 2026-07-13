@@ -9,6 +9,8 @@
     // 云端数据同步码（jsonblob）。部署后所有设备自动使用，无需手动复制。
     defaultSyncCode: '019f58bc-163f-7878-9ee6-4066a48180ee',
     autoSync: true,
+    // github-backup：浏览器只从 GitHub 网页备份读写，不访问 jsonblob（国内更稳）
+    syncMode: 'github-backup',
     siteUrl: 'https://3437017244-art.github.io/hebing-pingfen/',
     mirrors: {
       github: 'https://3437017244-art.github.io/hebing-pingfen/',
