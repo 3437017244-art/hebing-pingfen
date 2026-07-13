@@ -107,12 +107,10 @@
       const versionLine = document.getElementById('site-version-line');
       if (versionLine && window.HEBING_SITE) {
         const mode = window.MobileAppBridge?.isNativeApp?.() ? 'APP 在线版' : '在线版';
-        versionLine.textContent = mode + ' v' + HEBING_SITE.version + ' · ' + HEBING_SITE.updatedAt;
+        const syncHint = HEBING_SITE.defaultSyncCode && HEBING_SITE.autoSync !== false ? ' · 自动同步' : '';
+        versionLine.textContent = mode + ' v' + HEBING_SITE.version + ' · ' + HEBING_SITE.updatedAt + syncHint;
         versionLine.hidden = false;
       }
-
-      if (!window.HebingSync || !HebingSync.isAutoSyncEnabled() || !HebingSync.getSyncCode()) return;
-      HebingSync.tryAutoSync();
     });
   </script>
 </body>

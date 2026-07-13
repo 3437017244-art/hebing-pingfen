@@ -1,0 +1,15 @@
+[
+  {
+    "id": "mrf481emqozb2f",
+    "name": "冰度起点",
+    "location": "贸易街",
+    "rating": 4,
+    "products": [
+      {
+        "name": "冰度起点1000ML奶茶",
+        "rating": 4
+      }
+    ],
+    "createdAt": "2026-07-10T15:53:39.358Z"
+  }
+]

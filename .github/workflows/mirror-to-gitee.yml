@@ -1,0 +1,61 @@
+name: Mirror to Gitee
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Gitee mirror config
+        id: check
+        env:
+          GITEE_REPO: ${{ secrets.GITEE_REPO }}
+          GITEE_SSH_PRIVATE_KEY: ${{ secrets.GITEE_SSH_PRIVATE_KEY }}
+        run: |
+          if [ -z "$GITEE_REPO" ] || [ -z "$GITEE_SSH_PRIVATE_KEY" ]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "Gitee mirror secrets not configured, skipping."
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout
+        if: steps.check.outputs.enabled == 'true'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup SSH for Gitee
+        if: steps.check.outputs.enabled == 'true'
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.GITEE_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -t rsa gitee.com >> ~/.ssh/known_hosts
+
+      - name: Push to Gitee
+        if: steps.check.outputs.enabled == 'true'
+        env:
+          GITEE_REPO: ${{ secrets.GITEE_REPO }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git push --force "git@${GITEE_REPO}" HEAD:main
+
+      - name: Trigger Gitee Pages build
+        if: steps.check.outputs.enabled == 'true' && secrets.GITEE_TOKEN != ''
+        env:
+          GITEE_OWNER: ${{ secrets.GITEE_OWNER }}
+          GITEE_REPO_NAME: ${{ secrets.GITEE_REPO_NAME }}
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+        run: |
+          if [ -z "$GITEE_OWNER" ] || [ -z "$GITEE_REPO_NAME" ]; then
+            echo "GITEE_OWNER or GITEE_REPO_NAME not set, skipping Pages build."
+            exit 0
+          fi
+          curl -fsS -X POST \
+            "https://gitee.com/api/v5/repos/${GITEE_OWNER}/${GITEE_REPO_NAME}/pages/build" \
+            -d "access_token=${GITEE_TOKEN}"

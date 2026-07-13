@@ -32,35 +32,44 @@
       color: #1d4ed8;
       word-break: break-all;
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      margin-bottom: 10px;
     }
+    .url-display.mirror { background: #ecfdf5; border-color: #a7f3d0; color: #047857; }
+    .url-label { margin: 0 0 6px; font-size: 0.9rem; color: var(--text-muted, #64748b); }
     .deploy-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
     .deploy-actions a { text-decoration: none; display: inline-block; line-height: 1.2; }
     .result-box { padding: 12px 14px; border-radius: 8px; background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857; }
     .result-box.info { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+    .section-tag { display: inline-block; margin-bottom: 8px; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; background: #dbeafe; color: #1d4ed8; }
+    .section-tag.gitee { background: #d1fae5; color: #047857; }
   </style>
 </head>
 <body>
   <div class="deploy-page">
     <header class="header">
-      <h1>在线部署（方案 A）</h1>
-      <p class="subtitle">网页部署到 GitHub Pages 后，电脑浏览器和手机 APP 都访问同一网址，改完上传即自动更新。</p>
+      <h1>在线部署</h1>
+      <p class="subtitle">GitHub 作代码备份，Gitee Pages 作国内镜像。改完运行 deploy.ps1，两端同步更新。</p>
     </header>
 
     <div class="deploy-card">
       <h2>你的在线地址</h2>
-      <p class="field-hint">部署成功后，地址格式如下（把用户名换成你的 GitHub 账号）：</p>
-      <div class="url-display" id="site-url-preview">https://YOUR_GITHUB_USERNAME.github.io/hebing-pingfen/</div>
+      <p class="field-hint">国内日常访问推荐 Gitee；GitHub 保留作备份与海外访问。</p>
+      <p class="url-label">国内推荐（Gitee Pages）</p>
+      <div class="url-display mirror" id="gitee-url-preview">https://YOUR_GITEE_USERNAME.gitee.io/hebing-pingfen/</div>
+      <p class="url-label">GitHub 备份</p>
+      <div class="url-display" id="github-url-preview">https://YOUR_GITHUB_USERNAME.github.io/hebing-pingfen/</div>
       <p class="field-hint" id="site-version-hint" style="margin-top:12px;"></p>
     </div>
 
     <div class="deploy-card">
-      <h2>第一次部署（只需做一次）</h2>
+      <span class="section-tag">方案 A</span>
+      <h2>GitHub 备份（第一次，只需做一次）</h2>
       <ol class="step-list">
         <li>注册 <a href="https://github.com/" target="_blank" rel="noopener">GitHub</a> 账号（若已有可跳过）。</li>
         <li>在 GitHub 新建仓库，名称填 <strong>hebing-pingfen</strong>，选 Public，不要勾选 README。</li>
-        <li>在本文件夹打开 PowerShell，运行下面命令（把用户名和邮箱换成你的）：</li>
+        <li>在本文件夹打开 PowerShell，运行下面命令（把用户名换成你的）：</li>
       </ol>
-      <div class="code-box" id="first-deploy-cmd">cd D:\RuanJian\合并评分
+      <div class="code-box" id="first-github-cmd">cd D:\RuanJian\合并评分
 git init
 git branch -M main
 git add .
@@ -69,36 +78,72 @@ git remote add origin https://github.com/YOUR_GITHUB_USERNAME/hebing-pingfen.git
 git push -u origin main</div>
       <ol class="step-list" start="4">
         <li>打开 GitHub 仓库 → Settings → Pages → Build and deployment 选 <strong>GitHub Actions</strong>。</li>
-        <li>等 1～2 分钟，访问上面的在线地址，能看到本页面即部署成功。</li>
+        <li>等 1～2 分钟，访问 GitHub 地址，能看到本页面即成功。</li>
       </ol>
     </div>
 
     <div class="deploy-card">
+      <span class="section-tag gitee">方案 B</span>
+      <h2>Gitee 国内镜像（第一次，只需做一次）</h2>
+      <ol class="step-list">
+        <li>注册 <a href="https://gitee.com/" target="_blank" rel="noopener">Gitee</a> 并完成实名认证（开通 Pages 需要）。</li>
+        <li>在 Gitee 新建仓库，名称同样填 <strong>hebing-pingfen</strong>，选公开，不要初始化 README。</li>
+        <li>添加 Gitee 远程并推送（把用户名换成你的 Gitee 账号）：</li>
+      </ol>
+      <div class="code-box" id="first-gitee-cmd">cd D:\RuanJian\合并评分
+git remote add gitee https://gitee.com/YOUR_GITEE_USERNAME/hebing-pingfen.git
+git push -u gitee main</div>
+      <ol class="step-list" start="4">
+        <li>打开 Gitee 仓库 → <strong>服务</strong> → <strong>Gitee Pages</strong> → 分支选 <strong>main</strong> → 点 <strong>启动</strong>。</li>
+        <li>等 1～2 分钟，访问 Gitee 地址，内容与 GitHub 一致即镜像成功。</li>
+        <li>（可选）在 <code>site-config.js</code> 里把 <code>giteeUser</code> 改成你的 Gitee 用户名，方便脚本显示正确地址。</li>
+        <li>（可选，推荐）在 Gitee 生成私人令牌，并在本机设置环境变量，之后 deploy.ps1 会自动触发 Pages 更新：</li>
+      </ol>
+      <div class="code-box"># PowerShell 临时设置（当前窗口有效）
+$env:GITEE_TOKEN = "你的Gitee私人令牌"
+
+# 或系统环境变量里永久添加 GITEE_TOKEN</div>
+      <p class="field-hint">未设置令牌时，每次推送后需到 Gitee Pages 页面手动点「更新」。</p>
+    </div>
+
+    <div class="deploy-card">
       <h2>以后每次改完网页</h2>
-      <p class="field-hint">在本文件夹双击或在 PowerShell 运行：</p>
+      <p class="field-hint">在本文件夹 PowerShell 运行：</p>
       <div class="code-box">.\deploy.ps1</div>
-      <p class="field-hint">脚本会自动提交并推送到 GitHub，约 1 分钟后 APP 和浏览器都会是最新版。</p>
+      <p class="field-hint">脚本会同时推送到 GitHub 和 Gitee（已配置 remote 的才会推送），并尽量自动更新 Gitee Pages。</p>
+    </div>
+
+    <div class="deploy-card">
+      <h2>数据自动同步（已配置）</h2>
+      <p class="field-hint">商品/商店数据通过 jsonblob 云端同步，同步码已写在 <code>site-config.js</code> 的 <code>defaultSyncCode</code> 中。</p>
+      <div class="result-box info" id="sync-code-preview">正在读取…</div>
+      <ol class="step-list">
+        <li>打开网页时会<strong>自动从云端拉取</strong>并合并本地数据。</li>
+        <li>增删改后约 <strong>2 秒</strong>自动上传到云端，无需点「立即同步」。</li>
+        <li>电脑、手机、APP 打开同一在线地址即可共享数据。</li>
+        <li>若要更换同步码：在「云端同步」页生成新码，写入 <code>site-config.js</code> 后重新 deploy。</li>
+      </ol>
     </div>
 
     <div class="deploy-card">
       <h2>让手机 APP 加载在线地址</h2>
       <ol class="step-list">
-        <li>打开 <code>D:\RuanJian\合并评分-app\online-site.json</code>，把 <code>siteUrl</code> 改成你的真实在线地址。</li>
+        <li>打开 <code>D:\RuanJian\合并评分-app\online-site.json</code>，把 <code>siteUrl</code> 改成 <strong>Gitee 国内地址</strong>（国内打开更稳）。</li>
         <li>在 APP 项目目录运行：</li>
       </ol>
-      <div class="code-box">cd D:\RuanJian\合并评分-app
+      <div class="code-box" id="app-setup-cmd">cd D:\RuanJian\合并评分-app
 npm run apply-online-url
 npx cap sync android</div>
       <ol class="step-list" start="3">
         <li>用 Android Studio 重新打包 APK 并安装到手机（<strong>只需做一次</strong>，之后改网页不用再装 APP）。</li>
-        <li>数据仍用「云端同步」里的同步码在两台设备间合并。</li>
+        <li>数据会随 <code>site-config.js</code> 中的同步码自动同步，无需手动复制同步码。</li>
       </ol>
     </div>
 
     <div class="deploy-card">
       <h2>工作原理</h2>
       <div class="result-box info">
-        电脑改网页 → deploy.ps1 上传 → GitHub Pages 更新 → 浏览器打开在线地址即最新版；手机 APP 内嵌浏览器也打开同一地址，因此软件版本自动一致。同步码只负责商品/商店数据，不负责网页文件。
+        电脑改网页 → deploy.ps1 上传 → GitHub（备份）+ Gitee（国内镜像）同步更新 → 浏览器/APP 打开在线地址即最新版。商品/商店数据由 defaultSyncCode 自动云端同步。
       </div>
       <div class="deploy-actions">
         <a class="btn btn-primary" href="index.html">返回查一查</a>
@@ -111,8 +156,40 @@ npx cap sync android</div>
   <script>
     (function () {
       if (!window.HEBING_SITE) return;
+
+      var site = HEBING_SITE;
+      if (site.mirrors && site.mirrors.gitee) {
+        document.getElementById('gitee-url-preview').textContent = site.mirrors.gitee;
+      } else if (site.giteeUser && site.repoName) {
+        document.getElementById('gitee-url-preview').textContent =
+          'https://' + site.giteeUser + '.gitee.io/' + site.repoName + '/';
+      }
+
+      if (site.mirrors && site.mirrors.github) {
+        document.getElementById('github-url-preview').textContent = site.mirrors.github;
+      } else if (site.githubUser && site.repoName) {
+        document.getElementById('github-url-preview').textContent =
+          'https://' + site.githubUser + '.github.io/' + site.repoName + '/';
+      }
+
       document.getElementById('site-version-hint').textContent =
-        '当前网页版本：v' + HEBING_SITE.version + ' · ' + HEBING_SITE.updatedAt;
+        '当前网页版本：v' + site.version + ' · ' + site.updatedAt;
+
+      var syncPreview = document.getElementById('sync-code-preview');
+      if (syncPreview) {
+        if (site.defaultSyncCode) {
+          syncPreview.textContent = '当前同步码：' + site.defaultSyncCode +
+            (site.autoSync !== false ? '（autoSync 已开启）' : '（autoSync 已关闭）');
+        } else {
+          syncPreview.textContent = '尚未配置 defaultSyncCode。请先在「云端同步」页生成同步码并写入 site-config.js。';
+        }
+      }
+
+      var giteeUrl = site.getSiteUrl ? site.getSiteUrl('gitee') : (site.mirrors && site.mirrors.gitee);
+      if (giteeUrl) {
+        document.getElementById('app-setup-cmd').textContent =
+          'cd D:\\RuanJian\\合并评分-app\n# online-site.json 中 siteUrl 建议填：\n# ' + giteeUrl + '\nnpm run apply-online-url\nnpx cap sync android';
+      }
     })();
   </script>
 </body>

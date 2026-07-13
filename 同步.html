@@ -26,7 +26,7 @@
   <div class="sync-page">
     <header class="header">
       <h1>手机与网页云端同步</h1>
-      <p class="subtitle">两端输入同一个同步码，点「立即同步」即可合并商品和商店数据。需要联网。</p>
+      <p class="subtitle">已在 site-config.js 配置同步码时，打开网页会自动同步；也可在此手动操作。</p>
     </header>
 
     <div class="sync-card">
@@ -35,9 +35,15 @@
       <p class="field-hint" id="sync-status-hint"></p>
     </div>
 
-    <div class="sync-card">
-      <h2>第一步：设置同步码</h2>
-      <p class="field-hint">如果这是第一台设备，点「生成同步码」；如果另一台已经生成过，把同步码粘贴到下面并保存。</p>
+    <div class="sync-card" id="site-sync-card" hidden>
+      <h2>网站已配置自动同步</h2>
+      <p class="field-hint">同步码已写入 site-config.js，打开首页会自动拉取/上传，修改数据约 2 秒后也会自动上传。</p>
+      <div class="sync-code-display" id="site-sync-code-display"></div>
+    </div>
+
+    <div class="sync-card" id="manual-sync-card">
+      <h2>手动同步（可选）</h2>
+      <p class="field-hint">若未在网站配置同步码，可在此生成并保存；已配置自动同步时可跳过本节。</p>
       <div class="form-row">
         <label for="sync-code-input">同步码</label>
         <input type="text" id="sync-code-input" class="sync-code-input" placeholder="例如：1054938906322286336" autocomplete="off">
@@ -60,17 +66,18 @@
       </div>
       <label class="sync-check">
         <input type="checkbox" id="auto-sync-checkbox">
-        打开页面时自动同步（需已保存同步码）
+        打开页面时自动同步
       </label>
+      <p class="field-hint" id="auto-sync-hint" hidden>网站已启用 autoSync，此项已固定为开启。</p>
       <div id="sync-result" hidden style="margin-top:16px;"></div>
     </div>
 
     <div class="sync-card">
       <h2>使用说明</h2>
       <ol class="step-list">
-        <li>在<strong>电脑网页版</strong>或<strong>手机 APP</strong>任意一端，点「生成新同步码」。</li>
-        <li>把同步码复制到另一端，粘贴后点「保存同步码」。</li>
-        <li>任意一端有新增或修改后，点「立即同步」，另一端再点一次即可看到最新数据。</li>
+        <li>推荐：在 <code>site-config.js</code> 填写 <code>defaultSyncCode</code> 并部署，所有设备自动同步。</li>
+        <li>或在一台设备点「生成新同步码」，复制到另一台保存。</li>
+        <li>修改后会自动上传（约 2 秒）；另一台打开网页即可看到最新数据。</li>
         <li>同步码相当于钥匙，请勿分享给他人。</li>
       </ol>
     </div>
@@ -101,9 +108,28 @@
           '商品 ' + stats.products + ' 条，商店 ' + stats.shops + ' 家';
 
         const syncCode = HebingSync.getSyncCode();
-        document.getElementById('sync-status-hint').textContent = syncCode
-          ? '当前已保存同步码：' + syncCode
-          : '尚未保存同步码。';
+        const configured = HebingSync.getConfiguredSyncCode();
+        const siteCard = document.getElementById('site-sync-card');
+        const manualCard = document.getElementById('manual-sync-card');
+        const autoHint = document.getElementById('auto-sync-hint');
+
+        if (configured) {
+          siteCard.hidden = false;
+          document.getElementById('site-sync-code-display').textContent = configured;
+          manualCard.querySelector('h2').textContent = '手动同步（可选）';
+          document.getElementById('sync-status-hint').textContent =
+            '已启用网站自动同步（defaultSyncCode）';
+          autoSyncCheckbox.checked = true;
+          autoSyncCheckbox.disabled = true;
+          autoHint.hidden = false;
+        } else {
+          siteCard.hidden = true;
+          document.getElementById('sync-status-hint').textContent = syncCode
+            ? '当前已保存同步码：' + syncCode
+            : '尚未保存同步码。';
+          autoSyncCheckbox.disabled = false;
+          autoHint.hidden = true;
+        }
       }
 
       function setBusy(button, busy) {
@@ -168,6 +194,7 @@
         }
       });
 
+      HebingSync.ensureSyncSetup();
       autoSyncCheckbox.checked = HebingSync.isAutoSyncEnabled();
       autoSyncCheckbox.addEventListener('change', function () {
         HebingSync.setAutoSyncEnabled(autoSyncCheckbox.checked);
@@ -177,7 +204,7 @@
       updateStats();
 
       if (HebingSync.isAutoSyncEnabled() && HebingSync.getSyncCode()) {
-        HebingSync.tryAutoSync().then(function (result) {
+        HebingSync.bootstrap().then(function (result) {
           if (!result || result.error) return;
           const actionText = result.action === 'uploaded' ? '已自动上传到云端' : '已自动与云端合并';
           showBox(

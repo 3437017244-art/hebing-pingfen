@@ -6,6 +6,9 @@
   const SYNC_CODE_KEY = 'hebing-sync-code';
   const SYNC_AUTO_KEY = 'hebing-sync-auto';
   const SYNC_API = 'https://jsonblob.com/api/jsonBlob';
+  const SYNC_DEBOUNCE_MS = 2000;
+  let syncTimer = null;
+  let syncInFlight = null;
 
   function normalizeShops(list) {
     return (list || []).map(function (shop) {
@@ -119,7 +122,7 @@
   }
 
   async function syncNow(syncCode) {
-    const code = (syncCode || localStorage.getItem(SYNC_CODE_KEY) || '').trim();
+    const code = (syncCode || getSyncCode() || '').trim();
     if (!code) {
       throw new Error('请先设置同步码');
     }
@@ -160,29 +163,56 @@
     };
   }
 
+  function getConfiguredSyncCode() {
+    const site = global.HEBING_SITE;
+    if (!site || !site.defaultSyncCode) return '';
+    return String(site.defaultSyncCode).trim();
+  }
+
+  function isSiteAutoSyncConfigured() {
+    return Boolean(getConfiguredSyncCode()) && global.HEBING_SITE?.autoSync !== false;
+  }
+
+  function ensureSyncSetup() {
+    const configured = getConfiguredSyncCode();
+    if (!configured) return false;
+    localStorage.setItem(SYNC_CODE_KEY, configured);
+    if (global.HEBING_SITE?.autoSync !== false) {
+      localStorage.setItem(SYNC_AUTO_KEY, '1');
+    }
+    return true;
+  }
+
   function getSyncCode() {
+    const configured = getConfiguredSyncCode();
+    if (configured) return configured;
     return localStorage.getItem(SYNC_CODE_KEY) || '';
   }
 
   function setSyncCode(code) {
     const value = (code || '').trim();
     if (!value) {
-      localStorage.removeItem(SYNC_CODE_KEY);
-      return '';
+      if (!getConfiguredSyncCode()) {
+        localStorage.removeItem(SYNC_CODE_KEY);
+      }
+      return getSyncCode();
     }
     localStorage.setItem(SYNC_CODE_KEY, value);
     return value;
   }
 
   function isAutoSyncEnabled() {
+    if (isSiteAutoSyncConfigured()) return true;
     return localStorage.getItem(SYNC_AUTO_KEY) === '1';
   }
 
   function setAutoSyncEnabled(enabled) {
+    if (isSiteAutoSyncConfigured() && !enabled) return;
     localStorage.setItem(SYNC_AUTO_KEY, enabled ? '1' : '0');
   }
 
   async function tryAutoSync() {
+    ensureSyncSetup();
     if (!isAutoSyncEnabled() || !getSyncCode()) {
       return null;
     }
@@ -193,6 +223,26 @@
     }
   }
 
+  function scheduleCloudSync(delayMs) {
+    if (!isAutoSyncEnabled() || !getSyncCode()) return;
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(function () {
+      syncNow().catch(function () {
+        /* 后台同步失败时不打断使用 */
+      });
+    }, delayMs == null ? SYNC_DEBOUNCE_MS : delayMs);
+  }
+
+  async function bootstrap() {
+    ensureSyncSetup();
+    if (!isAutoSyncEnabled() || !getSyncCode()) return null;
+    if (syncInFlight) return syncInFlight;
+    syncInFlight = tryAutoSync().finally(function () {
+      syncInFlight = null;
+    });
+    return syncInFlight;
+  }
+
   global.HebingSync = {
     PRODUCT_KEY: PRODUCT_KEY,
     SHOP_KEY: SHOP_KEY,
@@ -201,9 +251,14 @@
     syncNow: syncNow,
     getSyncCode: getSyncCode,
     setSyncCode: setSyncCode,
+    getConfiguredSyncCode: getConfiguredSyncCode,
+    isSiteAutoSyncConfigured: isSiteAutoSyncConfigured,
+    ensureSyncSetup: ensureSyncSetup,
     isAutoSyncEnabled: isAutoSyncEnabled,
     setAutoSyncEnabled: setAutoSyncEnabled,
     tryAutoSync: tryAutoSync,
+    scheduleCloudSync: scheduleCloudSync,
+    bootstrap: bootstrap,
     getLocalPayload: getLocalPayload,
     countPayload: countPayload,
   };

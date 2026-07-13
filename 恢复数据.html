@@ -232,8 +232,19 @@
           return;
         }
         try {
-          const productText = productFile ? await readFile(productFile) : '';
-          const shopText = shopFile ? await readFile(shopFile) : '';
+          let productText = productFile ? await readFile(productFile) : '';
+          let shopText = shopFile ? await readFile(shopFile) : '';
+
+          if (productFile && !shopFile) {
+            const parsed = JSON.parse(productText);
+            if (parsed && Array.isArray(parsed.products)) {
+              productText = JSON.stringify(parsed.products);
+              if (Array.isArray(parsed.shops)) {
+                shopText = JSON.stringify(parsed.shops);
+              }
+            }
+          }
+
           importData(productText || null, shopText || null);
           showResult(
             resultEl,

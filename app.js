@@ -752,6 +752,7 @@
 
   function saveItems() {
     localStorage.setItem(PRODUCT_STORAGE_KEY, JSON.stringify(items));
+    window.HebingSync?.scheduleCloudSync?.();
   }
 
   function formatPrice(price) {
@@ -1485,6 +1486,7 @@
 
   function saveShops() {
     localStorage.setItem(SHOP_STORAGE_KEY, JSON.stringify(shops));
+    window.HebingSync?.scheduleCloudSync?.();
   }
 
   function getShopProducts(shop) {
@@ -1712,9 +1714,15 @@
   }
 
   /* ========== Init ========== */
-  function init() {
+  async function init() {
     tryRecoverPendingData();
     ensureUnifiedFormat();
+
+    if (window.HebingSync?.bootstrap) {
+      await HebingSync.bootstrap();
+      items = loadItems();
+      loadShops();
+    }
 
     productEls.dialogClose.addEventListener('click', closeDetailDialog);
     productEls.dialogEditBtn.addEventListener('click', async () => {
@@ -1838,5 +1846,7 @@
     renderBrowse();
   }
 
-  init();
+  init().catch(function (err) {
+    console.error('初始化失败', err);
+  });
 })();
