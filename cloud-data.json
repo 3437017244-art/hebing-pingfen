@@ -269,6 +269,23 @@
       "createdAt": "2026-07-11T08:04:34.710Z",
       "updatedAt": "2026-07-11T08:04:34.710Z",
       "category": ""
+    },
+    {
+      "id": "mrjb177sfpijne",
+      "name": "双汇",
+      "brand": "",
+      "flavor": "玉米肠",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 5,
+      "createdAt": "2026-07-13T14:15:22.312Z",
+      "updatedAt": "2026-07-13T14:18:53.800Z"
     }
   ],
   "shops": [
@@ -286,5 +303,14 @@
       "createdAt": "2026-07-10T15:53:39.358Z"
     }
   ],
-  "syncedAt": "2026-07-12T23:49:03.699Z"
+  "deletedIds": {
+    "products": {
+      "mrjaj95m7iyj5x": "2026-07-13T14:10:40.167Z",
+      "mrioqzb31zy6ec": "2026-07-13T14:10:50.919Z",
+      "mrjavvjc5lvzty": "2026-07-13T14:11:28.098Z",
+      "mrjb4fqj7yyhla": "2026-07-13T14:18:22.159Z"
+    },
+    "shops": {}
+  },
+  "syncedAt": "2026-07-13T14:18:57.502Z"
 }
