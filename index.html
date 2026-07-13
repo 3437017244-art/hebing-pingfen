@@ -107,6 +107,7 @@
 
   <script src="site-config.js"></script>
   <script src="mobile-bridge.js"></script>
+  <script src="app-update.js"></script>
   <script src="sync-service.js"></script>
   <script src="app.js"></script>
   <script>
@@ -115,7 +116,10 @@
       if (versionLine && window.HEBING_SITE) {
         const mode = window.MobileAppBridge?.isNativeApp?.() ? 'APP 在线版' : '在线版';
         const syncHint = HEBING_SITE.defaultSyncCode && HEBING_SITE.autoSync !== false ? ' · 自动同步' : '';
-        versionLine.textContent = mode + ' v' + HEBING_SITE.version + ' · ' + HEBING_SITE.updatedAt + syncHint;
+        const versionText = window.AppUpdate?.formatVersionLine
+          ? AppUpdate.formatVersionLine(HEBING_SITE)
+          : 'v' + HEBING_SITE.version + ' · ' + HEBING_SITE.updatedAt;
+        versionLine.textContent = mode + ' ' + versionText + syncHint;
         versionLine.hidden = false;
       }
     });

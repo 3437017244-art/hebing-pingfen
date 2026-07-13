@@ -1,7 +1,10 @@
 (function () {
   'use strict';
 
-  window.__IS_MOBILE_APP__ = true;
+  const isNativeApp = Boolean(window.Capacitor?.isNativePlatform?.());
+  if (isNativeApp) {
+    window.__IS_MOBILE_APP__ = true;
+  }
 
   document.addEventListener(
     'touchstart',
@@ -67,14 +70,83 @@
     return true;
   }
 
+  function setupPullToRefresh() {
+    if (!isNativeApp) return;
+
+    let startY = 0;
+    let pulling = false;
+    let indicator = document.getElementById('app-pull-indicator');
+    if (!indicator) {
+      indicator = document.createElement('div');
+      indicator.id = 'app-pull-indicator';
+      indicator.className = 'app-pull-indicator';
+      indicator.textContent = '下拉刷新';
+      document.body.appendChild(indicator);
+    }
+
+    document.addEventListener(
+      'touchstart',
+      function (event) {
+        if (window.scrollY > 8) return;
+        if (event.touches.length !== 1) return;
+        startY = event.touches[0].clientY;
+        pulling = true;
+      },
+      { passive: true },
+    );
+
+    document.addEventListener(
+      'touchmove',
+      function (event) {
+        if (!pulling) return;
+        const delta = event.touches[0].clientY - startY;
+        if (delta <= 0 || window.scrollY > 8) {
+          indicator.classList.remove('visible', 'ready');
+          return;
+        }
+        indicator.classList.add('visible');
+        if (delta > 72) {
+          indicator.classList.add('ready');
+          indicator.textContent = '松开刷新';
+        } else {
+          indicator.classList.remove('ready');
+          indicator.textContent = '下拉刷新';
+        }
+      },
+      { passive: true },
+    );
+
+    document.addEventListener(
+      'touchend',
+      function (event) {
+        if (!pulling) return;
+        pulling = false;
+        const delta = (event.changedTouches[0]?.clientY || 0) - startY;
+        indicator.classList.remove('visible', 'ready');
+        if (delta > 72 && window.scrollY <= 8) {
+          indicator.textContent = '正在刷新…';
+          indicator.classList.add('visible');
+          if (window.AppUpdate?.reloadForUpdate) {
+            window.AppUpdate.reloadForUpdate();
+          } else {
+            window.location.reload();
+          }
+        }
+      },
+      { passive: true },
+    );
+  }
+
   window.MobileAppBridge = {
     saveJsonFile,
     isNativeApp: function () {
-      return Boolean(window.Capacitor?.isNativePlatform?.());
+      return isNativeApp;
     },
   };
 
   document.addEventListener('DOMContentLoaded', function () {
+    setupPullToRefresh();
+
     const exportBtn = document.getElementById('export-btn');
     if (!exportBtn || exportBtn.dataset.mobileBridgeBound) return;
     exportBtn.dataset.mobileBridgeBound = '1';

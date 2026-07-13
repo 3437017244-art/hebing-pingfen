@@ -67,3 +67,57 @@ body {
     z-index: 1;
   }
 }
+
+.app-update-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius, 12px);
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #9a3412;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.app-update-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.app-pull-indicator {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 8px);
+  left: 50%;
+  transform: translate(-50%, -120%);
+  z-index: 9999;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.95);
+  color: #fff;
+  font-size: 0.85rem;
+  pointer-events: none;
+  opacity: 0;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.app-pull-indicator.visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.app-pull-indicator.ready {
+  background: rgba(22, 163, 74, 0.95);
+}
+
+.sync-version-line {
+  margin: 0 0 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  color: var(--text-muted, #64748b);
+}

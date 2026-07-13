@@ -77,6 +77,18 @@
     </div>
 
     <div class="sync-card">
+      <h2>版本与更新</h2>
+      <p class="sync-version-line" id="local-version-line">本机版本：读取中…</p>
+      <p class="sync-version-line" id="remote-version-line">在线版本：尚未检查</p>
+      <p class="field-hint">电脑端运行 deploy.ps1 上传后，APP 会自动检测新版本。也可手动检查或刷新。</p>
+      <div class="sync-actions">
+        <button type="button" class="btn btn-secondary" id="check-update-btn">检查更新</button>
+        <button type="button" class="btn btn-primary" id="reload-app-btn">立即刷新</button>
+      </div>
+      <div id="update-result" hidden style="margin-top:16px;"></div>
+    </div>
+
+    <div class="sync-card">
       <h2>第二步：立即同步</h2>
       <p class="field-hint">合并云端与本机数据（相同记录保留较新修改），再上传回 GitHub。登记后约 2 秒也会自动同步。</p>
       <div class="sync-actions">
@@ -106,6 +118,7 @@
 
   <script src="site-config.js"></script>
   <script src="mobile-bridge.js"></script>
+  <script src="app-update.js"></script>
   <script src="sync-service.js"></script>
   <script>
     (function () {
@@ -114,6 +127,7 @@
       const codeInput = document.getElementById('sync-code-input');
       const codeResult = document.getElementById('code-result');
       const syncResult = document.getElementById('sync-result');
+      const updateResult = document.getElementById('update-result');
       const autoSyncCheckbox = document.getElementById('auto-sync-checkbox');
       const githubTokenInput = document.getElementById('github-token-input');
       const githubTokenResult = document.getElementById('github-token-result');
@@ -189,6 +203,60 @@
         button.dataset.originalText = button.dataset.originalText || button.textContent;
         button.textContent = busy ? '处理中…' : button.dataset.originalText;
       }
+
+      function updateVersionLines() {
+        const localLine = document.getElementById('local-version-line');
+        const remoteLine = document.getElementById('remote-version-line');
+        if (localLine && window.AppUpdate) {
+          localLine.textContent = '本机版本：' + AppUpdate.formatVersionLine(AppUpdate.getLocalSiteInfo()).trim();
+        }
+        if (remoteLine && window.AppUpdate) {
+          remoteLine.textContent = '在线版本：尚未检查';
+        }
+      }
+
+      async function handleCheckUpdate(force) {
+        if (!window.AppUpdate) return;
+        const remoteLine = document.getElementById('remote-version-line');
+        if (remoteLine) remoteLine.textContent = '在线版本：正在检查…';
+        const result = await AppUpdate.checkForUpdate({ force: force });
+        updateVersionLines();
+        if (remoteLine) {
+          remoteLine.textContent = result.remote
+            ? '在线版本：' + AppUpdate.formatVersionLine(result.remote).trim()
+            : '在线版本：检查失败';
+        }
+        if (result.error) {
+          showBox(updateResult, 'error', '检查失败：' + result.error);
+          return;
+        }
+        if (result.hasUpdate) {
+          AppUpdate.showUpdateBanner(result);
+          showBox(
+            updateResult,
+            'info',
+            '发现新版本。点「立即刷新」或顶部提示即可更新界面与功能。',
+          );
+          return;
+        }
+        AppUpdate.hideUpdateBanner();
+        AppUpdate.markCurrentVersionSeen();
+        showBox(updateResult, '', '当前已是最新版本。');
+      }
+
+      document.getElementById('check-update-btn').addEventListener('click', function () {
+        handleCheckUpdate(true);
+      });
+
+      document.getElementById('reload-app-btn').addEventListener('click', function () {
+        if (window.AppUpdate?.reloadForUpdate) {
+          AppUpdate.reloadForUpdate();
+          return;
+        }
+        window.location.reload();
+      });
+
+      updateVersionLines();
 
       document.getElementById('save-github-token-btn').addEventListener('click', function () {
         const token = HebingSync.setGithubToken(githubTokenInput.value);

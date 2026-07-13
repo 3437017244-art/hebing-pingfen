@@ -29,10 +29,29 @@ function Update-SiteVersion {
   if (-not (Test-Path $configPath)) { return }
 
   $today = Get-Date -Format "yyyy-MM-dd"
+  $buildId = Get-Date -Format "yyyyMMdd-HHmmss"
   $content = Get-Content $configPath -Raw -Encoding UTF8
   $content = [regex]::Replace($content, "updatedAt:\s*'[^']*'", "updatedAt: '$today'")
+
+  $versionMatch = [regex]::Match($content, "version:\s*'(\d+)\.(\d+)\.(\d+)'")
+  if ($versionMatch.Success) {
+    $major = [int]$versionMatch.Groups[1].Value
+    $minor = [int]$versionMatch.Groups[2].Value
+    $patch = [int]$versionMatch.Groups[3].Value + 1
+    $newVersion = "$major.$minor.$patch"
+    $content = [regex]::Replace($content, "version:\s*'[^']*'", "version: '$newVersion'")
+    Write-Host "版本号已更新为 v$newVersion" -ForegroundColor Cyan
+  }
+
+  if ($content -match "buildId:\s*'") {
+    $content = [regex]::Replace($content, "buildId:\s*'[^']*'", "buildId: '$buildId'")
+  } else {
+    $content = [regex]::Replace($content, "(updatedAt:\s*'[^']*',)", "`$1`n    buildId: '$buildId',")
+  }
+
   $utf8NoBom = New-Object System.Text.UTF8Encoding $false
   [System.IO.File]::WriteAllText($configPath, $content, $utf8NoBom)
+  Write-Host "构建标识：$buildId（APP 将据此检测更新）" -ForegroundColor Cyan
 }
 
 function Get-SiteConfigValue {
@@ -116,3 +135,4 @@ if ($siteUrl) {
   Write-Host "  https://$githubUser.github.io/$repoName/" -ForegroundColor Green
 }
 Write-Host "GitHub Actions 会自动发布到 Pages。" -ForegroundColor Green
+Write-Host "手机 APP 会在打开时自动检测新版本（无需重装 APK）。" -ForegroundColor Green

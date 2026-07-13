@@ -99,6 +99,24 @@ powershell -ExecutionPolicy Bypass -File .\deploy.ps1</div>
     </div>
 
     <div class="deploy-card">
+      <h2>手机 APP（与电脑保持一致）</h2>
+      <p class="field-hint">APP 通过在线地址加载网页，界面、功能与电脑版<strong>始终同一套代码</strong>。数据通过 GitHub 云同步互相同步。</p>
+      <ol class="step-list">
+        <li><strong>首次安装</strong>：在 <code>D:\RuanJian\合并评分-app</code> 运行下面命令，用 Android Studio 打包 APK 安装到手机（只需做一次）。</li>
+        <li><strong>以后更新</strong>：电脑改完运行 <code>deploy.ps1</code> 上传即可。APP 会自动检测新版本，也可下拉刷新或到「云端同步」页点「检查更新」。</li>
+        <li><strong>数据同步</strong>：电脑和手机各在「云端同步」页保存一次 GitHub 令牌，登记后约 2 秒自动同步。</li>
+      </ol>
+      <div class="code-box" id="app-setup-cmd">cd D:\RuanJian\合并评分-app
+npm install
+npm run apply-online-url
+npx cap sync android
+npm run android</div>
+      <div class="result-box info" style="margin-top:12px;">
+        每次 deploy.ps1 会自动递增版本号并写入 buildId，APP 打开或回到前台时会提示更新。
+      </div>
+    </div>
+
+    <div class="deploy-card">
       <h2>让手机 APP 加载在线地址</h2>
       <ol class="step-list">
         <li>打开 <code>D:\RuanJian\合并评分-app\online-site.json</code>，把 <code>siteUrl</code> 改成下面的 <strong>GitHub 地址</strong>。</li>
