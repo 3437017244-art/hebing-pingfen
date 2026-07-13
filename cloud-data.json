@@ -286,23 +286,6 @@
       "rating": 3,
       "createdAt": "2026-07-13T14:15:22.312Z",
       "updatedAt": "2026-07-13T14:15:22.312Z"
-    },
-    {
-      "id": "mrjb4fqj7yyhla",
-      "name": "刮胡子刀",
-      "brand": "",
-      "flavor": "11111",
-      "category": "其他",
-      "storageLocation": "sdas",
-      "quantity": 1,
-      "shopName": "",
-      "shopLocation": "",
-      "price": null,
-      "weight": null,
-      "singleWeight": null,
-      "rating": 3,
-      "createdAt": "2026-07-13T14:17:53.323Z",
-      "updatedAt": "2026-07-13T14:17:53.323Z"
     }
   ],
   "shops": [
@@ -324,9 +307,10 @@
     "products": {
       "mrjaj95m7iyj5x": "2026-07-13T14:10:40.167Z",
       "mrioqzb31zy6ec": "2026-07-13T14:10:50.919Z",
-      "mrjavvjc5lvzty": "2026-07-13T14:11:28.098Z"
+      "mrjavvjc5lvzty": "2026-07-13T14:11:28.098Z",
+      "mrjb4fqj7yyhla": "2026-07-13T14:18:22.159Z"
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-13T14:17:59.165Z"
+  "syncedAt": "2026-07-13T14:18:25.615Z"
 }
