@@ -399,21 +399,17 @@ body {
 }
 
 .star.half {
-  color: #d1d5db;
-}
-
-.star.half::before {
-  content: '★';
-  position: absolute;
-  left: 2px;
-  top: 0;
-  width: 50%;
-  overflow: hidden;
-  color: var(--star);
+  background: linear-gradient(90deg, var(--star) 50%, #d1d5db 50%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
 
 .star-icon {
   font-size: 1rem;
+  line-height: 1;
+  vertical-align: middle;
 }
 
 .star-icon.full {
@@ -422,17 +418,19 @@ body {
 
 .star-icon.half {
   display: inline-block;
-  position: relative;
-  color: #d1d5db;
+  background: linear-gradient(90deg, var(--star) 50%, #d1d5db 50%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
 
-.star-icon.half::before {
-  content: '★';
-  position: absolute;
-  left: 0;
-  width: 50%;
-  overflow: hidden;
-  color: var(--star);
+.item-stars.low .star-icon.half {
+  background: linear-gradient(90deg, var(--low-score) 50%, #d1d5db 50%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
 
 .star-icon.empty {

@@ -269,40 +269,6 @@
       "createdAt": "2026-07-11T08:04:34.710Z",
       "updatedAt": "2026-07-11T08:04:34.710Z",
       "category": ""
-    },
-    {
-      "id": "mrioqzb31zy6ec",
-      "name": "你",
-      "brand": "",
-      "flavor": "",
-      "category": "食品",
-      "storageLocation": "卷",
-      "quantity": 5,
-      "shopName": "",
-      "shopLocation": "",
-      "price": null,
-      "weight": null,
-      "singleWeight": null,
-      "rating": 3,
-      "createdAt": "2026-07-13T03:51:33.951Z",
-      "updatedAt": "2026-07-13T03:51:33.951Z"
-    },
-    {
-      "id": "mrjaj95m7iyj5x",
-      "name": "111",
-      "brand": "",
-      "flavor": "",
-      "category": "食品",
-      "storageLocation": "11",
-      "quantity": 1,
-      "shopName": "",
-      "shopLocation": "",
-      "price": null,
-      "weight": null,
-      "singleWeight": null,
-      "rating": 3,
-      "createdAt": "2026-07-13T14:01:25.018Z",
-      "updatedAt": "2026-07-13T14:01:25.018Z"
     }
   ],
   "shops": [
@@ -320,5 +286,5 @@
       "createdAt": "2026-07-10T15:53:39.358Z"
     }
   ],
-  "syncedAt": "2026-07-13T14:01:36.961Z"
+  "syncedAt": "2026-07-12T23:49:03.699Z"
 }
