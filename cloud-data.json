@@ -274,7 +274,7 @@
       "id": "mrjhe4pp09s6ew",
       "name": "面条",
       "brand": "",
-      "flavor": "",
+      "flavor": "面条",
       "category": "食品",
       "storageLocation": "小屋门口地面上。嗯嗯",
       "quantity": 1,
@@ -285,7 +285,7 @@
       "singleWeight": null,
       "rating": 3,
       "createdAt": "2026-07-13T17:13:23.292Z",
-      "updatedAt": "2026-07-13T17:13:23.292Z"
+      "updatedAt": "2026-07-13T17:14:09.430Z"
     }
   ],
   "shops": [
@@ -313,5 +313,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-13T17:13:34.161Z"
+  "syncedAt": "2026-07-13T17:14:13.205Z"
 }
