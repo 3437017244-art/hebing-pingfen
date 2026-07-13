@@ -1734,7 +1734,8 @@
       banner.hidden = false;
       banner.textContent =
         '已从' + (result.source === 'bundled' ? '网页备份' : '云端') +
-        '同步：商品 ' + result.products + ' 条，商店 ' + result.shops + ' 家。';
+        '同步：商品 ' + result.products + ' 条，商店 ' + result.shops + ' 家。' +
+        (result.uploadWarning ? '（' + result.uploadWarning + '）' : '');
     }
   }
 

@@ -48,26 +48,18 @@ function Get-SiteConfigValue {
 }
 
 function Update-CloudDataFile {
-  $syncCode = Get-SiteConfigValue "defaultSyncCode:\s*'([^']*)'"
-  if (-not $syncCode) { return }
+  $scriptPath = Join-Path $Root "update-cloud-data.js"
+  if (-not (Test-Path $scriptPath)) { return }
 
-  $outPath = Join-Path $Root "cloud-data.json"
-  $uri = "https://jsonblob.com/api/jsonBlob/$syncCode"
-  try {
-    $response = Invoke-RestMethod -Uri $uri -Headers @{ Accept = "application/json" } -TimeoutSec 30
-    if (-not $response) { return }
-    $payload = [ordered]@{
-      products = @($response.products)
-      shops    = @($response.shops)
-      syncedAt = if ($response.syncedAt) { $response.syncedAt } else { (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ") }
-    }
-    $json = $payload | ConvertTo-Json -Depth 20
-    $utf8NoBom = New-Object System.Text.UTF8Encoding $false
-    [System.IO.File]::WriteAllText($outPath, $json, $utf8NoBom)
-    Write-Host "已更新 cloud-data.json（供手机读取的网页备份）。" -ForegroundColor Green
-  } catch {
-    Write-Host "未能从 jsonblob 更新 cloud-data.json：$($_.Exception.Message)" -ForegroundColor Yellow
-    Write-Host "手机仍可能通过 cloud-data.json 读取上次部署时的数据。" -ForegroundColor Yellow
+  if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
+    Write-Host "未找到 node，跳过 cloud-data.json 更新。" -ForegroundColor Yellow
+    return
+  }
+
+  Write-Host "正在从 jsonblob 更新 cloud-data.json（UTF-8）…" -ForegroundColor Cyan
+  & node $scriptPath
+  if ($LASTEXITCODE -ne 0) {
+    Write-Host "cloud-data.json 更新失败，将保留现有文件。" -ForegroundColor Yellow
   }
 }
 
@@ -91,6 +83,13 @@ $pushed = $false
 if ($remotes -contains "origin") {
   Write-Host "正在推送到 GitHub…" -ForegroundColor Cyan
   git push origin main
+  if ($LASTEXITCODE -ne 0) {
+    Write-Host ""
+    Write-Host "推送到 GitHub 失败（多为网络问题）。本地提交已保存，网络恢复后请执行：" -ForegroundColor Yellow
+    Write-Host "  git push origin main" -ForegroundColor Yellow
+    Write-Host ""
+    exit 1
+  }
   $pushed = $true
 } else {
   Write-Host ""

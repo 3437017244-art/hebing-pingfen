@@ -237,9 +237,10 @@
           const actionText = result.action === 'uploaded' ? '已自动上传到云端' : '已自动与云端合并';
           showBox(
             syncResult,
-            'info',
+            result.uploadWarning ? 'info' : '',
             actionText + '。当前共有商品 ' + result.products + ' 条、商店 ' + result.shops + ' 家。' +
-              (result.source ? '（来源 ' + formatSource(result.source) + '）' : ''),
+              (result.source ? '（来源 ' + formatSource(result.source) + '）' : '') +
+              (result.uploadWarning ? '<br><span class="field-hint">' + result.uploadWarning + '</span>' : ''),
           );
           updateStats();
           updateRemoteStats();

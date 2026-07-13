@@ -201,7 +201,16 @@
     };
 
     saveLocalPayload(merged);
-    await pushRemote(code, merged);
+
+    let uploadWarning = '';
+    try {
+      await pushRemote(code, merged);
+    } catch (pushErr) {
+      uploadWarning =
+        '数据已下载到本机，但上传到 jsonblob 失败：' +
+        (pushErr && pushErr.message ? pushErr.message : pushErr);
+    }
+
     localStorage.setItem(SYNC_CODE_KEY, code);
 
     const stats = countPayload(merged);
@@ -212,6 +221,7 @@
       shops: stats.shops,
       syncedAt: merged.syncedAt,
       source: lastPullSource || 'jsonblob',
+      uploadWarning: uploadWarning || undefined,
     };
   }
 
