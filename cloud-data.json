@@ -269,6 +269,23 @@
       "createdAt": "2026-07-11T08:04:34.710Z",
       "updatedAt": "2026-07-11T08:04:34.710Z",
       "category": ""
+    },
+    {
+      "id": "mrjhe4pp09s6ew",
+      "name": "面条",
+      "brand": "",
+      "flavor": "",
+      "category": "食品",
+      "storageLocation": "小屋门口地面上。嗯嗯",
+      "quantity": 1,
+      "shopName": "",
+      "shopLocation": "",
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 3,
+      "createdAt": "2026-07-13T17:13:23.292Z",
+      "updatedAt": "2026-07-13T17:13:23.292Z"
     }
   ],
   "shops": [
@@ -296,5 +313,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-13T17:12:21.294Z"
+  "syncedAt": "2026-07-13T17:13:30.733Z"
 }
