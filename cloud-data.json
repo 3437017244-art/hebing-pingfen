@@ -269,6 +269,23 @@
       "createdAt": "2026-07-11T08:04:34.710Z",
       "updatedAt": "2026-07-11T08:04:34.710Z",
       "category": ""
+    },
+    {
+      "id": "mrjavvjc5lvzty",
+      "name": "11111",
+      "brand": "",
+      "flavor": "",
+      "category": "食品",
+      "storageLocation": "1",
+      "quantity": 1,
+      "shopName": "",
+      "shopLocation": "",
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 3,
+      "createdAt": "2026-07-13T14:11:13.896Z",
+      "updatedAt": "2026-07-13T14:11:13.896Z"
     }
   ],
   "shops": [
@@ -293,5 +310,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-13T14:10:59.566Z"
+  "syncedAt": "2026-07-13T14:11:19.713Z"
 }
