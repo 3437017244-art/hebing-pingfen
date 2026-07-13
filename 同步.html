@@ -25,9 +25,30 @@
 <body>
   <div class="sync-page">
     <header class="header">
-      <h1>手机与网页云端同步</h1>
-      <p class="subtitle">已在 site-config.js 配置同步码时，打开网页会自动同步；也可在此手动操作。</p>
+      <h1>手机与电脑双向同步</h1>
+      <p class="subtitle">电脑和手机各保存一次 GitHub 令牌后，两边登记的数据会自动互相同步。</p>
     </header>
+
+    <div class="sync-card" id="github-token-card">
+      <h2>第一步：保存 GitHub 令牌（每台设备做一次）</h2>
+      <p class="field-hint">令牌只保存在本机浏览器，不会写入网站代码。电脑和手机<strong>各保存一次</strong>即可双向登记、双向同步。</p>
+      <ol class="step-list">
+        <li>电脑浏览器打开 <a href="https://github.com/settings/tokens?type=beta" target="_blank" rel="noopener">GitHub 令牌设置</a>（需登录 GitHub）。</li>
+        <li>点 <strong>Generate new token</strong>，名称随意，过期时间选 <strong>No expiration</strong> 或 90 天。</li>
+        <li>Repository access 选 <strong>Only select repositories</strong> → 勾选 <strong>hebing-pingfen</strong>。</li>
+        <li>Permissions 里 <strong>Contents</strong> 选 <strong>Read and write</strong>，生成并复制令牌（只显示一次）。</li>
+        <li>在下方粘贴并保存；手机打开本页同样操作一次。</li>
+      </ol>
+      <div class="form-row">
+        <label for="github-token-input">GitHub 令牌</label>
+        <input type="password" id="github-token-input" class="sync-code-input" placeholder="github_pat_..." autocomplete="off">
+      </div>
+      <div class="sync-actions">
+        <button type="button" class="btn btn-primary" id="save-github-token-btn">保存令牌</button>
+        <button type="button" class="btn btn-secondary" id="clear-github-token-btn">清除本机令牌</button>
+      </div>
+      <div id="github-token-result" hidden style="margin-top:16px;"></div>
+    </div>
 
     <div class="sync-card">
       <h2>当前本地数据</h2>
@@ -37,14 +58,13 @@
     </div>
 
     <div class="sync-card" id="site-sync-card" hidden>
-      <h2>网站已配置自动同步</h2>
-      <p class="field-hint">同步码已写入 site-config.js，打开首页会自动拉取/上传，修改数据约 2 秒后也会自动上传。</p>
+      <h2>旧版 jsonblob 同步码（可忽略）</h2>
+      <p class="field-hint">当前使用 GitHub 云同步，一般无需再管同步码。</p>
       <div class="sync-code-display" id="site-sync-code-display"></div>
     </div>
 
-    <div class="sync-card" id="manual-sync-card">
-      <h2>手动同步（可选）</h2>
-      <p class="field-hint">若未在网站配置同步码，可在此生成并保存；已配置自动同步时可跳过本节。</p>
+    <div class="sync-card" id="manual-sync-card" hidden>
+      <h2>旧版 jsonblob 手动同步（可忽略）</h2>
       <div class="form-row">
         <label for="sync-code-input">同步码</label>
         <input type="text" id="sync-code-input" class="sync-code-input" placeholder="例如：1054938906322286336" autocomplete="off">
@@ -58,7 +78,7 @@
 
     <div class="sync-card">
       <h2>第二步：立即同步</h2>
-      <p class="field-hint">会把云端数据与本地数据合并（相同记录保留较新的修改），再上传回云端。</p>
+      <p class="field-hint">合并云端与本机数据（相同记录保留较新修改），再上传回 GitHub。登记后约 2 秒也会自动同步。</p>
       <div class="sync-actions">
         <button type="button" class="btn btn-primary" id="sync-now-btn">立即同步</button>
         <a class="btn btn-secondary" href="index.html">返回查一查</a>
@@ -76,10 +96,10 @@
     <div class="sync-card">
       <h2>使用说明</h2>
       <ol class="step-list">
-        <li>推荐：在 <code>site-config.js</code> 填写 <code>defaultSyncCode</code> 并部署，所有设备自动同步。</li>
-        <li>或在一台设备点「生成新同步码」，复制到另一台保存。</li>
-        <li>修改后会自动上传（约 2 秒）；另一台打开网页即可看到最新数据。</li>
-        <li>同步码相当于钥匙，请勿分享给他人。</li>
+        <li>电脑、手机各在本页保存一次 GitHub 令牌。</li>
+        <li>任意一端登记或修改后，约 2 秒自动上传；另一端打开或刷新网页即可看到。</li>
+        <li>也可随时点「立即同步」手动拉取最新数据。</li>
+        <li>令牌相当于钥匙，请勿分享给他人。</li>
       </ol>
     </div>
   </div>
@@ -95,6 +115,8 @@
       const codeResult = document.getElementById('code-result');
       const syncResult = document.getElementById('sync-result');
       const autoSyncCheckbox = document.getElementById('auto-sync-checkbox');
+      const githubTokenInput = document.getElementById('github-token-input');
+      const githubTokenResult = document.getElementById('github-token-result');
 
       function showBox(el, type, html) {
         el.hidden = false;
@@ -116,9 +138,8 @@
           (result.source ? '（来源：' + formatSource(result.source) + '）' : '');
         if (result.uploadWarning) {
           html += '<br><span class="field-hint">' + result.uploadWarning + '</span>';
-        } else if (window.HEBING_SITE?.syncMode === 'github-backup') {
-          html +=
-            '<br><span class="field-hint">电脑改完数据后，在本机运行 deploy.ps1 并 push，手机刷新即可看到最新内容。</span>';
+        } else if (window.HEBING_SITE?.syncMode === 'github-api') {
+          html += '<br><span class="field-hint">另一端打开或刷新网页即可看到最新登记。</span>';
         }
         return html;
       }
@@ -129,29 +150,25 @@
         document.getElementById('local-stats').textContent =
           '本机：商品 ' + stats.products + ' 条，商店 ' + stats.shops + ' 家';
 
+        const autoHint = document.getElementById('auto-sync-hint');
+        autoSyncCheckbox.checked = HebingSync.isAutoSyncEnabled();
+        autoSyncCheckbox.disabled = HebingSync.isSiteAutoSyncConfigured();
+        autoHint.hidden = !HebingSync.isSiteAutoSyncConfigured();
+
+        if (HebingSync.isGithubApiMode && HebingSync.isGithubApiMode()) {
+          document.getElementById('sync-status-hint').textContent = HebingSync.hasGithubToken()
+            ? '已保存 GitHub 令牌，本机可登记并双向同步。'
+            : '尚未保存 GitHub 令牌，请先完成第一步。';
+          return;
+        }
+
         const syncCode = HebingSync.getSyncCode();
         const configured = HebingSync.getConfiguredSyncCode();
-        const siteCard = document.getElementById('site-sync-card');
-        const manualCard = document.getElementById('manual-sync-card');
-        const autoHint = document.getElementById('auto-sync-hint');
-
-        if (configured) {
-          siteCard.hidden = false;
-          document.getElementById('site-sync-code-display').textContent = configured;
-          manualCard.querySelector('h2').textContent = '手动同步（可选）';
-          document.getElementById('sync-status-hint').textContent =
-            '已启用网站自动同步（defaultSyncCode）';
-          autoSyncCheckbox.checked = true;
-          autoSyncCheckbox.disabled = true;
-          autoHint.hidden = false;
-        } else {
-          siteCard.hidden = true;
-          document.getElementById('sync-status-hint').textContent = syncCode
+        document.getElementById('sync-status-hint').textContent = configured
+          ? '已启用网站自动同步（defaultSyncCode）'
+          : syncCode
             ? '当前已保存同步码：' + syncCode
             : '尚未保存同步码。';
-          autoSyncCheckbox.disabled = false;
-          autoHint.hidden = true;
-        }
       }
 
       async function updateRemoteStats() {
@@ -172,6 +189,25 @@
         button.dataset.originalText = button.dataset.originalText || button.textContent;
         button.textContent = busy ? '处理中…' : button.dataset.originalText;
       }
+
+      document.getElementById('save-github-token-btn').addEventListener('click', function () {
+        const token = HebingSync.setGithubToken(githubTokenInput.value);
+        if (!token) {
+          showBox(githubTokenResult, 'error', '请粘贴 GitHub 令牌。');
+          return;
+        }
+        githubTokenInput.value = '';
+        showBox(githubTokenResult, '', 'GitHub 令牌已保存到本机。可点「立即同步」测试。');
+        updateStats();
+        updateRemoteStats();
+      });
+
+      document.getElementById('clear-github-token-btn').addEventListener('click', function () {
+        HebingSync.setGithubToken('');
+        githubTokenInput.value = '';
+        showBox(githubTokenResult, 'info', '已清除本机 GitHub 令牌。');
+        updateStats();
+      });
 
       document.getElementById('save-code-btn').addEventListener('click', function () {
         const code = HebingSync.setSyncCode(codeInput.value);
@@ -205,15 +241,9 @@
 
       document.getElementById('sync-now-btn').addEventListener('click', async function () {
         const button = this;
-        const code = codeInput.value.trim() || HebingSync.getSyncCode();
-        if (!code) {
-          showBox(syncResult, 'error', '请先生成或输入同步码。');
-          return;
-        }
-        HebingSync.setSyncCode(code);
         setBusy(button, true);
         try {
-          const result = await HebingSync.syncNow(code);
+          const result = await HebingSync.syncNow(codeInput.value.trim() || HebingSync.getSyncCode());
           showBox(
             syncResult,
             '',
@@ -230,16 +260,19 @@
       });
 
       HebingSync.ensureSyncSetup();
-      autoSyncCheckbox.checked = HebingSync.isAutoSyncEnabled();
       autoSyncCheckbox.addEventListener('change', function () {
         HebingSync.setAutoSyncEnabled(autoSyncCheckbox.checked);
       });
+
+      if (HebingSync.hasGithubToken && HebingSync.hasGithubToken()) {
+        githubTokenInput.placeholder = '本机已保存令牌，粘贴新令牌可覆盖';
+      }
 
       codeInput.value = HebingSync.getSyncCode();
       updateStats();
       updateRemoteStats();
 
-      if (HebingSync.isAutoSyncEnabled() && HebingSync.getSyncCode()) {
+      if (HebingSync.isAutoSyncEnabled() && (HebingSync.canUseGithubApiSync?.() || HebingSync.getSyncCode())) {
         HebingSync.bootstrap().then(function (result) {
           if (!result) return;
           if (result.error) {
@@ -247,12 +280,7 @@
             updateRemoteStats();
             return;
           }
-          const actionText = result.action === 'uploaded' ? '已自动同步到本机' : '已自动与云端合并';
-          showBox(
-            syncResult,
-            '',
-            formatSyncSuccess(result),
-          );
+          showBox(syncResult, '', formatSyncSuccess(result));
           updateStats();
           updateRemoteStats();
         });

@@ -5,12 +5,14 @@
   const SHOP_KEY = 'nearbyShops';
   const SYNC_CODE_KEY = 'hebing-sync-code';
   const SYNC_AUTO_KEY = 'hebing-sync-auto';
+  const GITHUB_TOKEN_KEY = 'hebing-github-sync-token';
   const SYNC_API = 'https://jsonblob.com/api/jsonBlob';
   const BUNDLED_CLOUD_FILE = 'cloud-data.json';
   const SYNC_DEBOUNCE_MS = 2000;
   let syncTimer = null;
   let syncInFlight = null;
   let lastPullSource = '';
+  let lastGithubSha = '';
 
   function normalizeShops(list) {
     return (list || []).map(function (shop) {
@@ -71,6 +73,132 @@
     return new URL(BUNDLED_CLOUD_FILE, global.location.href).href;
   }
 
+  function utf8ToBase64(text) {
+    return btoa(unescape(encodeURIComponent(text)));
+  }
+
+  function base64ToUtf8(base64) {
+    return decodeURIComponent(escape(atob(base64.replace(/\s/g, ''))));
+  }
+
+  function getGithubRepoConfig() {
+    const site = global.HEBING_SITE || {};
+    return {
+      owner: site.githubUser || '',
+      repo: site.repoName || '',
+      path: BUNDLED_CLOUD_FILE,
+      token: (localStorage.getItem(GITHUB_TOKEN_KEY) || '').trim(),
+    };
+  }
+
+  function isGithubApiMode() {
+    return global.HEBING_SITE?.syncMode === 'github-api';
+  }
+
+  function canUseGithubApiSync() {
+    const cfg = getGithubRepoConfig();
+    return isGithubApiMode() && Boolean(cfg.token && cfg.owner && cfg.repo);
+  }
+
+  function getGithubToken() {
+    return localStorage.getItem(GITHUB_TOKEN_KEY) || '';
+  }
+
+  function setGithubToken(token) {
+    const value = (token || '').trim();
+    if (!value) {
+      localStorage.removeItem(GITHUB_TOKEN_KEY);
+      return '';
+    }
+    localStorage.setItem(GITHUB_TOKEN_KEY, value);
+    return value;
+  }
+
+  function hasGithubToken() {
+    return Boolean(getGithubToken());
+  }
+
+  function githubContentsUrl(cfg) {
+    return (
+      'https://api.github.com/repos/' +
+      encodeURIComponent(cfg.owner) +
+      '/' +
+      encodeURIComponent(cfg.repo) +
+      '/contents/' +
+      encodeURIComponent(cfg.path)
+    );
+  }
+
+  async function pullFromGithubApi() {
+    const cfg = getGithubRepoConfig();
+    if (!cfg.token || !cfg.owner || !cfg.repo) {
+      throw new Error('未配置 GitHub 令牌');
+    }
+
+    const result = await requestJson(
+      githubContentsUrl(cfg) + '?_=' + Date.now(),
+      {
+        headers: {
+          Accept: 'application/vnd.github+json',
+          Authorization: 'Bearer ' + cfg.token,
+        },
+        cache: 'no-store',
+      },
+    );
+
+    if (result.notFound) return null;
+
+    const entry = result.data;
+    if (!entry || !entry.content) return null;
+
+    lastGithubSha = entry.sha || '';
+    return JSON.parse(base64ToUtf8(entry.content));
+  }
+
+  async function pushToGithubApi(payload) {
+    const cfg = getGithubRepoConfig();
+    if (!cfg.token || !cfg.owner || !cfg.repo) {
+      throw new Error('请先在「云端同步」保存 GitHub 令牌');
+    }
+
+    const body = {
+      message: '网页自动同步 cloud-data.json',
+      content: utf8ToBase64(JSON.stringify(payload, null, 2) + '\n'),
+    };
+
+    if (lastGithubSha) {
+      body.sha = lastGithubSha;
+    } else {
+      try {
+        const existing = await pullFromGithubApi();
+        if (existing && lastGithubSha) {
+          body.sha = lastGithubSha;
+        }
+      } catch (err) {
+        /* 文件不存在时直接创建 */
+      }
+    }
+
+    const response = await fetch(githubContentsUrl(cfg), {
+      method: 'PUT',
+      headers: {
+        Accept: 'application/vnd.github+json',
+        Authorization: 'Bearer ' + cfg.token,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const text = await response.text().catch(function () { return ''; });
+      throw new Error('GitHub 上传失败（' + response.status + '）' + (text ? '：' + text.slice(0, 120) : ''));
+    }
+
+    const data = await response.json();
+    lastGithubSha = data?.content?.sha || lastGithubSha;
+    return data;
+  }
+
   async function pullBundledCloudData() {
     const result = await requestJson(getBundledCloudUrl() + '?_=' + Date.now(), {
       headers: { Accept: 'application/json' },
@@ -129,16 +257,30 @@
   async function pullRemote(syncCode) {
     let lastError = null;
 
-    try {
-      const result = await requestJson(SYNC_API + '/' + encodeURIComponent(syncCode), {
-        headers: { Accept: 'application/json' },
-      });
-      if (!result.notFound && result.data) {
-        lastPullSource = 'jsonblob';
-        return result.data;
+    if (canUseGithubApiSync()) {
+      try {
+        const githubData = await pullFromGithubApi();
+        if (githubData) {
+          lastPullSource = 'github-api';
+          return githubData;
+        }
+      } catch (err) {
+        lastError = err;
       }
-    } catch (err) {
-      lastError = err;
+    }
+
+    if (!isGithubApiMode()) {
+      try {
+        const result = await requestJson(SYNC_API + '/' + encodeURIComponent(syncCode), {
+          headers: { Accept: 'application/json' },
+        });
+        if (!result.notFound && result.data) {
+          lastPullSource = 'jsonblob';
+          return result.data;
+        }
+      } catch (err) {
+        lastError = err;
+      }
     }
 
     try {
@@ -157,23 +299,14 @@
     return null;
   }
 
-  function shouldPushToJsonblob() {
-    return global.HEBING_SITE?.syncMode !== 'github-backup';
-  }
-
   function formatSyncSource(source) {
+    if (source === 'github-api') return 'GitHub 云同步';
     if (source === 'bundled') return 'GitHub 网页备份';
     if (source === 'jsonblob') return 'jsonblob 云端';
     return '云端';
   }
 
-  async function pushRemoteIfEnabled(syncCode, payload) {
-    if (!shouldPushToJsonblob()) return { skipped: true, reason: 'github-backup' };
-    await pushRemote(syncCode, payload);
-    return { skipped: false };
-  }
-
-  async function pushRemote(syncCode, payload) {
+  async function pushRemoteJsonblob(syncCode, payload) {
     await requestJson(SYNC_API + '/' + encodeURIComponent(syncCode), {
       method: 'PUT',
       headers: {
@@ -184,12 +317,33 @@
     });
   }
 
-  async function syncNow(syncCode) {
+  async function pushCloudPayload(syncCode, payload) {
+    if (canUseGithubApiSync()) {
+      await pushToGithubApi(payload);
+      return { source: 'github-api' };
+    }
+
+    if (isGithubApiMode()) {
+      throw new Error('请先在「云端同步」保存 GitHub 令牌，手机与电脑各保存一次即可双向同步');
+    }
+
     const code = (syncCode || getSyncCode() || '').trim();
     if (!code) {
       throw new Error('请先设置同步码');
     }
+    await pushRemoteJsonblob(code, payload);
+    return { source: 'jsonblob' };
+  }
 
+  async function syncNow(syncCode) {
+    if (!canUseGithubApiSync() && !isGithubApiMode() && !(syncCode || getSyncCode())) {
+      throw new Error('请先设置同步码');
+    }
+    if (isGithubApiMode() && !canUseGithubApiSync()) {
+      throw new Error('请先在「云端同步」保存 GitHub 令牌，手机与电脑各保存一次即可双向同步');
+    }
+
+    const code = (syncCode || getSyncCode() || '').trim();
     const local = getLocalPayload();
     const remote = await pullRemote(code);
 
@@ -198,15 +352,15 @@
       if (localStats.products === 0 && localStats.shops === 0) {
         throw new Error('无法获取云端数据，且本机也没有可上传的记录');
       }
-      await pushRemoteIfEnabled(code, local);
-      localStorage.setItem(SYNC_CODE_KEY, code);
+      const pushResult = await pushCloudPayload(code, local);
+      if (code) localStorage.setItem(SYNC_CODE_KEY, code);
       return {
         action: 'uploaded',
         syncCode: code,
         products: localStats.products,
         shops: localStats.shops,
         syncedAt: local.syncedAt,
-        source: shouldPushToJsonblob() ? 'jsonblob' : 'bundled',
+        source: pushResult.source,
       };
     }
 
@@ -217,16 +371,8 @@
     };
 
     saveLocalPayload(merged);
-
-    let uploadWarning = '';
-    const pushResult = await pushRemoteIfEnabled(code, merged).catch(function (pushErr) {
-      uploadWarning =
-        '数据已同步到本机，但实时云端备份暂不可用：' +
-        (pushErr && pushErr.message ? pushErr.message : pushErr);
-      return { skipped: false, failed: true };
-    });
-
-    localStorage.setItem(SYNC_CODE_KEY, code);
+    const pushResult = await pushCloudPayload(code, merged);
+    if (code) localStorage.setItem(SYNC_CODE_KEY, code);
 
     const stats = countPayload(merged);
     return {
@@ -235,16 +381,25 @@
       products: stats.products,
       shops: stats.shops,
       syncedAt: merged.syncedAt,
-      source: lastPullSource || 'jsonblob',
-      uploadWarning: pushResult && pushResult.skipped ? undefined : (uploadWarning || undefined),
+      source: lastPullSource || pushResult.source,
     };
   }
 
   async function peekRemote(syncCode) {
+    if (isGithubApiMode() && !canUseGithubApiSync()) {
+      return {
+        error: '尚未保存 GitHub 令牌',
+        products: 0,
+        shops: 0,
+        source: 'none',
+      };
+    }
+
     const code = (syncCode || getSyncCode() || '').trim();
-    if (!code) {
+    if (!isGithubApiMode() && !code) {
       return { error: '未配置同步码', products: 0, shops: 0, source: 'none' };
     }
+
     try {
       const remote = await pullRemote(code);
       if (!remote) {
@@ -274,17 +429,19 @@
   }
 
   function isSiteAutoSyncConfigured() {
+    if (isGithubApiMode()) return global.HEBING_SITE?.autoSync !== false;
     return Boolean(getConfiguredSyncCode()) && global.HEBING_SITE?.autoSync !== false;
   }
 
   function ensureSyncSetup() {
     const configured = getConfiguredSyncCode();
-    if (!configured) return false;
-    localStorage.setItem(SYNC_CODE_KEY, configured);
+    if (configured) {
+      localStorage.setItem(SYNC_CODE_KEY, configured);
+    }
     if (global.HEBING_SITE?.autoSync !== false) {
       localStorage.setItem(SYNC_AUTO_KEY, '1');
     }
-    return true;
+    return Boolean(configured || isGithubApiMode());
   }
 
   function getSyncCode() {
@@ -317,7 +474,10 @@
 
   async function tryAutoSync() {
     ensureSyncSetup();
-    if (!isAutoSyncEnabled() || !getSyncCode()) {
+    if (!isAutoSyncEnabled()) return null;
+    if (isGithubApiMode()) {
+      if (!canUseGithubApiSync()) return null;
+    } else if (!getSyncCode()) {
       return null;
     }
     try {
@@ -328,7 +488,12 @@
   }
 
   function scheduleCloudSync(delayMs) {
-    if (!isAutoSyncEnabled() || !getSyncCode()) return;
+    if (!isAutoSyncEnabled()) return;
+    if (isGithubApiMode()) {
+      if (!canUseGithubApiSync()) return;
+    } else if (!getSyncCode()) {
+      return;
+    }
     clearTimeout(syncTimer);
     syncTimer = setTimeout(function () {
       syncNow().catch(function () {
@@ -339,7 +504,12 @@
 
   async function bootstrap() {
     ensureSyncSetup();
-    if (!isAutoSyncEnabled() || !getSyncCode()) return null;
+    if (!isAutoSyncEnabled()) return null;
+    if (isGithubApiMode()) {
+      if (!canUseGithubApiSync()) return null;
+    } else if (!getSyncCode()) {
+      return null;
+    }
     if (syncInFlight) return syncInFlight;
     syncInFlight = tryAutoSync().finally(function () {
       syncInFlight = null;
@@ -351,10 +521,16 @@
     PRODUCT_KEY: PRODUCT_KEY,
     SHOP_KEY: SHOP_KEY,
     SYNC_CODE_KEY: SYNC_CODE_KEY,
+    GITHUB_TOKEN_KEY: GITHUB_TOKEN_KEY,
     createSyncCode: createSyncCode,
     syncNow: syncNow,
     getSyncCode: getSyncCode,
     setSyncCode: setSyncCode,
+    getGithubToken: getGithubToken,
+    setGithubToken: setGithubToken,
+    hasGithubToken: hasGithubToken,
+    canUseGithubApiSync: canUseGithubApiSync,
+    isGithubApiMode: isGithubApiMode,
     getConfiguredSyncCode: getConfiguredSyncCode,
     isSiteAutoSyncConfigured: isSiteAutoSyncConfigured,
     ensureSyncSetup: ensureSyncSetup,
@@ -363,7 +539,6 @@
     tryAutoSync: tryAutoSync,
     scheduleCloudSync: scheduleCloudSync,
     formatSyncSource: formatSyncSource,
-    shouldPushToJsonblob: shouldPushToJsonblob,
     bootstrap: bootstrap,
     peekRemote: peekRemote,
     getLastPullSource: function () { return lastPullSource; },

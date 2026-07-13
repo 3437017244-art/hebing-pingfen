@@ -1745,6 +1745,9 @@
       items = loadItems();
       loadShops();
       updateSyncStatusBanner(bootstrapResult);
+    } else if (window.HebingSync?.isGithubApiMode?.() && !HebingSync.hasGithubToken?.()) {
+      const setupBanner = $('#sync-setup-banner');
+      if (setupBanner) setupBanner.hidden = false;
     }
 
     productEls.dialogClose.addEventListener('click', closeDetailDialog);
