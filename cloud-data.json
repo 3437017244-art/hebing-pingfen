@@ -269,23 +269,6 @@
       "createdAt": "2026-07-11T08:04:34.710Z",
       "updatedAt": "2026-07-11T08:04:34.710Z",
       "category": ""
-    },
-    {
-      "id": "mrioqzb31zy6ec",
-      "name": "你",
-      "brand": "",
-      "flavor": "",
-      "category": "食品",
-      "storageLocation": "卷",
-      "quantity": 5,
-      "shopName": "",
-      "shopLocation": "",
-      "price": null,
-      "weight": null,
-      "singleWeight": null,
-      "rating": 3,
-      "createdAt": "2026-07-13T03:51:33.951Z",
-      "updatedAt": "2026-07-13T03:51:33.951Z"
     }
   ],
   "shops": [
@@ -305,9 +288,10 @@
   ],
   "deletedIds": {
     "products": {
-      "mrjaj95m7iyj5x": "2026-07-13T14:10:40.167Z"
+      "mrjaj95m7iyj5x": "2026-07-13T14:10:40.167Z",
+      "mrioqzb31zy6ec": "2026-07-13T14:10:50.919Z"
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-13T14:10:43.258Z"
+  "syncedAt": "2026-07-13T14:10:54.891Z"
 }
