@@ -320,5 +320,9 @@
       "createdAt": "2026-07-10T15:53:39.358Z"
     }
   ],
-  "syncedAt": "2026-07-13T14:08:54.783Z"
+  "deletedIds": {
+    "products": {},
+    "shops": {}
+  },
+  "syncedAt": "2026-07-13T14:10:30.565Z"
 }
