@@ -275,17 +275,17 @@
       "name": "双汇",
       "brand": "",
       "flavor": "玉米肠",
-      "category": "食品",
-      "storageLocation": "11111",
-      "quantity": 5,
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
       "shopName": "",
       "shopLocation": "",
       "price": null,
       "weight": null,
       "singleWeight": null,
-      "rating": 3,
+      "rating": 5,
       "createdAt": "2026-07-13T14:15:22.312Z",
-      "updatedAt": "2026-07-13T14:15:22.312Z"
+      "updatedAt": "2026-07-13T14:18:53.800Z"
     }
   ],
   "shops": [
@@ -312,5 +312,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-13T14:18:25.615Z"
+  "syncedAt": "2026-07-13T14:18:57.502Z"
 }
