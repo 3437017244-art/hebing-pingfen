@@ -6,6 +6,7 @@
   const SYNC_CODE_KEY = 'hebing-sync-code';
   const SYNC_AUTO_KEY = 'hebing-sync-auto';
   const GITHUB_TOKEN_KEY = 'hebing-github-sync-token';
+  const DELETED_IDS_KEY = 'hebing-deleted-ids';
   const SYNC_API = 'https://jsonblob.com/api/jsonBlob';
   const BUNDLED_CLOUD_FILE = 'cloud-data.json';
   const SYNC_DEBOUNCE_MS = 2000;
@@ -21,6 +22,61 @@
         delete shop.product;
       }
       return shop;
+    });
+  }
+
+  function normalizeDeletedIds(raw) {
+    const source = raw && typeof raw === 'object' ? raw : {};
+    return {
+      products: source.products && typeof source.products === 'object' ? source.products : {},
+      shops: source.shops && typeof source.shops === 'object' ? source.shops : {},
+    };
+  }
+
+  function getDeletedIds() {
+    try {
+      return normalizeDeletedIds(JSON.parse(localStorage.getItem(DELETED_IDS_KEY) || '{}'));
+    } catch (_err) {
+      return normalizeDeletedIds(null);
+    }
+  }
+
+  function saveDeletedIds(deletedIds) {
+    localStorage.setItem(DELETED_IDS_KEY, JSON.stringify(normalizeDeletedIds(deletedIds)));
+  }
+
+  function recordDeletion(type, id) {
+    if (id == null) return;
+    const bucket = type === 'shops' ? 'shops' : 'products';
+    const deleted = getDeletedIds();
+    deleted[bucket][String(id)] = new Date().toISOString();
+    saveDeletedIds(deleted);
+  }
+
+  function mergeDeletedIdMaps(left, right) {
+    const a = normalizeDeletedIds(left);
+    const b = normalizeDeletedIds(right);
+    const merged = normalizeDeletedIds(null);
+
+    ['products', 'shops'].forEach(function (bucket) {
+      const ids = new Set([...Object.keys(a[bucket]), ...Object.keys(b[bucket])]);
+      ids.forEach(function (id) {
+        const tsA = a[bucket][id] || '';
+        const tsB = b[bucket][id] || '';
+        merged[bucket][id] = tsA >= tsB ? tsA : tsB;
+      });
+    });
+
+    return merged;
+  }
+
+  function applyDeletions(list, deletedIds, bucket) {
+    const dels = (deletedIds && deletedIds[bucket]) || {};
+    return (list || []).filter(function (item) {
+      if (!item || item.id == null) return false;
+      const deletedAt = dels[String(item.id)];
+      if (!deletedAt) return true;
+      return itemTimestamp(item) > deletedAt;
     });
   }
 
@@ -51,6 +107,7 @@
     return {
       products: JSON.parse(localStorage.getItem(PRODUCT_KEY) || '[]'),
       shops: normalizeShops(JSON.parse(localStorage.getItem(SHOP_KEY) || '[]')),
+      deletedIds: getDeletedIds(),
       syncedAt: new Date().toISOString(),
     };
   }
@@ -59,6 +116,9 @@
     try {
       localStorage.setItem(PRODUCT_KEY, JSON.stringify(payload.products || []));
       localStorage.setItem(SHOP_KEY, JSON.stringify(normalizeShops(payload.shops || [])));
+      if (payload.deletedIds) {
+        saveDeletedIds(payload.deletedIds);
+      }
     } catch (err) {
       throw new Error('无法写入本机存储：' + (err && err.message ? err.message : err));
     }
@@ -364,9 +424,19 @@
       };
     }
 
+    const mergedDeletedIds = mergeDeletedIdMaps(local.deletedIds, remote.deletedIds);
     const merged = {
-      products: mergeByIdNewer(local.products, remote.products),
-      shops: normalizeShops(mergeByIdNewer(local.shops, remote.shops)),
+      products: applyDeletions(
+        mergeByIdNewer(local.products, remote.products),
+        mergedDeletedIds,
+        'products',
+      ),
+      shops: applyDeletions(
+        normalizeShops(mergeByIdNewer(local.shops, remote.shops)),
+        mergedDeletedIds,
+        'shops',
+      ),
+      deletedIds: mergedDeletedIds,
       syncedAt: new Date().toISOString(),
     };
 
@@ -544,5 +614,7 @@
     getLastPullSource: function () { return lastPullSource; },
     getLocalPayload: getLocalPayload,
     countPayload: countPayload,
+    recordDeletion: recordDeletion,
+    getDeletedIds: getDeletedIds,
   };
 })(window);

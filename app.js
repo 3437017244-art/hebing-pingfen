@@ -1379,6 +1379,7 @@
     if (!item) return;
     const label = item.flavor ? `${getBrandName(item)} · ${item.flavor}` : getBrandName(item);
     if (!(await showAppConfirm(`确定删除「${label}」吗？此操作不可撤销。`, '删除确认'))) return;
+    window.HebingSync?.recordDeletion?.('products', item.id);
     items = items.filter((i) => i.id !== item.id);
     saveItems();
     closeDetailDialog();
@@ -1574,6 +1575,7 @@
 
   async function deleteShop(shopId) {
     if (!(await showAppConfirm('确定要删除该商店及其商品记录吗？', '删除确认'))) return;
+    window.HebingSync?.recordDeletion?.('shops', shopId);
     shops = shops.filter((s) => s.id !== shopId);
     saveShops();
     if (selectedDetail?.type === 'shop' && selectedDetail.id === shopId) {
