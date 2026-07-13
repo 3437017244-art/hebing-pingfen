@@ -2,10 +2,10 @@
   'use strict';
 
   global.HEBING_SITE = {
-    version: '1.0.5',
+    version: '1.0.6',
     repoName: 'hebing-pingfen',
     updatedAt: '2026-07-13',
-    buildId: '20260713-101346',
+    buildId: '20260713-101439',
     githubUser: '3437017244-art',
     // 云端数据同步码（jsonblob）。部署后所有设备自动使用，无需手动复制。
     defaultSyncCode: '019f58bc-163f-7878-9ee6-4066a48180ee',
