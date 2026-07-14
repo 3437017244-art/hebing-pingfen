@@ -292,7 +292,7 @@
       "name": "朱大胆",
       "brand": "",
       "flavor": "辣条",
-      "category": "食品",
+      "category": "速食",
       "storageLocation": "客厅电视桌子上",
       "quantity": 1,
       "shopName": "",
@@ -302,7 +302,7 @@
       "singleWeight": null,
       "rating": 5,
       "createdAt": "2026-07-14T02:07:28.861Z",
-      "updatedAt": "2026-07-14T02:07:28.861Z"
+      "updatedAt": "2026-07-14T12:04:28.115Z"
     },
     {
       "id": "mrkavu6p0rk68w",
@@ -347,5 +347,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-14T12:04:03.594Z"
+  "syncedAt": "2026-07-14T12:04:32.197Z"
 }
