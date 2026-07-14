@@ -275,7 +275,7 @@
       "name": "面条",
       "brand": "",
       "flavor": "面条",
-      "category": "食品",
+      "category": "速食",
       "storageLocation": "小屋门口地面上",
       "quantity": 1,
       "shopName": "",
@@ -285,7 +285,7 @@
       "singleWeight": null,
       "rating": 3,
       "createdAt": "2026-07-13T17:13:23.292Z",
-      "updatedAt": "2026-07-13T17:14:48.462Z"
+      "updatedAt": "2026-07-14T12:04:34.362Z"
     },
     {
       "id": "mrk0gz8dpconp9",
@@ -347,5 +347,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-14T12:04:32.197Z"
+  "syncedAt": "2026-07-14T12:04:37.607Z"
 }
