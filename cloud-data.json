@@ -303,6 +303,23 @@
       "rating": 5,
       "createdAt": "2026-07-14T02:07:28.861Z",
       "updatedAt": "2026-07-14T02:07:28.861Z"
+    },
+    {
+      "id": "mrkavu6p0rk68w",
+      "name": "雨润",
+      "brand": "",
+      "flavor": "精切火腿",
+      "category": "食品",
+      "storageLocation": "客厅电视桌子上",
+      "quantity": 3,
+      "shopName": "",
+      "shopLocation": "",
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 5,
+      "createdAt": "2026-07-14T06:58:58.320Z",
+      "updatedAt": "2026-07-14T06:58:58.320Z"
     }
   ],
   "shops": [
@@ -330,5 +347,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-14T06:57:53.539Z"
+  "syncedAt": "2026-07-14T06:59:02.051Z"
 }
