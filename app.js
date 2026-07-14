@@ -818,7 +818,7 @@
     return (item.name || '').trim() || '未命名';
   }
 
-  const PRODUCT_CATEGORIES = ['食品', '其他'];
+  const PRODUCT_CATEGORIES = ['食品', '速食', '其他'];
 
   const STOCK_COLOR_CLASSES = [
     'stock-red',
@@ -1299,6 +1299,7 @@
   function matchesBrowseCategoryFilter(item, filter = browseFilter) {
     if (filter === 'all') return true;
     if (filter === 'food') return hasStockCategory(item, '食品');
+    if (filter === 'instant') return hasStockCategory(item, '速食');
     if (filter === 'other') return hasStockCategory(item, '其他');
     return true;
   }
@@ -1353,6 +1354,8 @@
         emptyEl.textContent = '暂无记录';
       } else if (browseFilter === 'food') {
         emptyEl.textContent = query.trim() ? '没有符合搜索条件的食品库存记录' : '暂无食品分类的库存记录';
+      } else if (browseFilter === 'instant') {
+        emptyEl.textContent = query.trim() ? '没有符合搜索条件的速食库存记录' : '暂无速食分类的库存记录';
       } else if (browseFilter === 'other') {
         emptyEl.textContent = query.trim() ? '没有符合搜索条件的其他库存记录' : '暂无其他分类的库存记录';
       } else {
@@ -1620,9 +1623,11 @@
       totalEntries === 0
         ? browseFilter === 'food'
           ? '暂无食品分类的库存记录'
-          : browseFilter === 'other'
-            ? '暂无其他分类的库存记录'
-            : ''
+          : browseFilter === 'instant'
+            ? '暂无速食分类的库存记录'
+            : browseFilter === 'other'
+              ? '暂无其他分类的库存记录'
+              : ''
         : `共 ${totalEntries} 条记录；当前显示 ${shownTotal} 条`;
 
     const globalEmpty = $('#global-empty-hint');
