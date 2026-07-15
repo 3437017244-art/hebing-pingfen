@@ -303,6 +303,23 @@
       "rating": 5,
       "createdAt": "2026-07-14T06:58:58.320Z",
       "updatedAt": "2026-07-14T12:04:00.838Z"
+    },
+    {
+      "id": "mrle64f2rsy2s6",
+      "name": "螺丝椒",
+      "brand": "",
+      "flavor": "螺丝椒",
+      "category": "食品",
+      "storageLocation": "小屋门口地面上",
+      "quantity": 1,
+      "shopName": "",
+      "shopLocation": "",
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 5,
+      "createdAt": "2026-07-15T01:18:43.166Z",
+      "updatedAt": "2026-07-15T01:18:43.166Z"
     }
   ],
   "shops": [
@@ -331,5 +348,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-15T01:15:43.121Z"
+  "syncedAt": "2026-07-15T01:18:46.332Z"
 }
