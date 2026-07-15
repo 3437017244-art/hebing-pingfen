@@ -271,23 +271,6 @@
       "category": ""
     },
     {
-      "id": "mrjhe4pp09s6ew",
-      "name": "面条",
-      "brand": "",
-      "flavor": "面条",
-      "category": "速食",
-      "storageLocation": "小屋门口地面上",
-      "quantity": 1,
-      "shopName": "",
-      "shopLocation": "",
-      "price": null,
-      "weight": null,
-      "singleWeight": null,
-      "rating": 3,
-      "createdAt": "2026-07-13T17:13:23.292Z",
-      "updatedAt": "2026-07-14T12:04:34.362Z"
-    },
-    {
       "id": "mrk0gz8dpconp9",
       "name": "朱大胆",
       "brand": "",
@@ -343,9 +326,10 @@
       "mrioqzb31zy6ec": "2026-07-13T14:10:50.919Z",
       "mrjavvjc5lvzty": "2026-07-13T14:11:28.098Z",
       "mrjb4fqj7yyhla": "2026-07-13T14:18:22.159Z",
-      "mrjb177sfpijne": "2026-07-13T14:30:24.632Z"
+      "mrjb177sfpijne": "2026-07-13T14:30:24.632Z",
+      "mrjhe4pp09s6ew": "2026-07-15T01:15:40.353Z"
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-15T01:15:26.113Z"
+  "syncedAt": "2026-07-15T01:15:43.121Z"
 }
