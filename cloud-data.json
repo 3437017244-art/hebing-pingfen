@@ -351,9 +351,9 @@
       "price": null,
       "weight": null,
       "singleWeight": null,
-      "rating": 3,
+      "rating": 0.5,
       "createdAt": "2026-07-16T05:28:00.162Z",
-      "updatedAt": "2026-07-16T05:28:00.162Z"
+      "updatedAt": "2026-07-16T06:33:21.109Z"
     },
     {
       "id": "mrn4te7yad77cb",
@@ -399,5 +399,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-16T06:32:28.672Z"
+  "syncedAt": "2026-07-16T06:33:25.886Z"
 }
