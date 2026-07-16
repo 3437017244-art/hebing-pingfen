@@ -337,6 +337,23 @@
       "rating": 5,
       "createdAt": "2026-07-16T05:26:09.667Z",
       "updatedAt": "2026-07-16T05:26:09.667Z"
+    },
+    {
+      "id": "mrn2ijz6c4yiib",
+      "name": "二小对面水果摊",
+      "brand": "",
+      "flavor": "西瓜",
+      "category": "速食",
+      "storageLocation": "客厅电视桌子上",
+      "quantity": 1,
+      "shopName": "",
+      "shopLocation": "",
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 3,
+      "createdAt": "2026-07-16T05:28:00.162Z",
+      "updatedAt": "2026-07-16T05:28:00.162Z"
     }
   ],
   "shops": [
@@ -365,5 +382,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-16T05:26:13.472Z"
+  "syncedAt": "2026-07-16T05:28:04.371Z"
 }
