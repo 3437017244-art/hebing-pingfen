@@ -1633,8 +1633,8 @@
     const globalEmpty = $('#global-empty-hint');
     const hasAnyData = items.length > 0;
     const hasResults = shownTotal > 0;
-    const clearBtn = $('#clear-search-btn');
-    if (clearBtn) clearBtn.hidden = !query.trim();
+    const panelBrowse = $('#panel-browse');
+    if (panelBrowse) panelBrowse.classList.toggle('has-browse-content', hasAnyData || !!query.trim());
 
     if (!hasAnyData) {
       globalEmpty.hidden = true;
@@ -1827,7 +1827,6 @@
     $('#app-message-dialog')?.addEventListener('click', (event) => {
       if (event.target === $('#app-message-dialog')) closeAppMessageDialog(false);
     });
-    $('#clear-search-btn').addEventListener('click', clearSearch);
     $('#unified-suggestions').addEventListener('click', handleUnifiedSuggestionClick);
 
     const listClickGuard = createClickGuard();

@@ -10,8 +10,9 @@ body {
   overscroll-behavior-y: contain;
 }
 
-.app {
-  padding-top: max(16px, env(safe-area-inset-top));
+.app,
+.page-shell {
+  padding-top: max(18px, env(safe-area-inset-top));
   padding-bottom: max(48px, env(safe-area-inset-bottom));
 }
 
@@ -23,7 +24,8 @@ body {
 .btn,
 .item-card,
 .brand-product-row,
-.search-suggestion-item {
+.search-suggestion-item,
+.page-card {
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -33,6 +35,12 @@ body {
 .item-card,
 .brand-product-row {
   min-height: 44px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .dialog {
@@ -66,6 +74,15 @@ body {
     background: var(--surface);
     z-index: 1;
   }
+
+  .page-nav {
+    gap: 2px;
+  }
+
+  .page-nav a {
+    font-size: 0.88rem;
+    padding: 6px 8px;
+  }
 }
 
 .app-pull-indicator {
@@ -74,14 +91,16 @@ body {
   left: 50%;
   transform: translate(-50%, -120%);
   z-index: 9999;
-  padding: 8px 14px;
+  padding: 8px 16px;
   border-radius: 999px;
-  background: rgba(37, 99, 235, 0.95);
-  color: #fff;
+  background: rgba(212, 165, 116, 0.95);
+  color: #0f1419;
   font-size: 0.85rem;
+  font-weight: 600;
   pointer-events: none;
   opacity: 0;
   transition: transform 0.18s ease, opacity 0.18s ease;
+  box-shadow: 0 6px 20px rgba(212, 165, 116, 0.35);
 }
 
 .app-pull-indicator.visible {
@@ -90,5 +109,5 @@ body {
 }
 
 .app-pull-indicator.ready {
-  background: rgba(22, 163, 74, 0.95);
+  background: rgba(224, 183, 138, 0.98);
 }

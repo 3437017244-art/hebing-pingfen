@@ -2,62 +2,38 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0f1419">
   <title>在线部署 · 购物与商店评分</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="mobile.css">
-  <style>
-    .deploy-page { max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; }
-    .deploy-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px; }
-    .deploy-card h2 { margin: 0 0 12px; font-size: 1.1rem; }
-    .step-list { margin: 0; padding-left: 1.2rem; }
-    .step-list li { margin-bottom: 10px; line-height: 1.6; }
-    .code-box {
-      margin-top: 10px;
-      padding: 12px 14px;
-      border-radius: 8px;
-      background: #0f172a;
-      color: #e2e8f0;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 0.85rem;
-      overflow-x: auto;
-      white-space: pre-wrap;
-      word-break: break-all;
-    }
-    .url-display {
-      padding: 12px 14px;
-      border-radius: 8px;
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
-      color: #1d4ed8;
-      word-break: break-all;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      margin-bottom: 10px;
-    }
-    .url-label { margin: 0 0 6px; font-size: 0.9rem; color: var(--text-muted, #64748b); }
-    .deploy-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
-    .deploy-actions a { text-decoration: none; display: inline-block; line-height: 1.2; }
-    .result-box { padding: 12px 14px; border-radius: 8px; background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857; }
-    .result-box.info { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
-    .section-tag { display: inline-block; margin-bottom: 8px; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; background: #dbeafe; color: #1d4ed8; }
-  </style>
 </head>
 <body>
-  <div class="deploy-page">
+  <div class="page-shell page-shell-wide">
     <header class="header">
       <h1>在线部署</h1>
       <p class="subtitle">使用 GitHub Pages 托管网页。改完运行 deploy.ps1 上传，手机电脑打开同一地址即可。</p>
+      <nav class="page-nav" aria-label="功能导航">
+        <a href="index.html">查一查</a>
+        <span class="page-nav-sep" aria-hidden="true">·</span>
+        <a href="同步.html">云端同步</a>
+        <span class="page-nav-sep" aria-hidden="true">·</span>
+        <a href="恢复数据.html">恢复数据</a>
+      </nav>
     </header>
 
-    <div class="deploy-card">
+    <div class="page-card">
       <h2>你的在线地址</h2>
       <p class="field-hint">电脑、手机、APP 都使用下面这个 GitHub 地址。</p>
       <p class="url-label">GitHub Pages</p>
       <div class="url-display" id="github-url-preview">https://YOUR_GITHUB_USERNAME.github.io/hebing-pingfen/</div>
-      <p class="field-hint" id="site-version-hint" style="margin-top:12px;"></p>
+      <p class="field-hint mt-md" id="site-version-hint"></p>
     </div>
 
-    <div class="deploy-card">
+    <div class="page-card">
       <span class="section-tag">首次部署</span>
       <h2>GitHub Pages（第一次，只需做一次）</h2>
       <ol class="step-list">
@@ -78,7 +54,7 @@ git push -u origin main</div>
       </ol>
     </div>
 
-    <div class="deploy-card">
+    <div class="page-card">
       <h2>以后每次改完网页</h2>
       <p class="field-hint">在本文件夹 CMD 或 PowerShell 运行（一条一条执行）：</p>
       <div class="code-box">cd /d D:\RuanJian\合并评分
@@ -86,7 +62,7 @@ powershell -ExecutionPolicy Bypass -File .\deploy.ps1</div>
       <p class="field-hint">脚本会提交并推送到 GitHub，GitHub Actions 自动发布到 Pages。</p>
     </div>
 
-    <div class="deploy-card">
+    <div class="page-card">
       <h2>数据自动同步（已配置）</h2>
       <p class="field-hint">商品/商店数据通过 jsonblob 云端同步，同步码已写在 <code>site-config.js</code> 的 <code>defaultSyncCode</code> 中。</p>
       <div class="result-box info" id="sync-code-preview">正在读取…</div>
@@ -98,7 +74,7 @@ powershell -ExecutionPolicy Bypass -File .\deploy.ps1</div>
       </ol>
     </div>
 
-    <div class="deploy-card">
+    <div class="page-card">
       <h2>手机 APP（与电脑保持一致）</h2>
       <p class="field-hint">APP 通过在线地址加载网页，界面、功能与电脑版<strong>始终同一套代码</strong>。数据通过 GitHub 云同步互相同步。</p>
       <ol class="step-list">
@@ -111,12 +87,12 @@ npm install
 npm run apply-online-url
 npx cap sync android
 npm run android</div>
-      <div class="result-box info" style="margin-top:12px;">
+      <div class="result-box info mt-md">
         每次 deploy.ps1 会自动递增版本号并写入 buildId，电脑和手机 APP 打开或回到前台时会自动刷新到最新版。
       </div>
     </div>
 
-    <div class="deploy-card">
+    <div class="page-card">
       <h2>让手机 APP 加载在线地址</h2>
       <ol class="step-list">
         <li>打开 <code>D:\RuanJian\合并评分-app\online-site.json</code>，把 <code>siteUrl</code> 改成下面的 <strong>GitHub 地址</strong>。</li>
@@ -131,12 +107,12 @@ npx cap sync android</div>
       </ol>
     </div>
 
-    <div class="deploy-card">
+    <div class="page-card">
       <h2>工作原理</h2>
       <div class="result-box info">
         电脑改网页 → deploy.ps1 上传到 GitHub → GitHub Actions 发布 Pages → 浏览器/APP 打开 GitHub 地址即最新版。商品/商店数据由 defaultSyncCode 自动云端同步（与网页托管无关）。
       </div>
-      <div class="deploy-actions">
+      <div class="page-actions">
         <a class="btn btn-primary" href="index.html">返回查一查</a>
         <a class="btn btn-secondary" href="同步.html">云端同步</a>
       </div>

@@ -2,34 +2,30 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0f1419">
   <title>云端同步 · 购物与商店评分</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="mobile.css">
-  <style>
-    .sync-page { max-width: 720px; margin: 0 auto; padding: 24px 16px 48px; }
-    .sync-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px; }
-    .sync-card h2 { margin: 0 0 12px; font-size: 1.1rem; }
-    .result-box { padding: 12px 14px; border-radius: 8px; background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857; }
-    .result-box.error { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
-    .result-box.info { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
-    .sync-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
-    .sync-actions a { text-decoration: none; display: inline-block; line-height: 1.2; }
-    .sync-code-input { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.95rem; }
-    .sync-code-display { padding: 12px 14px; border-radius: 8px; background: #f8fafc; border: 1px dashed var(--border); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; word-break: break-all; }
-    .step-list { margin: 0; padding-left: 1.2rem; }
-    .step-list li { margin-bottom: 8px; }
-    .sync-check { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
-  </style>
 </head>
 <body>
-  <div class="sync-page">
+  <div class="page-shell">
     <header class="header">
       <h1>手机与电脑双向同步</h1>
       <p class="subtitle">电脑和手机各保存一次 GitHub 令牌后，两边登记的数据会自动互相同步。</p>
+      <nav class="page-nav" aria-label="功能导航">
+        <a href="index.html">查一查</a>
+        <span class="page-nav-sep" aria-hidden="true">·</span>
+        <a href="恢复数据.html">恢复数据</a>
+        <span class="page-nav-sep" aria-hidden="true">·</span>
+        <a href="在线部署.html">在线部署</a>
+      </nav>
     </header>
 
-    <div class="sync-card" id="github-token-card">
+    <div class="page-card" id="github-token-card">
       <h2>第一步：保存 GitHub 令牌（每台设备做一次）</h2>
       <p class="field-hint">令牌只保存在本机浏览器，不会写入网站代码。电脑和手机<strong>各保存一次</strong>即可双向登记、双向同步。</p>
       <ol class="step-list">
@@ -43,43 +39,43 @@
         <label for="github-token-input">GitHub 令牌</label>
         <input type="password" id="github-token-input" class="sync-code-input" placeholder="github_pat_..." autocomplete="off">
       </div>
-      <div class="sync-actions">
+      <div class="page-actions">
         <button type="button" class="btn btn-primary" id="save-github-token-btn">保存令牌</button>
         <button type="button" class="btn btn-secondary" id="clear-github-token-btn">清除本机令牌</button>
       </div>
-      <div id="github-token-result" hidden style="margin-top:16px;"></div>
+      <div id="github-token-result" class="result-box" hidden></div>
     </div>
 
-    <div class="sync-card">
+    <div class="page-card">
       <h2>当前本地数据</h2>
-      <p id="local-stats">正在检查…</p>
+      <p class="stat-line" id="local-stats">正在检查…</p>
       <p id="remote-stats" class="field-hint">正在检查云端…</p>
       <p class="field-hint" id="sync-status-hint"></p>
     </div>
 
-    <div class="sync-card" id="site-sync-card" hidden>
+    <div class="page-card" id="site-sync-card" hidden>
       <h2>旧版 jsonblob 同步码（可忽略）</h2>
       <p class="field-hint">当前使用 GitHub 云同步，一般无需再管同步码。</p>
       <div class="sync-code-display" id="site-sync-code-display"></div>
     </div>
 
-    <div class="sync-card" id="manual-sync-card" hidden>
+    <div class="page-card" id="manual-sync-card" hidden>
       <h2>旧版 jsonblob 手动同步（可忽略）</h2>
       <div class="form-row">
         <label for="sync-code-input">同步码</label>
         <input type="text" id="sync-code-input" class="sync-code-input" placeholder="例如：1054938906322286336" autocomplete="off">
       </div>
-      <div class="sync-actions">
+      <div class="page-actions">
         <button type="button" class="btn btn-secondary" id="save-code-btn">保存同步码</button>
         <button type="button" class="btn btn-primary" id="create-code-btn">生成新同步码</button>
       </div>
-      <div id="code-result" hidden style="margin-top:16px;"></div>
+      <div id="code-result" class="result-box" hidden></div>
     </div>
 
-    <div class="sync-card">
+    <div class="page-card">
       <h2>第二步：立即同步</h2>
       <p class="field-hint">合并云端与本机数据（相同记录保留较新修改），再上传回 GitHub。登记后约 2 秒也会自动同步。</p>
-      <div class="sync-actions">
+      <div class="page-actions">
         <button type="button" class="btn btn-primary" id="sync-now-btn">立即同步</button>
         <a class="btn btn-secondary" href="index.html">返回查一查</a>
         <a class="btn btn-secondary" href="恢复数据.html">恢复数据</a>
@@ -90,10 +86,10 @@
         打开页面时自动同步
       </label>
       <p class="field-hint" id="auto-sync-hint" hidden>网站已启用 autoSync，此项已固定为开启。</p>
-      <div id="sync-result" hidden style="margin-top:16px;"></div>
+      <div id="sync-result" class="result-box" hidden></div>
     </div>
 
-    <div class="sync-card">
+    <div class="page-card">
       <h2>使用说明</h2>
       <ol class="step-list">
         <li>电脑、手机各在本页保存一次 GitHub 令牌。</li>
@@ -229,8 +225,8 @@
           showBox(
             codeResult,
             '',
-            '已生成并保存同步码：<div class="sync-code-display" style="margin-top:8px;">' + code + '</div>' +
-              '<p class="field-hint" style="margin-top:8px;">请把这段同步码复制到另一台设备保存。</p>',
+            '已生成并保存同步码：<div class="sync-code-display mt-sm">' + code + '</div>' +
+              '<p class="field-hint mt-sm">请把这段同步码复制到另一台设备保存。</p>',
           );
           updateStats();
         } catch (err) {

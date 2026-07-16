@@ -3,43 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#2563eb">
+  <meta name="theme-color" content="#0f1419">
   <title>购物与商店评分（合并版）</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="mobile.css">
 </head>
 <body>
   <div class="app">
-    <header class="header">
+    <header class="header" hidden>
       <h1>购物与商店评分</h1>
-      <p class="subtitle" style="margin-top:8px;">
+      <nav class="page-nav subtitle" aria-label="功能导航" hidden>
         <a href="同步.html">云端同步</a>
-        <span aria-hidden="true"> · </span>
+        <span class="page-nav-sep" aria-hidden="true">·</span>
         <a href="恢复数据.html">恢复数据</a>
-        <span aria-hidden="true"> · </span>
+        <span class="page-nav-sep" aria-hidden="true">·</span>
         <a href="在线部署.html">在线部署</a>
-      </p>
+      </nav>
       <p class="app-version" id="site-version-line" hidden></p>
     </header>
 
     <!-- 查一查（合并搜索） -->
     <section id="panel-browse" class="panel active">
-      <div class="toolbar">
-        <div class="search-row">
-          <input type="search" id="unified-search" class="search-input" autocomplete="off" placeholder="搜索已登记内容…">
-          <button type="button" class="btn btn-secondary btn-sm" id="clear-search-btn" hidden>清空搜索</button>
+      <div class="search-hero">
+        <div class="toolbar">
+          <div class="search-row">
+            <input type="search" id="unified-search" class="search-input" autocomplete="off" placeholder="搜索已登记内容…">
+          </div>
+          <div id="unified-suggestions" class="search-suggestions hidden"></div>
         </div>
-        <div id="unified-suggestions" class="search-suggestions hidden"></div>
-      </div>
 
-      <div class="browse-filter-bar">
-        <div class="filter-chips browse-category-chips" id="browse-category-chips">
-          <button type="button" class="chip active" data-browse-filter="all">全部</button>
-          <button type="button" class="chip" data-browse-filter="food">食品</button>
-          <button type="button" class="chip" data-browse-filter="instant">速食</button>
-          <button type="button" class="chip" data-browse-filter="other">其他</button>
+        <div class="browse-filter-bar">
+          <div class="filter-chips browse-category-chips" id="browse-category-chips">
+            <button type="button" class="chip active" data-browse-filter="all">全部</button>
+            <button type="button" class="chip" data-browse-filter="food">食品</button>
+            <button type="button" class="chip" data-browse-filter="instant">速食</button>
+            <button type="button" class="chip" data-browse-filter="other">其他</button>
+          </div>
+          <p class="list-summary" id="browse-summary"></p>
         </div>
-        <p class="list-summary" id="browse-summary"></p>
       </div>
 
       <div id="no-data-banner" class="form-banner" hidden>
@@ -49,11 +53,11 @@
         <a href="恢复数据.html">点此恢复或导入数据</a>
         或 <a href="同步.html">云端同步</a>
       </div>
-      <div id="sync-setup-banner" class="form-banner" hidden style="background:#fff7ed;border-color:#fed7aa;color:#9a3412;">
+      <div id="sync-setup-banner" class="form-banner form-banner-setup" hidden>
         尚未保存 GitHub 令牌，手机与电脑无法双向同步。
         <a href="同步.html">点此设置令牌</a>
       </div>
-      <div id="sync-status-banner" class="form-banner" hidden style="background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8;"></div>
+      <div id="sync-status-banner" class="form-banner form-banner-status" hidden></div>
 
       <div id="browse-results">
         <ul class="item-list" id="unified-list"></ul>
@@ -121,7 +125,8 @@
           ? AppUpdate.formatVersionLine(HEBING_SITE)
           : 'v' + HEBING_SITE.version + ' · ' + HEBING_SITE.updatedAt;
         versionLine.textContent = mode + ' ' + versionText + syncHint;
-        versionLine.hidden = false;
+        // 临时隐藏导航与版本行，预览极简顶栏；满意后改回 false 即可
+        versionLine.hidden = true;
       }
     });
   </script>
