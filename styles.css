@@ -486,6 +486,37 @@ a:hover {
   color: var(--star);
 }
 
+.rating-current.is-pending {
+  color: var(--text-muted);
+}
+
+.rating-pending-btn {
+  appearance: none;
+  border: 1.5px solid color-mix(in srgb, var(--star) 55%, #9ca3af);
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1.2;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.1s;
+  touch-action: manipulation;
+}
+
+.rating-pending-btn:hover {
+  transform: scale(1.03);
+  border-color: var(--star);
+  color: var(--star);
+}
+
+.rating-pending-btn.active {
+  background: color-mix(in srgb, var(--star) 22%, transparent);
+  border-color: var(--star);
+  color: var(--star);
+}
+
 .field-hint {
   margin: 6px 0 0;
   font-size: 0.85rem;
@@ -566,6 +597,24 @@ a:hover {
 .item-stars.low {
   color: var(--low-score);
   font-weight: 600;
+}
+
+.item-stars.pending {
+  color: var(--text-muted);
+}
+
+.rating-pending-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #92400e;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1.5px solid rgba(146, 64, 14, 0.35);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
 }
 
 .rating-num {
@@ -983,28 +1032,37 @@ button.editing {
 .brand-stock-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
+  gap: 8px;
+  padding: 7px 14px;
   border-radius: 999px;
   font-size: 0.82rem;
   font-weight: 700;
   line-height: 1.3;
   color: #fff;
   background: var(--stock-accent);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.22);
   white-space: nowrap;
 }
 
-.brand-stock-name,
+.brand-stock-name {
+  font-size: 1.12rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
+}
+
 .brand-stock-qty,
 .brand-stock-location {
-  font-weight: 700;
-  color: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.88);
 }
 
 .brand-stock-sep {
-  opacity: 0.72;
+  opacity: 0.55;
   font-weight: 400;
+  font-size: 0.78rem;
   color: inherit;
 }
 

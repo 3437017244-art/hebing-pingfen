@@ -33,10 +33,27 @@
     return Math.min(5, Math.max(0.5, n));
   }
 
+  function ratingOrDefault(value, fallback = 3) {
+    if (value === '' || value == null) return fallback;
+    const n = Number(value);
+    if (isNaN(n)) return fallback;
+    return normalizeRating(n);
+  }
+
+  function isLowRating(value) {
+    const r = Number(value);
+    return r > 0 && r <= 2;
+  }
+
   function formatRating(rating) {
     const r = normalizeRating(rating);
-    if (r <= 0) return '—';
+    if (r <= 0) return '待定';
     return Number.isInteger(r) ? String(r) : r.toFixed(1);
+  }
+
+  function formatRatingLabel(rating) {
+    const r = ratingOrDefault(rating, 0);
+    return r > 0 ? `${formatRating(r)} 星` : '待定';
   }
 
   function generateId() {
@@ -90,10 +107,11 @@
   }
 
   function setStarsState(starContainer, hiddenInput, ratingDisplayEl, value, defaultWhenEmpty) {
-    const v = Number(value) > 0 ? normalizeRating(value) : (defaultWhenEmpty ?? 0);
-    if (hiddenInput) hiddenInput.value = v > 0 ? String(v) : '';
+    const v = ratingOrDefault(value, defaultWhenEmpty ?? 0);
+    if (hiddenInput) hiddenInput.value = String(v);
     if (ratingDisplayEl) {
-      ratingDisplayEl.textContent = v > 0 ? `${formatRating(v)} 星` : '—';
+      ratingDisplayEl.textContent = formatRatingLabel(v);
+      ratingDisplayEl.classList.toggle('is-pending', v <= 0);
     }
     if (!starContainer) return;
     starContainer.querySelectorAll('.star').forEach((star) => {
@@ -101,6 +119,12 @@
       star.classList.remove('active', 'half');
       if (v >= starValue) star.classList.add('active');
       else if (v >= starValue - 0.5) star.classList.add('half');
+    });
+    const wrap = starContainer.closest('.star-rating-wrap');
+    wrap?.querySelectorAll('.rating-pending-btn').forEach((btn) => {
+      const pending = v <= 0;
+      btn.classList.toggle('active', pending);
+      btn.setAttribute('aria-pressed', pending ? 'true' : 'false');
     });
   }
 
@@ -114,19 +138,28 @@
         setStarsState(starContainer, hiddenInput, ratingDisplayEl, isHalf ? base - 0.5 : base, defaultWhenEmpty);
       });
     });
+    const wrap = starContainer.closest('.star-rating-wrap');
+    wrap?.querySelectorAll('.rating-pending-btn').forEach((btn) => {
+      btn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        setStarsState(starContainer, hiddenInput, ratingDisplayEl, 0, 0);
+      });
+    });
     return (value) => setStarsState(starContainer, hiddenInput, ratingDisplayEl, value, defaultWhenEmpty);
   }
 
   function renderStarsDisplay(value, lowClass) {
     const r = Number(value) > 0 ? normalizeRating(value) : 0;
+    if (r <= 0) {
+      return `<span class="item-stars pending"><span class="rating-pending-label">待定</span></span>`;
+    }
     const parts = [];
     for (let i = 1; i <= 5; i++) {
       if (r >= i) parts.push('<span class="star-icon full">★</span>');
       else if (r >= i - 0.5) parts.push('<span class="star-icon half">★</span>');
       else parts.push('<span class="star-icon empty">☆</span>');
     }
-    const ratingText = r > 0 ? `${formatRating(r)}星` : '—';
-    return `<span class="item-stars${lowClass ? ' low' : ''}">${parts.join('')}<span class="rating-num">${ratingText}</span></span>`;
+    return `<span class="item-stars${lowClass ? ' low' : ''}">${parts.join('')}<span class="rating-num">${formatRating(r)}星</span></span>`;
   }
 
   function createInteractiveStars(id, type, value, index) {
@@ -138,9 +171,37 @@
       else if (score >= i - 0.5) cls += ' half';
       buttons += `<button type="button" class="${cls}" data-value="${i}">★</button>`;
     }
-    const ratingText = score > 0 ? `${formatRating(score)}星` : '—';
+    const ratingText = score > 0 ? `${formatRating(score)}星` : '待定';
     const indexAttr = index != null ? ` data-index="${index}"` : '';
     return `<span class="star-rating rateable" data-id="${escapeHtml(id)}" data-type="${type}"${indexAttr}>${buttons}<span class="rating-num">${ratingText}</span></span>`;
+  }
+
+  function renderRatingEditorHtml(score, options = {}) {
+    const ratingId = options.ratingId || '';
+    const currentId = options.currentId || '';
+    const hiddenId = options.hiddenId || '';
+    const starClass = options.starClass || '';
+    const currentClass = options.currentClass || '';
+    const hiddenClass = options.hiddenClass || '';
+    const value = ratingOrDefault(score, 3);
+    let starButtons = '';
+    for (let i = 1; i <= 5; i++) {
+      let cls = 'star';
+      if (value >= i) cls += ' active';
+      else if (value >= i - 0.5) cls += ' half';
+      starButtons += `<button type="button" class="${cls}" data-value="${i}" aria-label="${i}星">★</button>`;
+    }
+    const pendingActive = value <= 0 ? ' active' : '';
+    return `
+      <div class="star-rating-wrap">
+        <div class="star-rating${starClass ? ` ${starClass}` : ''}"${ratingId ? ` id="${ratingId}"` : ''}>
+          ${starButtons}
+        </div>
+        <button type="button" class="rating-pending-btn${pendingActive}" aria-pressed="${value <= 0 ? 'true' : 'false'}">待定</button>
+        <span class="rating-current${currentClass ? ` ${currentClass}` : ''}${value <= 0 ? ' is-pending' : ''}"${currentId ? ` id="${currentId}"` : ''}>${formatRatingLabel(value)}</span>
+      </div>
+      <input type="hidden"${hiddenId ? ` id="${hiddenId}"` : ''}${hiddenClass ? ` class="${hiddenClass}"` : ''} value="${value}">
+    `;
   }
 
   function hasSelectedText() {
@@ -278,17 +339,11 @@
         </div>
         <div class="form-row">
           <label>评分</label>
-          <div class="star-rating-wrap">
-            <div class="star-rating" id="dialog-star-rating">
-              <button type="button" class="star" data-value="1" aria-label="1星">★</button>
-              <button type="button" class="star" data-value="2" aria-label="2星">★</button>
-              <button type="button" class="star" data-value="3" aria-label="3星">★</button>
-              <button type="button" class="star" data-value="4" aria-label="4星">★</button>
-              <button type="button" class="star" data-value="5" aria-label="5星">★</button>
-            </div>
-            <span class="rating-current" id="dialog-rating-current">${formatRating(item.rating)} 星</span>
-          </div>
-          <input type="hidden" id="dialog-rating" value="${item.rating || 3}">
+          ${renderRatingEditorHtml(item.rating, {
+            ratingId: 'dialog-star-rating',
+            currentId: 'dialog-rating-current',
+            hiddenId: 'dialog-rating',
+          })}
         </div>
         <div class="form-row form-row-key form-row-key-quantity">
           <label for="dialog-quantity">数量</label>
@@ -332,17 +387,10 @@
 
   function renderExtraProductRowHtml(index, item = {}) {
     const flavor = item.flavor || '';
-    const score = Number(item.rating) > 0 ? normalizeRating(item.rating) : 3;
+    const score = ratingOrDefault(item.rating, 3);
     const quantity = item.quantity != null ? item.quantity : '';
     const showStockFields = hasStockQuantity(item);
     const price = item.price != null ? item.price : '';
-    let starButtons = '';
-    for (let i = 1; i <= 5; i++) {
-      let cls = 'star';
-      if (score >= i) cls += ' active';
-      else if (score >= i - 0.5) cls += ' half';
-      starButtons += `<button type="button" class="${cls}" data-value="${i}" aria-label="${i}星">★</button>`;
-    }
     const productNumber = index + 2;
     return `
       <div class="extra-product-row" data-index="${index}">
@@ -355,13 +403,11 @@
         </div>
         <div class="form-row">
           <label>评分</label>
-          <div class="star-rating-wrap">
-            <div class="star-rating extra-star-rating">
-              ${starButtons}
-            </div>
-            <span class="rating-current extra-rating-current">${formatRating(score)} 星</span>
-          </div>
-          <input type="hidden" class="extra-rating" value="${score}">
+          ${renderRatingEditorHtml(score, {
+            starClass: 'extra-star-rating',
+            currentClass: 'extra-rating-current',
+            hiddenClass: 'extra-rating',
+          })}
         </div>
         <div class="form-row form-row-key form-row-key-quantity">
           <label>数量</label>
@@ -389,7 +435,7 @@
     const starContainer = row.querySelector('.extra-star-rating');
     const hiddenInput = row.querySelector('.extra-rating');
     const ratingDisplay = row.querySelector('.extra-rating-current');
-    bindStarRating(starContainer, hiddenInput, ratingDisplay, 3)(rating || 3);
+    bindStarRating(starContainer, hiddenInput, ratingDisplay, 3)(ratingOrDefault(rating, 3));
     bindStockDependentFields(
       row.querySelector('.extra-quantity'),
       row.querySelector('.extra-category-row'),
@@ -424,7 +470,7 @@
     wrapper.innerHTML = renderExtraProductRowHtml(index, item);
     const row = wrapper.firstElementChild;
     list.appendChild(row);
-    bindExtraProductRow(row, item.rating ?? 3);
+    bindExtraProductRow(row, ratingOrDefault(item.rating, 3));
     row.querySelector('.extra-flavor')?.focus();
   }
 
@@ -443,7 +489,7 @@
             row.querySelector('.extra-price')?.value !== ''
               ? parseFloat(row.querySelector('.extra-price').value)
               : null,
-          rating: normalizeRating(row.querySelector('.extra-rating')?.value || 3),
+          rating: ratingOrDefault(row.querySelector('.extra-rating')?.value, 3),
         }),
       )
       .filter((item) => item.flavor);
@@ -495,7 +541,7 @@
     const hiddenInput = $('#dialog-rating');
     const ratingDisplay = $('#dialog-rating-current');
     dialogSetStars = bindStarRating(starContainer, hiddenInput, ratingDisplay, 3);
-    dialogSetStars(item.rating || 3);
+    dialogSetStars(ratingOrDefault(item.rating, 3));
     const priceEl = $('#dialog-price');
     const weightEl = $('#dialog-weight');
     if (priceEl) priceEl.addEventListener('input', updateDialogUnitPriceDisplay);
@@ -521,7 +567,7 @@
       price: $('#dialog-price')?.value !== '' ? parseFloat($('#dialog-price').value) : null,
       weight: $('#dialog-weight')?.value !== '' ? parseFloat($('#dialog-weight').value) : null,
       singleWeight: $('#dialog-single-weight')?.value !== '' ? parseFloat($('#dialog-single-weight').value) : null,
-      rating: normalizeRating($('#dialog-rating')?.value || 3),
+      rating: ratingOrDefault($('#dialog-rating')?.value, 3),
     });
   }
 
@@ -618,17 +664,11 @@
         </div>
         <div class="form-row">
           <label>评分</label>
-          <div class="star-rating-wrap">
-            <div class="star-rating" id="dialog-star-rating">
-              <button type="button" class="star" data-value="1" aria-label="1星">★</button>
-              <button type="button" class="star" data-value="2" aria-label="2星">★</button>
-              <button type="button" class="star" data-value="3" aria-label="3星">★</button>
-              <button type="button" class="star" data-value="4" aria-label="4星">★</button>
-              <button type="button" class="star" data-value="5" aria-label="5星">★</button>
-            </div>
-            <span class="rating-current" id="dialog-rating-current">${formatRating(shop.rating)} 星</span>
-          </div>
-          <input type="hidden" id="dialog-rating" value="${shop.rating || 3}">
+          ${renderRatingEditorHtml(shop.rating, {
+            ratingId: 'dialog-star-rating',
+            currentId: 'dialog-rating-current',
+            hiddenId: 'dialog-rating',
+          })}
         </div>
       </form>
     `;
@@ -639,7 +679,7 @@
     selectedDetail = { type: 'shop', id: shop.id };
     productEls.dialogTitle.textContent = shop.name || '编辑';
     productEls.dialogBody.innerHTML = renderShopEditForm(shop);
-    bindDialogProductEdit({ rating: shop.rating || 3 });
+    bindDialogProductEdit({ rating: ratingOrDefault(shop.rating, 3) });
     productEls.dialogEditBtn.textContent = '保存';
     productEls.dialogDeleteBtn.textContent = '取消';
     productEls.dialogDeleteBtn.className = 'btn btn-secondary';
@@ -652,7 +692,7 @@
     const shop = shops.find((s) => s.id === selectedDetail.id);
     if (!shop) return;
     shop.location = ($('#dialog-shop-location')?.value || '').trim();
-    shop.rating = normalizeRating($('#dialog-rating')?.value || 3);
+    shop.rating = ratingOrDefault($('#dialog-rating')?.value, 3);
     saveShops();
     setDialogViewMode();
     showShopDetail(shop);
@@ -1005,13 +1045,6 @@
     return `<span class="brand-stock-chip">${parts.join('<span class="brand-stock-sep">·</span>')}</span>`;
   }
 
-  function renderBrandStockBadge(products, count) {
-    if (count === 1) return renderStockBadge(products[0]);
-    const stocked = products.filter(hasStockQuantity);
-    if (!stocked.length) return '';
-    return `<span class="stock-badge">${stocked.length} 种有库存</span>`;
-  }
-
   function getSearchSuggestionClass(group) {
     const stocked = group.products.find(hasStockQuantity);
     const ref = stocked || { id: group.brand, name: group.brand, flavor: group.brand };
@@ -1088,7 +1121,7 @@
   }
 
   function buildProductDetailRows(item) {
-    const isLow = item.rating <= 2;
+    const isLow = isLowRating(item.rating);
     const unitPrice = formatUnitPrice(item.price, item.weight);
     const { shopName, shopLocation } = getProductShopInfo(item);
     return [
@@ -1111,7 +1144,7 @@
   function renderProductCard(item, options = {}) {
     const type = options.type || 'product';
     const cardId = options.id || item.id;
-    const isLow = item.rating <= 2;
+    const isLow = isLowRating(item.rating);
     const meta = buildProductMetaHtml(item);
     const productIdAttr = options.productId ? ` data-product-id="${escapeHtml(options.productId)}"` : '';
     return `
@@ -1119,7 +1152,6 @@
         <div class="item-header">
           <div class="item-title-wrap">
             <h3 class="item-name">${escapeHtml(item.name)}</h3>
-            ${renderStockBadge(item)}
           </div>
           ${renderStarsDisplay(item.rating, isLow)}
         </div>
@@ -1159,7 +1191,6 @@
         <div class="item-header">
           <div class="item-title-wrap">
             <h3 class="item-name">${escapeHtml(brand)}</h3>
-            ${renderBrandStockBadge(products, count)}
           </div>
           ${stockPreview}
           <div class="item-header-rating">${renderStarsDisplay(displayRating, isLow)}</div>
@@ -1173,7 +1204,7 @@
     const rows = products
       .map((item) => {
         const label = item.flavor || '未命名商品';
-        const isLow = Number(item.rating) > 0 && Number(item.rating) <= 2;
+        const isLow = isLowRating(item.rating);
         const unitPrice = formatUnitPrice(item.price, item.weight);
         const metaParts = [
           item.price != null && formatPrice(item.price),
@@ -1526,7 +1557,7 @@
       return renderProductCard(linked, { type: 'shop', id: shop.id, productId: linked.id });
     }
 
-    const isLow = Number(shop.rating) > 0 && Number(shop.rating) <= 2;
+    const isLow = isLowRating(shop.rating);
     const products = getShopProducts(shop);
     const meta = [
       `<span>店铺名称：${escapeHtml(shop.name) || '—'}</span>`,
@@ -1547,7 +1578,7 @@
   }
 
   function buildShopDetailRows(shop) {
-    const isLow = Number(shop.rating) > 0 && Number(shop.rating) <= 2;
+    const isLow = isLowRating(shop.rating);
     const rows = [
       ['评分', renderStarsDisplay(shop.rating, isLow)],
       ['店铺位置', escapeHtml(shop.location) || '—'],
@@ -1559,7 +1590,7 @@
     }
     products.forEach((product, index) => {
       const suffix = products.length > 1 ? String(index + 1) : '';
-      const pLow = Number(product.rating) > 0 && Number(product.rating) <= 2;
+      const pLow = isLowRating(product.rating);
       rows.push([`商品${suffix}`, escapeHtml(product.name) || '—']);
       rows.push([`商品评分${suffix}`, renderStarsDisplay(product.rating, pLow)]);
     });
