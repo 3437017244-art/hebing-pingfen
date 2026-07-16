@@ -371,6 +371,23 @@
       "rating": 2.5,
       "createdAt": "2026-07-16T06:32:25.150Z",
       "updatedAt": "2026-07-16T06:32:25.150Z"
+    },
+    {
+      "id": "mrner5kz41xktv",
+      "name": "刮胡子刀",
+      "brand": "",
+      "flavor": "刮胡子刀",
+      "category": "其他",
+      "storageLocation": "小屋门口地面上",
+      "quantity": 1,
+      "shopName": "",
+      "shopLocation": "",
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 3,
+      "createdAt": "2026-07-16T11:10:36.803Z",
+      "updatedAt": "2026-07-16T11:10:36.803Z"
     }
   ],
   "shops": [
@@ -399,5 +416,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-16T11:08:18.092Z"
+  "syncedAt": "2026-07-16T11:10:40.249Z"
 }
