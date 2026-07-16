@@ -320,6 +320,23 @@
       "rating": 5,
       "createdAt": "2026-07-15T01:18:43.166Z",
       "updatedAt": "2026-07-15T01:18:43.166Z"
+    },
+    {
+      "id": "mrn2g6pv7jiqjv",
+      "name": "李记板面",
+      "brand": "",
+      "flavor": "板面",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "贸易街东头西南角",
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 5,
+      "createdAt": "2026-07-16T05:26:09.667Z",
+      "updatedAt": "2026-07-16T05:26:09.667Z"
     }
   ],
   "shops": [
@@ -348,5 +365,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-16T05:25:31.677Z"
+  "syncedAt": "2026-07-16T05:26:13.472Z"
 }
