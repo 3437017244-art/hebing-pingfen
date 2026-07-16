@@ -354,6 +354,23 @@
       "rating": 3,
       "createdAt": "2026-07-16T05:28:00.162Z",
       "updatedAt": "2026-07-16T05:28:00.162Z"
+    },
+    {
+      "id": "mrn4te7yad77cb",
+      "name": "茶与甜",
+      "brand": "",
+      "flavor": "拿铁咖啡",
+      "category": "速食",
+      "storageLocation": "客厅电视桌子上",
+      "quantity": 50,
+      "shopName": "",
+      "shopLocation": "",
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 2.5,
+      "createdAt": "2026-07-16T06:32:25.150Z",
+      "updatedAt": "2026-07-16T06:32:25.150Z"
     }
   ],
   "shops": [
@@ -382,5 +399,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-16T06:31:42.045Z"
+  "syncedAt": "2026-07-16T06:32:28.672Z"
 }
