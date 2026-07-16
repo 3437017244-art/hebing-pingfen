@@ -603,6 +603,63 @@ a:hover {
   color: var(--text-muted);
 }
 
+.item-card.in-stock .item-stars,
+.brand-product-row.in-stock .item-stars {
+  color: #b45309;
+  font-weight: 700;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.item-card.in-stock .star-icon.full,
+.brand-product-row.in-stock .star-icon.full {
+  color: #b45309;
+}
+
+.item-card.in-stock .star-icon.half,
+.brand-product-row.in-stock .star-icon.half {
+  background: linear-gradient(90deg, #b45309 50%, #78716c 50%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.item-card.in-stock .star-icon.empty,
+.brand-product-row.in-stock .star-icon.empty {
+  color: #78716c;
+}
+
+.item-card.in-stock .rating-num,
+.brand-product-row.in-stock .rating-num {
+  color: #1f2937;
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+.item-card.in-stock .item-stars.low,
+.brand-product-row.in-stock .item-stars.low {
+  color: #b91c1c;
+}
+
+.item-card.in-stock .item-stars.low .star-icon.full,
+.brand-product-row.in-stock .item-stars.low .star-icon.full {
+  color: #b91c1c;
+}
+
+.item-card.in-stock .item-stars.low .star-icon.half,
+.brand-product-row.in-stock .item-stars.low .star-icon.half {
+  background: linear-gradient(90deg, #b91c1c 50%, #78716c 50%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.item-card.in-stock .item-stars.low .rating-num,
+.brand-product-row.in-stock .item-stars.low .rating-num {
+  color: #991b1b;
+}
+
 .rating-pending-label {
   display: inline-flex;
   align-items: center;
