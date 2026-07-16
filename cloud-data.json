@@ -340,20 +340,20 @@
     },
     {
       "id": "mrn2ijz6c4yiib",
-      "name": "二小对面马路口西南男水果摊",
+      "name": "二小对面水果摊",
       "brand": "",
       "flavor": "西瓜",
       "category": "速食",
-      "storageLocation": "客厅电视桌子上",
+      "storageLocation": "厨房",
       "quantity": 1,
       "shopName": "",
-      "shopLocation": "二小对面马路口西南男水果摊",
+      "shopLocation": "二小对面马路口西南男",
       "price": null,
       "weight": null,
       "singleWeight": null,
       "rating": 0.5,
       "createdAt": "2026-07-16T05:28:00.162Z",
-      "updatedAt": "2026-07-16T08:21:42.180Z"
+      "updatedAt": "2026-07-16T09:58:46.058Z"
     },
     {
       "id": "mrn4te7yad77cb",
@@ -399,5 +399,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-16T09:57:18.390Z"
+  "syncedAt": "2026-07-16T09:58:51.142Z"
 }
