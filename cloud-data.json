@@ -385,9 +385,9 @@
       "price": null,
       "weight": null,
       "singleWeight": null,
-      "rating": 0,
+      "rating": 4,
       "createdAt": "2026-07-17T02:22:59.856Z",
-      "updatedAt": "2026-07-17T02:22:59.856Z"
+      "updatedAt": "2026-07-17T02:50:07.465Z"
     },
     {
       "id": "mrobydobj47ot2",
@@ -434,5 +434,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-17T02:48:17.366Z"
+  "syncedAt": "2026-07-17T02:50:11.056Z"
 }
