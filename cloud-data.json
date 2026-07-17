@@ -388,6 +388,23 @@
       "rating": 0,
       "createdAt": "2026-07-17T02:22:59.856Z",
       "updatedAt": "2026-07-17T02:22:59.856Z"
+    },
+    {
+      "id": "mrobydobj47ot2",
+      "name": "小白潼关肉夹馍",
+      "brand": "",
+      "flavor": "肉夹馍",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "createdAt": "2026-07-17T02:40:01.211Z",
+      "updatedAt": "2026-07-17T02:40:01.211Z"
     }
   ],
   "shops": [
@@ -417,5 +434,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-17T02:39:33.923Z"
+  "syncedAt": "2026-07-17T02:40:04.626Z"
 }
