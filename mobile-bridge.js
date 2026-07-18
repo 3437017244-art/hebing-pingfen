@@ -70,6 +70,118 @@
     return true;
   }
 
+  function isHomePage() {
+    const path = String(location.pathname || '').replace(/\\/g, '/');
+    const file = path.split('/').pop() || '';
+    return file === '' || /^index\.html$/i.test(file);
+  }
+
+  function getTopOpenDialog() {
+    const dialogs = document.querySelectorAll('dialog[open]');
+    if (!dialogs.length) return null;
+    return dialogs[dialogs.length - 1];
+  }
+
+  function performAppBack() {
+    const openDialog = getTopOpenDialog();
+    if (openDialog) {
+      openDialog.close();
+      return true;
+    }
+    if (isHomePage()) {
+      return false;
+    }
+    if (window.history.length > 1) {
+      window.history.back();
+      return true;
+    }
+    window.location.href = 'index.html';
+    return true;
+  }
+
+  function setupEdgeSwipeBack() {
+    if (!isNativeApp) return;
+
+    const EDGE_ZONE = 28;
+    const MIN_DISTANCE = 72;
+    const MAX_VERTICAL = 56;
+
+    let tracking = false;
+    let fromLeft = false;
+    let fromRight = false;
+    let startX = 0;
+    let startY = 0;
+    let moved = false;
+
+    document.addEventListener(
+      'touchstart',
+      function (event) {
+        if (event.touches.length !== 1) {
+          tracking = false;
+          return;
+        }
+        const touch = event.touches[0];
+        const width = window.innerWidth || document.documentElement.clientWidth || 0;
+        startX = touch.clientX;
+        startY = touch.clientY;
+        fromLeft = startX <= EDGE_ZONE;
+        fromRight = startX >= width - EDGE_ZONE;
+        tracking = fromLeft || fromRight;
+        moved = false;
+      },
+      { passive: true },
+    );
+
+    document.addEventListener(
+      'touchmove',
+      function (event) {
+        if (!tracking || event.touches.length !== 1) return;
+        const touch = event.touches[0];
+        const dx = touch.clientX - startX;
+        const dy = touch.clientY - startY;
+        if (Math.abs(dy) > MAX_VERTICAL && Math.abs(dy) > Math.abs(dx)) {
+          tracking = false;
+          return;
+        }
+        if ((fromLeft && dx > 24) || (fromRight && dx < -24)) {
+          moved = true;
+        }
+      },
+      { passive: true },
+    );
+
+    document.addEventListener(
+      'touchend',
+      function (event) {
+        if (!tracking) return;
+        tracking = false;
+        if (!moved) return;
+
+        const touch = event.changedTouches[0];
+        if (!touch) return;
+        const dx = touch.clientX - startX;
+        const dy = touch.clientY - startY;
+        if (Math.abs(dy) > MAX_VERTICAL && Math.abs(dy) > Math.abs(dx)) return;
+
+        const swipeFromLeft = fromLeft && dx >= MIN_DISTANCE;
+        const swipeFromRight = fromRight && dx <= -MIN_DISTANCE;
+        if (!swipeFromLeft && !swipeFromRight) return;
+
+        performAppBack();
+      },
+      { passive: true },
+    );
+
+    document.addEventListener(
+      'touchcancel',
+      function () {
+        tracking = false;
+        moved = false;
+      },
+      { passive: true },
+    );
+  }
+
   function setupPullToRefresh() {
     if (!isNativeApp) return;
 
@@ -142,9 +254,11 @@
     isNativeApp: function () {
       return isNativeApp;
     },
+    performAppBack: performAppBack,
   };
 
   document.addEventListener('DOMContentLoaded', function () {
+    setupEdgeSwipeBack();
     setupPullToRefresh();
 
     const exportBtn = document.getElementById('export-btn');
