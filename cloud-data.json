@@ -388,6 +388,23 @@
       "rating": 3.5,
       "createdAt": "2026-07-17T02:40:01.211Z",
       "updatedAt": "2026-07-17T02:48:08.120Z"
+    },
+    {
+      "id": "mrqwl56wmejmqz",
+      "name": "小米",
+      "brand": "",
+      "flavor": "红米turbo5 max",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "price": 1868,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 4.5,
+      "createdAt": "2026-07-18T21:53:07.975Z",
+      "updatedAt": "2026-07-18T21:53:07.975Z"
     }
   ],
   "shops": [
@@ -418,5 +435,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-18T21:51:42.459Z"
+  "syncedAt": "2026-07-18T21:53:11.971Z"
 }
