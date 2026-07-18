@@ -42,6 +42,11 @@
       <div class="page-actions">
         <button type="button" class="btn btn-primary" id="save-github-token-btn">保存令牌</button>
         <button type="button" class="btn btn-secondary" id="clear-github-token-btn">清除本机令牌</button>
+        <button type="button" class="btn btn-secondary" id="copy-github-token-btn">复制令牌</button>
+      </div>
+      <div id="saved-github-token-block" class="mt-md">
+        <p class="field-hint">本机最近一次保存的令牌（仅当前浏览器可见；本地文件与 GitHub 网页互不相通）：</p>
+        <div class="sync-code-display" id="saved-github-token-display">尚未保存令牌</div>
       </div>
       <div id="github-token-result" class="result-box" hidden></div>
     </div>
@@ -114,11 +119,26 @@
       const autoSyncCheckbox = document.getElementById('auto-sync-checkbox');
       const githubTokenInput = document.getElementById('github-token-input');
       const githubTokenResult = document.getElementById('github-token-result');
+      const savedTokenBlock = document.getElementById('saved-github-token-block');
+      const savedTokenDisplay = document.getElementById('saved-github-token-display');
+      const copyTokenBtn = document.getElementById('copy-github-token-btn');
 
       function showBox(el, type, html) {
         el.hidden = false;
         el.className = 'result-box' + (type ? ' ' + type : '');
         el.innerHTML = html;
+      }
+
+      function refreshSavedTokenDisplay() {
+        const token = (HebingSync.getGithubToken() || '').trim();
+        savedTokenBlock.hidden = false;
+        if (!token) {
+          savedTokenDisplay.textContent = '尚未保存令牌';
+          copyTokenBtn.disabled = true;
+          return;
+        }
+        savedTokenDisplay.textContent = token;
+        copyTokenBtn.disabled = false;
       }
 
       function formatSource(source) {
@@ -195,6 +215,7 @@
         }
         githubTokenInput.value = '';
         showBox(githubTokenResult, '', 'GitHub 令牌已保存到本机。可点「立即同步」测试。');
+        refreshSavedTokenDisplay();
         updateStats();
         updateRemoteStats();
       });
@@ -203,7 +224,22 @@
         HebingSync.setGithubToken('');
         githubTokenInput.value = '';
         showBox(githubTokenResult, 'info', '已清除本机 GitHub 令牌。');
+        refreshSavedTokenDisplay();
         updateStats();
+      });
+
+      copyTokenBtn.addEventListener('click', async function () {
+        const token = (HebingSync.getGithubToken() || '').trim();
+        if (!token) {
+          showBox(githubTokenResult, 'error', '本机还没有保存令牌。');
+          return;
+        }
+        try {
+          await navigator.clipboard.writeText(token);
+          showBox(githubTokenResult, 'info', '令牌已复制，可粘贴到手机同步页保存。');
+        } catch (err) {
+          showBox(githubTokenResult, 'error', '复制失败，请手动选中上方令牌复制。');
+        }
       });
 
       document.getElementById('save-code-btn').addEventListener('click', function () {
@@ -264,6 +300,7 @@
       if (HebingSync.hasGithubToken && HebingSync.hasGithubToken()) {
         githubTokenInput.placeholder = '本机已保存令牌，粘贴新令牌可覆盖';
       }
+      refreshSavedTokenDisplay();
 
       codeInput.value = HebingSync.getSyncCode();
       updateStats();
