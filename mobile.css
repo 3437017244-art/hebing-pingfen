@@ -83,6 +83,11 @@ body {
     font-size: 0.88rem;
     padding: 6px 8px;
   }
+
+  .home-meta {
+    margin-top: 20px;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }
 
 .app-pull-indicator {

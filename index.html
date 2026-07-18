@@ -13,18 +13,6 @@
 </head>
 <body>
   <div class="app">
-    <header class="header" hidden>
-      <h1>购物与商店评分</h1>
-      <nav class="page-nav subtitle" aria-label="功能导航" hidden>
-        <a href="同步.html">云端同步</a>
-        <span class="page-nav-sep" aria-hidden="true">·</span>
-        <a href="恢复数据.html">恢复数据</a>
-        <span class="page-nav-sep" aria-hidden="true">·</span>
-        <a href="在线部署.html">在线部署</a>
-      </nav>
-      <p class="app-version" id="site-version-line" hidden></p>
-    </header>
-
     <!-- 查一查（合并搜索） -->
     <section id="panel-browse" class="panel active">
       <div class="search-hero">
@@ -67,6 +55,12 @@
       <p class="empty-hint" id="global-empty-hint" hidden></p>
       <button type="button" class="btn btn-primary search-add-trigger" id="search-add-trigger-btn" hidden>确认添加</button>
     </section>
+
+    <footer class="home-meta" aria-label="站点信息">
+      <span class="home-meta-version" id="site-version-line">…</span>
+      <span class="home-meta-sep" aria-hidden="true">·</span>
+      <a class="home-meta-link" href="同步.html">同步</a>
+    </footer>
   </div>
 
   <dialog id="search-add-confirm-dialog" class="dialog dialog-prompt">
@@ -118,16 +112,15 @@
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       const versionLine = document.getElementById('site-version-line');
-      if (versionLine && window.HEBING_SITE) {
-        const mode = window.MobileAppBridge?.isNativeApp?.() ? 'APP 在线版' : '在线版';
-        const syncHint = HEBING_SITE.defaultSyncCode && HEBING_SITE.autoSync !== false ? ' · 自动同步' : '';
-        const versionText = window.AppUpdate?.formatVersionLine
-          ? AppUpdate.formatVersionLine(HEBING_SITE)
-          : 'v' + HEBING_SITE.version + ' · ' + HEBING_SITE.updatedAt;
-        versionLine.textContent = mode + ' ' + versionText + syncHint;
-        // 临时隐藏导航与版本行，预览极简顶栏；满意后改回 false 即可
-        versionLine.hidden = true;
-      }
+      if (!versionLine || !window.HEBING_SITE) return;
+      const versionText = window.AppUpdate?.formatVersionLine
+        ? AppUpdate.formatVersionLine(HEBING_SITE)
+        : 'v' + HEBING_SITE.version;
+      versionLine.textContent = versionText;
+      versionLine.title = [
+        window.MobileAppBridge?.isNativeApp?.() ? 'APP 在线版' : '在线版',
+        HEBING_SITE.buildId ? '构建 ' + HEBING_SITE.buildId : '',
+      ].filter(Boolean).join(' · ');
     });
   </script>
 </body>
