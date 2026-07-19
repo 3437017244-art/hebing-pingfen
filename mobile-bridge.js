@@ -83,6 +83,9 @@
   }
 
   function performAppBack() {
+    if (global.AmapPicker?.cancelIfOpen?.()) {
+      return true;
+    }
     const openDialog = getTopOpenDialog();
     if (openDialog) {
       openDialog.close();

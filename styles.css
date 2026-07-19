@@ -2046,3 +2046,312 @@ button.editing {
     font-size: 0.68rem;
   }
 }
+
+/* 店铺位置：文字 + 地图选点 */
+.shop-location-field {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.shop-location-field input[type="text"] {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.shop-location-field .btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.shop-location-geo-hint {
+  margin: 6px 0 0;
+  color: var(--success-text);
+  font-size: 0.78rem;
+}
+
+.geo-located-hint {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  color: var(--success-text);
+  font-size: 0.72rem;
+  font-weight: 600;
+  vertical-align: 0.1em;
+}
+
+/* 高德地图选点：原生 dialog，盖在编辑弹窗最上层 */
+body.amap-picker-open {
+  overflow: hidden;
+}
+
+.amap-picker-overlay {
+  width: min(960px, calc(100vw - 16px));
+  height: min(92vh, 920px);
+  max-width: none;
+  max-height: none;
+  margin: auto;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: var(--text);
+  overflow: hidden;
+}
+
+.amap-picker-overlay::backdrop {
+  background: rgba(8, 12, 16, 0.78);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.amap-picker {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-hover);
+  overflow: hidden;
+}
+
+.amap-picker-header {
+  flex: 0 0 auto;
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-accent);
+}
+
+.amap-picker-search-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.amap-picker-search-row .btn {
+  flex: 0 0 auto;
+}
+
+.amap-picker-search {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-soft);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.95rem;
+}
+
+.amap-picker-search:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-ring);
+}
+
+.amap-picker-selected {
+  margin: 8px 0 0;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  line-height: 1.4;
+  min-height: 1.4em;
+}
+
+.amap-picker-results {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  max-height: 160px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.amap-picker-result-item {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.amap-picker-result-item:last-child {
+  border-bottom: none;
+}
+
+.amap-picker-result-item:hover,
+.amap-picker-result-item:active {
+  background: var(--primary-soft);
+  color: var(--primary-hover);
+}
+
+.amap-picker-map-wrap {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 220px;
+}
+
+.amap-picker-map {
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+  background: #1a222c;
+}
+
+.amap-picker-fab {
+  appearance: none;
+  border: 1px solid var(--border-strong);
+  background: rgba(26, 34, 44, 0.92);
+  color: var(--text);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  line-height: 1;
+  transition: background 0.2s var(--ease), border-color 0.2s var(--ease), transform 0.15s var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.amap-picker-fab:hover {
+  background: rgba(36, 48, 60, 0.96);
+  border-color: rgba(212, 165, 116, 0.4);
+}
+
+.amap-picker-fab:active {
+  transform: scale(0.97);
+}
+
+.amap-picker-fab:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.amap-picker-zoom {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.amap-picker-zoom .amap-picker-fab {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  font-size: 1.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.amap-picker-actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-accent);
+}
+
+.amap-picker-actions-right {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.amap-picker-actions .btn {
+  min-width: 96px;
+}
+
+.amap-picker-locate-btn {
+  appearance: none;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(125, 205, 194, 0.45);
+  background: var(--success-bg);
+  color: var(--success-text);
+  cursor: pointer;
+  flex: 0 0 auto;
+  transition: background 0.2s var(--ease), border-color 0.2s var(--ease), transform 0.15s var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.amap-picker-locate-btn:hover {
+  border-color: rgba(125, 205, 194, 0.7);
+  background: rgba(61, 155, 143, 0.28);
+}
+
+.amap-picker-locate-btn:active {
+  transform: scale(0.96);
+}
+
+.amap-picker-locate-btn:disabled,
+.amap-picker-locate-btn.is-busy {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.amap-picker-locate-icon {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+.amap-picker-locate-btn.is-busy .amap-picker-locate-icon {
+  animation: amap-locate-pulse 1s ease-in-out infinite;
+}
+
+@keyframes amap-locate-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 640px) {
+  .shop-location-field {
+    flex-wrap: wrap;
+  }
+
+  .shop-location-field .btn {
+    width: 100%;
+  }
+
+  .amap-picker-actions {
+    flex-wrap: wrap;
+  }
+
+  .amap-picker-actions-right {
+    width: auto;
+    flex: 1 1 auto;
+    justify-content: flex-end;
+  }
+
+  .amap-picker-actions .btn {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+}

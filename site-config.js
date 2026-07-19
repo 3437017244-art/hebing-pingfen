@@ -2,10 +2,10 @@
   'use strict';
 
   global.HEBING_SITE = {
-    version: '1.0.16',
+    version: '1.0.18',
     repoName: 'hebing-pingfen',
-    updatedAt: '2026-07-18',
-    buildId: '20260718-083623',
+    updatedAt: '2026-07-19',
+    buildId: '20260719-103018',
     githubUser: '3437017244-art',
     // 云端数据同步码（jsonblob）。部署后所有设备自动使用，无需手动复制。
     defaultSyncCode: '019f58bc-163f-7878-9ee6-4066a48180ee',
@@ -17,6 +17,11 @@
       github: 'https://3437017244-art.github.io/hebing-pingfen/',
     },
     preferredMirror: 'github',
+    // 高德地图 Web 端(JS API) Key。申请：https://console.amap.com/
+    // Key 安全设置建议白名单：3437017244-art.github.io、localhost、127.0.0.1
+    // 若控制台启用了「安全密钥」，把 securityJsCode 填到 amapSecurityJsCode。
+    amapKey: '0305d86e98fb1555fd1d95c5410b33b4',
+    amapSecurityJsCode: '91165ecd9025eda9eccec66351cba4e2',
   };
 
   global.HEBING_SITE.getSiteUrl = function (prefer) {

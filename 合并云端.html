@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>合并云端数据</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="header">
+      <h1>合并云端到本地</h1>
+      <p class="subtitle">把线上数据与当前浏览器本地数据合并（会保留本机已有记录，例如「螺丝胶」）。</p>
+    </header>
+    <div class="page-card">
+      <p class="stat-line" id="status">正在准备…</p>
+      <div class="page-actions">
+        <button type="button" class="btn btn-primary" id="merge-btn">立即合并</button>
+        <a class="btn btn-secondary" href="index.html">返回查一查</a>
+      </div>
+    </div>
+  </div>
+  <script src="site-config.js?v=20260719-094800"></script>
+  <script src="sync-service.js?v=20260719-094800"></script>
+  <script>
+    (function () {
+      const status = document.getElementById('status');
+      const btn = document.getElementById('merge-btn');
+
+      function countLocal() {
+        try {
+          const products = JSON.parse(localStorage.getItem('shopping-ratings') || '[]');
+          const shops = JSON.parse(localStorage.getItem('nearbyShops') || '[]');
+          return { products: products.length, shops: shops.length };
+        } catch (_err) {
+          return { products: 0, shops: 0 };
+        }
+      }
+
+      async function runMerge() {
+        btn.disabled = true;
+        const before = countLocal();
+        status.textContent = '合并中… 当前本机 ' + before.products + ' 条商品、' + before.shops + ' 家店';
+        try {
+          if (!window.HebingSync?.syncNow) {
+            throw new Error('同步模块未加载，请强制刷新后重试');
+          }
+          const result = await HebingSync.syncNow();
+          const after = countLocal();
+          const source = result?.source || '未知';
+          const action = result?.action || 'none';
+          status.textContent =
+            '完成：' +
+            action +
+            '（来源 ' +
+            source +
+            '）。本机现有 ' +
+            after.products +
+            ' 条商品、' +
+            after.shops +
+            ' 家店。' +
+            (result?.needsToken
+              ? ' 尚未保存 GitHub 令牌：已能自动拉取，但本机新改动还不会上传；请到「云端同步」保存一次令牌。'
+              : ' 已具备双向同步能力。');
+        } catch (err) {
+          status.textContent = '合并失败：' + (err && err.message ? err.message : err);
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      btn.addEventListener('click', runMerge);
+      const before = countLocal();
+      status.textContent = '当前本机 ' + before.products + ' 条商品、' + before.shops + ' 家店。点下方按钮开始合并。';
+      // 打开页面后自动合并一次
+      runMerge();
+    })();
+  </script>
+</body>
+</html>

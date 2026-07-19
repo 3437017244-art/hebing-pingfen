@@ -323,7 +323,88 @@
     }
   }
 
-  function renderProductEditForm(item, shopLocation) {
+  function parseCoord(value) {
+    if (value == null || value === '') return null;
+    const num = Number(value);
+    return Number.isFinite(num) ? num : null;
+  }
+
+  function formatLocationWithGeo(address, lng, lat) {
+    const text = escapeHtml(address) || '—';
+    if (parseCoord(lng) == null || parseCoord(lat) == null) return text;
+    return `${text} <span class="geo-located-hint">已定位</span>`;
+  }
+
+  function renderShopLocationFieldHtml({ address, lng, lat }) {
+    const hasGeo = parseCoord(lng) != null && parseCoord(lat) != null;
+    return `
+      <div class="form-row form-row-shop-location">
+        <label for="dialog-shop-location">店铺位置</label>
+        <div class="shop-location-field">
+          <input type="text" id="dialog-shop-location" value="${escapeHtml(address || '')}" placeholder="手填或地图选点">
+          <button type="button" class="btn btn-secondary btn-sm" id="dialog-amap-pick-btn">地图选点</button>
+        </div>
+        <input type="hidden" id="dialog-shop-lng" value="${hasGeo ? escapeHtml(String(lng)) : ''}">
+        <input type="hidden" id="dialog-shop-lat" value="${hasGeo ? escapeHtml(String(lat)) : ''}">
+        <p class="field-hint shop-location-geo-hint" id="dialog-shop-geo-hint"${hasGeo ? '' : ' hidden'}>已定位到地图坐标</p>
+      </div>
+    `;
+  }
+
+  function getShopLocationCoordsFromForm() {
+    const address = ($('#dialog-shop-location')?.value || '').trim();
+    if (!address) {
+      return { lng: null, lat: null };
+    }
+    return {
+      lng: parseCoord($('#dialog-shop-lng')?.value),
+      lat: parseCoord($('#dialog-shop-lat')?.value),
+    };
+  }
+
+  function bindShopLocationPicker() {
+    const updateGeoHint = () => {
+      const hint = $('#dialog-shop-geo-hint');
+      if (!hint) return;
+      const coords = getShopLocationCoordsFromForm();
+      const address = ($('#dialog-shop-location')?.value || '').trim();
+      hint.hidden = !(address && coords.lng != null && coords.lat != null);
+    };
+
+    $('#dialog-shop-location')?.addEventListener('input', () => {
+      const address = ($('#dialog-shop-location')?.value || '').trim();
+      if (!address) {
+        if ($('#dialog-shop-lng')) $('#dialog-shop-lng').value = '';
+        if ($('#dialog-shop-lat')) $('#dialog-shop-lat').value = '';
+      }
+      updateGeoHint();
+    });
+
+    $('#dialog-amap-pick-btn')?.addEventListener('click', async () => {
+      if (!window.AmapPicker?.open) {
+        alert('地图选点模块未加载');
+        return;
+      }
+      const result = await AmapPicker.open({
+        address: ($('#dialog-shop-location')?.value || '').trim(),
+        lng: parseCoord($('#dialog-shop-lng')?.value),
+        lat: parseCoord($('#dialog-shop-lat')?.value),
+      });
+      if (!result) return;
+      if ($('#dialog-shop-location')) {
+        $('#dialog-shop-location').value = result.address || '';
+      }
+      if ($('#dialog-shop-lng')) {
+        $('#dialog-shop-lng').value = result.lng != null ? String(result.lng) : '';
+      }
+      if ($('#dialog-shop-lat')) {
+        $('#dialog-shop-lat').value = result.lat != null ? String(result.lat) : '';
+      }
+      updateGeoHint();
+    });
+  }
+
+  function renderProductEditForm(item, shopLocation, shopLng, shopLat) {
     const unitPrice = formatUnitPrice(item.price, item.weight);
     const showUnitPrice = unitPrice !== '—';
     const showStockFields = hasStockQuantity(item);
@@ -359,10 +440,11 @@
           <label for="dialog-storage-location">所在位置</label>
           <input type="text" id="dialog-storage-location" value="${escapeHtml(item.storageLocation || '')}" placeholder="请输入所在位置">
         </div>
-        <div class="form-row">
-          <label for="dialog-shop-location">店铺位置</label>
-          <input type="text" id="dialog-shop-location" value="${escapeHtml(shopLocation || '')}">
-        </div>
+        ${renderShopLocationFieldHtml({
+          address: shopLocation,
+          lng: shopLng,
+          lat: shopLat,
+        })}
         <div class="form-row">
           <label for="dialog-price">价格（元）</label>
           <input type="number" id="dialog-price" min="0" step="0.01" value="${item.price != null ? item.price : ''}">
@@ -506,6 +588,8 @@
       quantity: extra.quantity,
       shopName: '',
       shopLocation: baseData.shopLocation || '',
+      shopLng: baseData.shopLng ?? null,
+      shopLat: baseData.shopLat ?? null,
       price: extra.price,
       weight: null,
       singleWeight: null,
@@ -552,9 +636,11 @@
       $('#dialog-storage-location-row'),
     );
     $('#dialog-add-extra-product')?.addEventListener('click', () => addExtraProductRow());
+    bindShopLocationPicker();
   }
 
   function getDialogProductFormData() {
+    const coords = getShopLocationCoordsFromForm();
     return sanitizeProductStockFields({
       name: ($('#dialog-name')?.value || '').trim(),
       brand: '',
@@ -564,6 +650,8 @@
       quantity: $('#dialog-quantity')?.value !== '' ? parseInt($('#dialog-quantity').value, 10) : null,
       shopName: '',
       shopLocation: ($('#dialog-shop-location')?.value || '').trim(),
+      shopLng: coords.lng,
+      shopLat: coords.lat,
       price: $('#dialog-price')?.value !== '' ? parseFloat($('#dialog-price').value) : null,
       weight: $('#dialog-weight')?.value !== '' ? parseFloat($('#dialog-weight').value) : null,
       singleWeight: $('#dialog-single-weight')?.value !== '' ? parseFloat($('#dialog-single-weight').value) : null,
@@ -576,8 +664,10 @@
     dialogEditMode = true;
     selectedDetail = { type: 'product', id: editItem.id };
     const shopLocation = editItem.shopLocation || getProductShopInfo(editItem).shopLocation;
+    const shopLng = editItem.shopLng ?? getProductShopInfo(editItem).shopLng;
+    const shopLat = editItem.shopLat ?? getProductShopInfo(editItem).shopLat;
     productEls.dialogTitle.textContent = editItem.name || '编辑';
-    productEls.dialogBody.innerHTML = renderProductEditForm(editItem, shopLocation);
+    productEls.dialogBody.innerHTML = renderProductEditForm(editItem, shopLocation, shopLng, shopLat);
     bindDialogProductEdit(editItem);
     productEls.dialogEditBtn.textContent = '保存';
     productEls.dialogEditBtn.className = 'btn btn-primary';
@@ -658,10 +748,11 @@
   function renderShopEditForm(shop) {
     return `
       <form id="dialog-edit-form" class="dialog-edit-form" onsubmit="return false">
-        <div class="form-row">
-          <label for="dialog-shop-location">店铺位置</label>
-          <input type="text" id="dialog-shop-location" value="${escapeHtml(shop.location || '')}">
-        </div>
+        ${renderShopLocationFieldHtml({
+          address: shop.location || '',
+          lng: shop.lng,
+          lat: shop.lat,
+        })}
         <div class="form-row">
           <label>评分</label>
           ${renderRatingEditorHtml(shop.rating, {
@@ -691,7 +782,10 @@
     if (!selectedDetail || selectedDetail.type !== 'shop') return;
     const shop = shops.find((s) => s.id === selectedDetail.id);
     if (!shop) return;
+    const coords = getShopLocationCoordsFromForm();
     shop.location = ($('#dialog-shop-location')?.value || '').trim();
+    shop.lng = coords.lng;
+    shop.lat = coords.lat;
     shop.rating = ratingOrDefault($('#dialog-rating')?.value, 3);
     saveShops();
     setDialogViewMode();
@@ -851,6 +945,8 @@
     return {
       shopName: (item.shopName || '').trim(),
       shopLocation: (item.shopLocation || '').trim(),
+      shopLng: parseCoord(item.shopLng),
+      shopLat: parseCoord(item.shopLat),
     };
   }
 
@@ -1105,12 +1201,12 @@
 
   function buildProductMetaHtml(item) {
     const unitPrice = formatUnitPrice(item.price, item.weight);
-    const { shopName, shopLocation } = getProductShopInfo(item);
+    const { shopName, shopLocation, shopLng, shopLat } = getProductShopInfo(item);
     return [
       item.brand && `<span>${escapeHtml(item.brand)}</span>`,
       item.flavor && `<span>${escapeHtml(item.flavor)}</span>`,
       `<span>店铺名称：${escapeHtml(shopName) || '—'}</span>`,
-      `<span>店铺位置：${escapeHtml(shopLocation) || '—'}</span>`,
+      `<span>店铺位置：${formatLocationWithGeo(shopLocation, shopLng, shopLat)}</span>`,
       item.price != null && `<span>${formatPrice(item.price)}</span>`,
       item.weight != null && item.weight > 0 && `<span>${formatWeight(item.weight)}</span>`,
       item.singleWeight != null && item.singleWeight > 0 && `<span>${formatGramWeight(item.singleWeight)}</span>`,
@@ -1123,7 +1219,7 @@
   function buildProductDetailRows(item) {
     const isLow = isLowRating(item.rating);
     const unitPrice = formatUnitPrice(item.price, item.weight);
-    const { shopName, shopLocation } = getProductShopInfo(item);
+    const { shopName, shopLocation, shopLng, shopLat } = getProductShopInfo(item);
     return [
       ['评分', renderStarsDisplay(item.rating, isLow)],
       ['品牌', escapeHtml(getBrandName(item))],
@@ -1132,7 +1228,7 @@
       ['所在位置', escapeHtml(getItemStorageLocation(item)) || '—'],
       ['数量', item.quantity != null && item.quantity > 0 ? String(item.quantity) : '—'],
       ['店铺名称', escapeHtml(shopName) || '—'],
-      ['店铺位置', escapeHtml(shopLocation) || '—'],
+      ['店铺位置', formatLocationWithGeo(shopLocation, shopLng, shopLat)],
       ['价格', formatPrice(item.price)],
       ['总重量', formatWeight(item.weight)],
       ['单个重量', formatGramWeight(item.singleWeight)],
@@ -1561,7 +1657,7 @@
     const products = getShopProducts(shop);
     const meta = [
       `<span>店铺名称：${escapeHtml(shop.name) || '—'}</span>`,
-      `<span>店铺位置：${escapeHtml(shop.location) || '—'}</span>`,
+      `<span>店铺位置：${formatLocationWithGeo(shop.location, shop.lng, shop.lat)}</span>`,
       products.length > 0 && `<span>${products.length} 件商品</span>`,
     ]
       .filter(Boolean)
@@ -1581,7 +1677,7 @@
     const isLow = isLowRating(shop.rating);
     const rows = [
       ['评分', renderStarsDisplay(shop.rating, isLow)],
-      ['店铺位置', escapeHtml(shop.location) || '—'],
+      ['店铺位置', formatLocationWithGeo(shop.location, shop.lng, shop.lat)],
     ];
     const products = getShopProducts(shop);
     if (!products.length) {
@@ -1753,23 +1849,36 @@
 
   function updateSyncStatusBanner(result) {
     const banner = $('#sync-status-banner');
+    const setupBanner = $('#sync-setup-banner');
     if (!banner) return;
-    if (!result || !result.error) {
-      banner.hidden = true;
-      banner.textContent = '';
-      if (result?.error) return;
+
+    if (result?.error) {
+      banner.hidden = false;
+      banner.textContent = '自动同步失败：' + result.error + '。请打开「云端同步」重试。';
       const failHint = $('#sync-fail-hint');
       const failSep = $('#sync-fail-sep');
-      if (failHint) failHint.hidden = true;
-      if (failSep) failSep.hidden = true;
+      if (failHint) failHint.hidden = false;
+      if (failSep) failSep.hidden = false;
+      if (setupBanner && window.HebingSync?.isGithubApiMode?.() && !HebingSync.hasGithubToken?.()) {
+        setupBanner.hidden = false;
+      }
       return;
     }
-    banner.hidden = false;
-    banner.textContent = '自动同步失败：' + result.error + '。请打开「云端同步」重试。';
+
+    banner.hidden = true;
+    banner.textContent = '';
     const failHint = $('#sync-fail-hint');
     const failSep = $('#sync-fail-sep');
-    if (failHint) failHint.hidden = false;
-    if (failSep) failSep.hidden = false;
+    if (failHint) failHint.hidden = true;
+    if (failSep) failSep.hidden = true;
+
+    // 已拉取合并但未保存令牌：提醒一次，本机修改还不能自动上传
+    if (setupBanner) {
+      const needsToken =
+        result?.needsToken ||
+        (window.HebingSync?.isGithubApiMode?.() && !HebingSync.hasGithubToken?.());
+      setupBanner.hidden = !needsToken;
+    }
   }
 
   /* ========== Init ========== */
@@ -1821,7 +1930,14 @@
       }
     });
     productEls.detailDialog.addEventListener('click', (e) => {
+      // 地图选点打开时，不要因为点击穿透关掉编辑框
+      if (window.AmapPicker?.isOpen?.()) return;
       if (e.target === productEls.detailDialog) closeDetailDialog();
+    });
+    productEls.detailDialog.addEventListener('cancel', (e) => {
+      if (window.AmapPicker?.isOpen?.()) {
+        e.preventDefault();
+      }
     });
 
     $('#unified-search').addEventListener('input', renderBrowse);

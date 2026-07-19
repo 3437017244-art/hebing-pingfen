@@ -27,7 +27,7 @@
 
     <div class="page-card" id="github-token-card">
       <h2>第一步：保存 GitHub 令牌（每台设备做一次）</h2>
-      <p class="field-hint">令牌只保存在本机浏览器，不会写入网站代码。电脑和手机<strong>各保存一次</strong>即可双向登记、双向同步。</p>
+      <p class="field-hint">令牌只保存在本机浏览器，不会写入网站代码。电脑、手机，以及本地调试地址（<code>127.0.0.1</code>）与线上网站，都要<strong>各保存一次</strong>；保存后打开页面、登记数据都会自动双向同步，一般不用再手动点同步。</p>
       <ol class="step-list">
         <li>电脑浏览器打开 <a href="https://github.com/settings/tokens?type=beta" target="_blank" rel="noopener">GitHub 令牌设置</a>（需登录 GitHub）。</li>
         <li>点 <strong>Generate new token</strong>，名称随意，过期时间选 <strong>No expiration</strong> 或 90 天。</li>
@@ -105,10 +105,10 @@
     </div>
   </div>
 
-  <script src="site-config.js"></script>
-  <script src="mobile-bridge.js"></script>
-  <script src="app-update.js"></script>
-  <script src="sync-service.js"></script>
+  <script src="site-config.js?v=20260719-094800"></script>
+  <script src="mobile-bridge.js?v=20260719-094800"></script>
+  <script src="app-update.js?v=20260719-094800"></script>
+  <script src="sync-service.js?v=20260719-094800"></script>
   <script>
     (function () {
       'use strict';

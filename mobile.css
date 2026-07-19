@@ -116,3 +116,29 @@ body {
 .app-pull-indicator.ready {
   background: rgba(224, 183, 138, 0.98);
 }
+
+.amap-picker-overlay {
+  padding-top: max(0px, env(safe-area-inset-top));
+  padding-bottom: max(0px, env(safe-area-inset-bottom));
+}
+
+.amap-picker-header,
+.amap-picker-actions {
+  padding-left: max(14px, env(safe-area-inset-left));
+  padding-right: max(14px, env(safe-area-inset-right));
+}
+
+.amap-picker-search,
+.amap-picker-result-item,
+.amap-picker-actions .btn,
+#amap-picker-search-btn,
+#dialog-amap-pick-btn,
+.amap-picker-locate-btn,
+.amap-picker-zoom .amap-picker-fab {
+  min-height: 44px;
+}
+
+.amap-picker-zoom .amap-picker-fab {
+  width: 44px;
+  min-width: 44px;
+}

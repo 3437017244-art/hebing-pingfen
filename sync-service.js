@@ -259,13 +259,68 @@
     return data;
   }
 
+  function listBundledCloudUrls() {
+    const urls = [];
+    const seen = {};
+    function add(url) {
+      if (!url || seen[url]) return;
+      seen[url] = true;
+      urls.push(url);
+    }
+    try {
+      add(getBundledCloudUrl());
+    } catch (_err) {
+      /* ignore */
+    }
+    try {
+      add(new URL(BUNDLED_CLOUD_FILE, global.location.href).href);
+    } catch (_err) {
+      /* ignore */
+    }
+    return urls;
+  }
+
   async function pullBundledCloudData() {
-    const result = await requestJson(getBundledCloudUrl() + '?_=' + Date.now(), {
-      headers: { Accept: 'application/json' },
-      cache: 'no-store',
-    });
-    if (result.notFound) return null;
-    return result.data;
+    const urls = listBundledCloudUrls();
+    let best = null;
+    let bestSyncedAt = '';
+
+    for (let i = 0; i < urls.length; i += 1) {
+      try {
+        const result = await requestJson(urls[i] + '?_=' + Date.now(), {
+          headers: { Accept: 'application/json' },
+          cache: 'no-store',
+        });
+        if (result.notFound || !result.data) continue;
+        const syncedAt = String(result.data.syncedAt || '');
+        if (!best || syncedAt >= bestSyncedAt) {
+          best = result.data;
+          bestSyncedAt = syncedAt;
+        }
+      } catch (_err) {
+        /* 尝试下一个地址 */
+      }
+    }
+
+    return best;
+  }
+
+  function buildMergedPayload(local, remote) {
+    const mergedDeletedIds = mergeDeletedIdMaps(local.deletedIds, remote.deletedIds);
+    return {
+      products: applyDeletions(
+        mergeByIdNewer(local.products, remote.products),
+        mergedDeletedIds,
+        'products',
+      ),
+      shops: applyDeletions(
+        normalizeShops(mergeByIdNewer(local.shops, remote.shops)),
+        mergedDeletedIds,
+        'shops',
+      ),
+      deletedIds: mergedDeletedIds,
+      syncedAt: new Date().toISOString(),
+    };
   }
 
   function countPayload(payload) {
@@ -399,18 +454,51 @@
     if (!canUseGithubApiSync() && !isGithubApiMode() && !(syncCode || getSyncCode())) {
       throw new Error('请先设置同步码');
     }
-    if (isGithubApiMode() && !canUseGithubApiSync()) {
-      throw new Error('请先在「云端同步」保存 GitHub 令牌，手机与电脑各保存一次即可双向同步');
-    }
 
     const code = (syncCode || getSyncCode() || '').trim();
     const local = getLocalPayload();
+    const canPush = canUseGithubApiSync() || (!isGithubApiMode() && Boolean(code));
+
+    // 未保存 GitHub 令牌时：仍自动拉取云端/备份并与本机合并，只是不上传
+    if (isGithubApiMode() && !canUseGithubApiSync()) {
+      const remote = await pullRemote(code);
+      if (!remote) {
+        const localStats = countPayload(local);
+        return {
+          action: 'none',
+          syncCode: code,
+          products: localStats.products,
+          shops: localStats.shops,
+          syncedAt: local.syncedAt,
+          source: 'none',
+          pullOnly: true,
+          needsToken: true,
+        };
+      }
+      const merged = buildMergedPayload(local, remote);
+      saveLocalPayload(merged);
+      const stats = countPayload(merged);
+      return {
+        action: 'pulled',
+        syncCode: code,
+        products: stats.products,
+        shops: stats.shops,
+        syncedAt: merged.syncedAt,
+        source: lastPullSource || 'bundled',
+        pullOnly: true,
+        needsToken: true,
+      };
+    }
+
     const remote = await pullRemote(code);
 
     if (!remote) {
       const localStats = countPayload(local);
       if (localStats.products === 0 && localStats.shops === 0) {
         throw new Error('无法获取云端数据，且本机也没有可上传的记录');
+      }
+      if (!canPush) {
+        throw new Error('请先在「云端同步」保存 GitHub 令牌，手机与电脑各保存一次即可双向同步');
       }
       const pushResult = await pushCloudPayload(code, local);
       if (code) localStorage.setItem(SYNC_CODE_KEY, code);
@@ -424,22 +512,7 @@
       };
     }
 
-    const mergedDeletedIds = mergeDeletedIdMaps(local.deletedIds, remote.deletedIds);
-    const merged = {
-      products: applyDeletions(
-        mergeByIdNewer(local.products, remote.products),
-        mergedDeletedIds,
-        'products',
-      ),
-      shops: applyDeletions(
-        normalizeShops(mergeByIdNewer(local.shops, remote.shops)),
-        mergedDeletedIds,
-        'shops',
-      ),
-      deletedIds: mergedDeletedIds,
-      syncedAt: new Date().toISOString(),
-    };
-
+    const merged = buildMergedPayload(local, remote);
     saveLocalPayload(merged);
     const pushResult = await pushCloudPayload(code, merged);
     if (code) localStorage.setItem(SYNC_CODE_KEY, code);
@@ -545,9 +618,7 @@
   async function tryAutoSync() {
     ensureSyncSetup();
     if (!isAutoSyncEnabled()) return null;
-    if (isGithubApiMode()) {
-      if (!canUseGithubApiSync()) return null;
-    } else if (!getSyncCode()) {
+    if (!isGithubApiMode() && !getSyncCode()) {
       return null;
     }
     try {
@@ -559,6 +630,7 @@
 
   function scheduleCloudSync(delayMs) {
     if (!isAutoSyncEnabled()) return;
+    // 无令牌时改动无法上传；启动时的 bootstrap 会负责拉取合并
     if (isGithubApiMode()) {
       if (!canUseGithubApiSync()) return;
     } else if (!getSyncCode()) {
@@ -575,9 +647,7 @@
   async function bootstrap() {
     ensureSyncSetup();
     if (!isAutoSyncEnabled()) return null;
-    if (isGithubApiMode()) {
-      if (!canUseGithubApiSync()) return null;
-    } else if (!getSyncCode()) {
+    if (!isGithubApiMode() && !getSyncCode()) {
       return null;
     }
     if (syncInFlight) return syncInFlight;
