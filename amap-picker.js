@@ -950,7 +950,10 @@
 
   function selectBrowsePlace(place) {
     if (!place || typeof browseOnSelect !== 'function') return;
-    browseOnSelect(place);
+    const cb = browseOnSelect;
+    // 先关浏览层，避免与详情叠层；也减少移动端穿透点击
+    closeBrowseMap();
+    cb(place);
   }
 
   function handleBrowseMarkerClick(entry) {

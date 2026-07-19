@@ -309,6 +309,8 @@
 
   let dialogEditMode = false;
   let dialogSetStars = null;
+  // 从地图浏览点进详情后，短暂忽略小地图点击，避免 APP 穿透误开选点页
+  let suppressBrandMapThumbUntil = 0;
 
   function resetDialogHeader() {
     if (productEls.dialogTitle) {
@@ -1641,7 +1643,14 @@
     const thumb = $('#brand-amap-thumb');
     if (!thumb) return;
     const brand = group?.brand || '';
-    thumb.addEventListener('click', () => openBrandMapEditor(brand));
+    thumb.addEventListener('click', (event) => {
+      if (Date.now() < suppressBrandMapThumbUntil) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+      openBrandMapEditor(brand);
+    });
     mountShopMapThumb(thumb);
   }
 
@@ -1803,7 +1812,7 @@
     triggerBtn.hidden = true;
   }
 
-  function showBrandDetail(group) {
+  function showBrandDetail(group, options = {}) {
     selectedDetail = {
       type: 'brand',
       brand: group.brand,
@@ -1815,6 +1824,9 @@
       productEls.dialogHeaderEditBtn.hidden = false;
     }
     productEls.dialogBody.innerHTML = renderBrandDetailBody(group);
+    if (options.fromBrowseMap) {
+      suppressBrandMapThumbUntil = Date.now() + 500;
+    }
     bindBrandLocationMapThumb(group);
     productEls.dialogEditBtn.textContent = '添加新商品';
     productEls.dialogEditBtn.hidden = false;
@@ -1861,7 +1873,7 @@
           const brand = (place?.brand || place?.id || '').trim();
           if (!brand) return;
           const group = groupProductsByBrand(items).find((g) => g.brand === brand);
-          if (group) showBrandDetail(group);
+          if (group) showBrandDetail(group, { fromBrowseMap: true });
         },
       });
     } catch (error) {
