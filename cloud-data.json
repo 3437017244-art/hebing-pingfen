@@ -185,11 +185,14 @@
       "rating": 3.5,
       "notes": "",
       "createdAt": "2026-07-10T15:47:00.567Z",
-      "updatedAt": "2026-07-19T06:39:07.087Z",
+      "updatedAt": "2026-07-19T06:44:16.704Z",
       "shopName": "",
       "shopLocation": "贸易街东头北侧二十米",
       "category": "",
-      "shopRating": 3.5
+      "shopRating": 3.5,
+      "shopMapAddress": "河北省邢台市沙河市褡裢街道建设路188号千里行客栈(沙河建设路店)",
+      "shopLng": 114.507908,
+      "shopLat": 36.861597
     },
     {
       "id": "mrg0kof0httwuw",
@@ -484,5 +487,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-19T06:43:42.081Z"
+  "syncedAt": "2026-07-19T06:44:22.453Z"
 }
