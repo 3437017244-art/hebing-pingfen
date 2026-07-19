@@ -496,6 +496,26 @@
       "createdAt": "2026-07-19T09:16:39.680Z",
       "updatedAt": "2026-07-19T09:37:57.357Z",
       "shopRating": 3.5
+    },
+    {
+      "id": "mrrp22vkhjhcoj",
+      "name": "比奇堡",
+      "brand": "",
+      "flavor": "不开门",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0.5,
+      "createdAt": "2026-07-19T11:10:07.376Z",
+      "updatedAt": "2026-07-19T11:10:07.376Z"
     }
   ],
   "shops": [
@@ -530,5 +550,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-19T11:09:43.971Z"
+  "syncedAt": "2026-07-19T11:10:15.262Z"
 }
