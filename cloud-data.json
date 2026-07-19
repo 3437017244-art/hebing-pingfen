@@ -372,7 +372,8 @@
       "singleWeight": null,
       "rating": 2.5,
       "createdAt": "2026-07-16T06:32:25.150Z",
-      "updatedAt": "2026-07-16T06:32:25.150Z"
+      "updatedAt": "2026-07-19T06:36:08.445Z",
+      "shopRating": 2.5
     },
     {
       "id": "mrobchlcha7ze4",
@@ -459,5 +460,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-19T06:35:57.850Z"
+  "syncedAt": "2026-07-19T06:36:11.566Z"
 }
