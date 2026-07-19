@@ -405,9 +405,10 @@
       "singleWeight": null,
       "rating": 4,
       "createdAt": "2026-07-17T02:22:59.856Z",
-      "updatedAt": "2026-07-19T03:46:01.630Z",
+      "updatedAt": "2026-07-19T06:40:43.310Z",
       "shopLng": 114.507884,
-      "shopLat": 36.86101
+      "shopLat": 36.86101,
+      "shopRating": 4
     },
     {
       "id": "mrobydobj47ot2",
@@ -476,5 +477,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-19T06:40:36.014Z"
+  "syncedAt": "2026-07-19T06:40:44.298Z"
 }
