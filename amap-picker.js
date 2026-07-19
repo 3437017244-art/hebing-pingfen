@@ -1226,13 +1226,13 @@
           clearBrowseLongPress();
           return;
         }
-        const pin = event.target.closest?.('.amap-browse-pin');
-        if (!pin) {
+        const touch = event.touches[0];
+        const hit = resolveBrowsePinAtPoint(touch.clientX, touch.clientY);
+        if (!hit) {
           clearBrowseLongPress();
           return;
         }
-        const touch = event.touches[0];
-        beginBrowseLongPress(pin.dataset.browseId, touch.clientX, touch.clientY);
+        beginBrowseLongPress(hit.place.id, touch.clientX, touch.clientY);
       },
       { passive: true },
     );
@@ -1252,12 +1252,12 @@
 
     mapEl.addEventListener('mousedown', function (event) {
       if (event.button !== 0) return;
-      const pin = event.target.closest?.('.amap-browse-pin');
-      if (!pin) {
+      const hit = resolveBrowsePinAtPoint(event.clientX, event.clientY);
+      if (!hit) {
         clearBrowseLongPress();
         return;
       }
-      beginBrowseLongPress(pin.dataset.browseId, event.clientX, event.clientY);
+      beginBrowseLongPress(hit.place.id, event.clientX, event.clientY);
     });
 
     mapEl.addEventListener('mousemove', function (event) {
@@ -1376,35 +1376,81 @@
     return null;
   }
 
-  function resolveBrowseHoverFromPoint(clientX, clientY) {
+  function pointInClientRect(clientX, clientY, el) {
+    if (!el || typeof el.getBoundingClientRect !== 'function') return false;
+    const rect = el.getBoundingClientRect();
+    return (
+      clientX >= rect.left &&
+      clientX <= rect.right &&
+      clientY >= rect.top &&
+      clientY <= rect.bottom
+    );
+  }
+
+  function entryFromBrowsePin(pin) {
+    if (!pin) return null;
+    const id = pin.dataset?.browseId;
+    if (id == null) return null;
+    return (
+      browseMarkers.find(function (item) {
+        return String(item.place.id) === String(id);
+      }) || null
+    );
+  }
+
+  /**
+   * 按真实坐标命中招牌/钉子（忽略放大后的透明占位）。
+   * 重叠时优先更靠近点击点、面积更小的那家，避免放大招牌挡住下面的店。
+   */
+  function resolveBrowsePinAtPoint(clientX, clientY) {
     if (clientX == null || clientY == null) return null;
-    const stack = document.elementsFromPoint
-      ? document.elementsFromPoint(clientX, clientY)
-      : [document.elementFromPoint(clientX, clientY)].filter(Boolean);
-    const hits = [];
-    const seen = Object.create(null);
-    for (let i = 0; i < stack.length; i++) {
-      const pin = findBrowsePinNode(stack[i]);
-      if (!pin) continue;
-      const id = pin.dataset?.browseId;
-      if (id == null || seen[id]) continue;
-      seen[id] = true;
-      const entry = browseMarkers.find(function (e) {
-        return String(e.place.id) === String(id);
+    const candidates = [];
+    browseMarkers.forEach(function (item) {
+      const root = getBrowseMarkerDom(item.marker);
+      const pin = root?.querySelector?.('.amap-browse-pin') || root;
+      if (!pin) return;
+      const label = pin.querySelector?.('.amap-browse-pin-label');
+      const needle = pin.querySelector?.('.amap-browse-pin-needle');
+      let hitEl = null;
+      if (label && pointInClientRect(clientX, clientY, label)) hitEl = label;
+      else if (needle && pointInClientRect(clientX, clientY, needle)) hitEl = needle;
+      if (!hitEl) return;
+      const rect = hitEl.getBoundingClientRect();
+      const cx = (rect.left + rect.right) / 2;
+      const cy = (rect.top + rect.bottom) / 2;
+      const dx = clientX - cx;
+      const dy = clientY - cy;
+      candidates.push({
+        entry: item,
+        dist: dx * dx + dy * dy,
+        area: Math.max(1, rect.width * rect.height),
       });
-      if (entry) hits.push(entry);
+    });
+    if (!candidates.length) return null;
+    candidates.sort(function (a, b) {
+      // 距离差明显时取更近；否则取更小（未放大）的招牌
+      if (Math.abs(a.dist - b.dist) > 64) return a.dist - b.dist;
+      return a.area - b.area;
+    });
+    return candidates[0].entry;
+  }
+
+  function clientPointFromBrowseEvent(event) {
+    const origin = event?.originEvent || event;
+    if (!origin) return null;
+    if (origin.clientX != null && origin.clientY != null) {
+      return { x: origin.clientX, y: origin.clientY };
     }
-    if (!hits.length) return null;
-    // 放大后命中盒也变大：指针仍在当前放大项上时优先粘住
-    const stickyId = getBrowseVisualActiveId();
-    if (stickyId != null) {
-      for (let j = 0; j < hits.length; j++) {
-        if (String(hits[j].place.id) === String(stickyId)) {
-          return hits[j];
-        }
-      }
+    const touch = origin.changedTouches?.[0] || origin.touches?.[0];
+    if (touch && touch.clientX != null) {
+      return { x: touch.clientX, y: touch.clientY };
     }
-    return hits[0];
+    return null;
+  }
+
+  function resolveBrowseHoverFromPoint(clientX, clientY) {
+    // 悬停也用精确命中，避免放大招牌的透明区抢悬停
+    return resolveBrowsePinAtPoint(clientX, clientY);
   }
 
   function bindBrowseMarkerHover() {
@@ -1535,16 +1581,29 @@
         lat: layout.lat,
         neighbors: layout.neighbors,
       };
-      marker.on('click', function () {
-        handleBrowseMarkerClick(entry);
+      marker.on('click', function (event) {
+        const pt = clientPointFromBrowseEvent(event);
+        const hit = pt ? resolveBrowsePinAtPoint(pt.x, pt.y) : null;
+        handleBrowseMarkerClick(hit || entry);
       });
       browseMap.add(marker);
       return entry;
     });
 
-    browseMap.on('click', function () {
-      // 点空白处取消固定放大；点标记时由 marker click 处理
+    browseMap.on('click', function (event) {
       if (browseMarkerClickLock) return;
+      const pt = clientPointFromBrowseEvent(event);
+      if (pt) {
+        const hit = resolveBrowsePinAtPoint(pt.x, pt.y);
+        if (hit) {
+          browseMarkerClickLock = true;
+          window.setTimeout(function () {
+            browseMarkerClickLock = false;
+          }, 50);
+          handleBrowseMarkerClick(hit);
+          return;
+        }
+      }
       clearBrowseLongPress();
       clearBrowsePinnedPlace();
     });
