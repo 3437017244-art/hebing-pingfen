@@ -473,8 +473,8 @@
       "singleWeight": null,
       "rating": 0,
       "createdAt": "2026-07-19T09:14:27.514Z",
-      "updatedAt": "2026-07-19T09:15:49.908Z",
-      "shopRating": 0
+      "updatedAt": "2026-07-19T09:37:21.666Z",
+      "shopRating": 3.5
     },
     {
       "id": "mrrl060wcmc2wy",
@@ -494,7 +494,8 @@
       "singleWeight": null,
       "rating": 0,
       "createdAt": "2026-07-19T09:16:39.680Z",
-      "updatedAt": "2026-07-19T09:16:39.680Z"
+      "updatedAt": "2026-07-19T09:37:21.666Z",
+      "shopRating": 3.5
     }
   ],
   "shops": [
@@ -528,5 +529,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-19T09:37:05.645Z"
+  "syncedAt": "2026-07-19T09:37:24.346Z"
 }
