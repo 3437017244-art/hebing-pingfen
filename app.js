@@ -233,6 +233,8 @@
 
   function shouldOpenFromCardClick(event, pressPoint) {
     if (event.target.closest('.brand-product-row')) {
+      // 必须先有按压点：地图点开详情后的幽灵 click 没有 dialog 内的 touch/mousedown
+      if (!pressPoint) return false;
       if (hasSelectedText()) return false;
       if (isCardDragClick(event, pressPoint)) return false;
       return true;
@@ -311,6 +313,18 @@
   let dialogSetStars = null;
   // 从地图浏览点进详情后，短暂忽略小地图点击，避免 APP 穿透误开选点页
   let suppressBrandMapThumbUntil = 0;
+  // 同时屏蔽详情内商品行/底部按钮，避免幽灵点击直接跳进商品编辑
+  let suppressDetailInteractionUntil = 0;
+
+  function armDetailGhostClickShield(ms = 750) {
+    const until = Date.now() + ms;
+    suppressBrandMapThumbUntil = until;
+    suppressDetailInteractionUntil = until;
+  }
+
+  function isDetailInteractionSuppressed() {
+    return Date.now() < suppressDetailInteractionUntil;
+  }
 
   function resetDialogHeader() {
     if (productEls.dialogTitle) {
@@ -1835,7 +1849,7 @@
     }
     productEls.dialogBody.innerHTML = renderBrandDetailBody(group);
     if (options.fromBrowseMap) {
-      suppressBrandMapThumbUntil = Date.now() + 600;
+      armDetailGhostClickShield(750);
     }
     bindBrandLocationMapThumb(group);
     productEls.dialogEditBtn.textContent = '添加新商品';
@@ -2380,6 +2394,7 @@
 
     productEls.dialogClose.addEventListener('click', closeDetailDialog);
     productEls.dialogHeaderEditBtn?.addEventListener('click', () => {
+      if (isDetailInteractionSuppressed()) return;
       if (!selectedDetail || selectedDetail.type !== 'brand' || dialogEditMode) return;
       startBrandNameEdit(selectedDetail.brand);
     });
@@ -2391,6 +2406,8 @@
     });
     productEls.dialogEditBtn.addEventListener('click', async () => {
       if (!selectedDetail) return;
+      // 非编辑态（如「添加新商品」）屏蔽地图穿透；编辑态保存仍要可用
+      if (!dialogEditMode && isDetailInteractionSuppressed()) return;
       if (dialogEditMode) {
         if (selectedDetail.type === 'brand' && selectedDetail.renaming) {
           saveBrandNameFromDialog();
@@ -2506,12 +2523,31 @@
     productEls.dialogBody.addEventListener('mousedown', (event) => {
       dialogRowClickGuard.onMouseDown(event, event.target.closest('.brand-product-row'));
     });
+    productEls.dialogBody.addEventListener(
+      'touchstart',
+      (event) => {
+        if (event.touches.length !== 1) return;
+        const row = event.target.closest('.brand-product-row');
+        if (!row) return;
+        const touch = event.touches[0];
+        dialogRowClickGuard.onMouseDown(
+          { clientX: touch.clientX, clientY: touch.clientY },
+          row,
+        );
+      },
+      { passive: true },
+    );
     productEls.dialogBody.addEventListener('mouseup', (event) => {
       dialogRowClickGuard.onMouseUp(event);
     });
     productEls.dialogBody.addEventListener('click', (event) => {
       const row = event.target.closest('.brand-product-row');
       if (!row) return;
+      if (isDetailInteractionSuppressed()) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
       if (!dialogRowClickGuard.shouldHandleClick(event)) return;
       const query = $('#unified-search').value;
       const item = findDisplayProduct(row.dataset.productId, query);

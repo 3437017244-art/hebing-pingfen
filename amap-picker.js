@@ -1100,7 +1100,11 @@
   function selectBrowsePlace(place) {
     if (!place || typeof browseOnSelect !== 'function') return;
     // 不关闭大地图：详情叠在上面，关掉详情后仍停在原地图位置
-    browseOnSelect(place);
+    // 延后一帧再开详情，避免 APP 上同一次触摸的合成 click 打到详情里的商品行
+    const payload = place;
+    window.setTimeout(function () {
+      browseOnSelect(payload);
+    }, 0);
   }
 
   function handleBrowseMarkerClick(entry) {
