@@ -224,9 +224,10 @@
       "singleWeight": null,
       "notes": "",
       "createdAt": "2026-07-10T15:53:39.358Z",
-      "updatedAt": "2026-07-11T07:28:10.599Z",
+      "updatedAt": "2026-07-19T06:40:24.092Z",
       "brand": "",
-      "category": ""
+      "category": "",
+      "shopRating": 4
     },
     {
       "id": "mrg2wniu54oyc8",
@@ -472,5 +473,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-19T06:40:17.314Z"
+  "syncedAt": "2026-07-19T06:40:24.907Z"
 }
