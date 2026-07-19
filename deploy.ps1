@@ -1,9 +1,16 @@
 # 一键上传网页到 GitHub Pages
 # 用法：.\deploy.ps1
 # 可选：.\deploy.ps1 -Message "修复搜索问题"
+#
+# 代理说明：会自动检测 127.0.0.1:33210
+# - 开着代理 → 走代理推送
+# - 没开代理 → 临时关闭 Git 里写死的 GitHub 代理再直连
+# 这样代理开/关都能方便部署（直连不通时仍需打开代理）
 
 param(
-  [string]$Message = "更新在线版网页"
+  [string]$Message = "更新在线版网页",
+  [string]$ProxyHost = "127.0.0.1",
+  [int]$ProxyPort = 33210
 )
 
 $ErrorActionPreference = "Stop"
@@ -21,6 +28,65 @@ function Ensure-Git {
     Write-Host "正在初始化 git 仓库…" -ForegroundColor Cyan
     git init
     git branch -M main
+  }
+}
+
+function Test-LocalProxyPort {
+  param(
+    [string]$HostName = "127.0.0.1",
+    [int]$Port = 33210,
+    [int]$TimeoutMs = 400
+  )
+
+  $client = $null
+  try {
+    $client = New-Object System.Net.Sockets.TcpClient
+    $async = $client.BeginConnect($HostName, $Port, $null, $null)
+    if (-not $async.AsyncWaitHandle.WaitOne($TimeoutMs)) {
+      return $false
+    }
+    $client.EndConnect($async)
+    return $client.Connected
+  } catch {
+    return $false
+  } finally {
+    if ($client) { $client.Close() }
+  }
+}
+
+function Invoke-GitHubPush {
+  param(
+    [string]$Remote = "origin",
+    [string]$Branch = "main"
+  )
+
+  $proxyUrl = "http://${ProxyHost}:${ProxyPort}"
+  if (Test-LocalProxyPort -HostName $ProxyHost -Port $ProxyPort) {
+    Write-Host "检测到本地代理 ${ProxyHost}:${ProxyPort}，经代理推送…" -ForegroundColor Cyan
+    & git `
+      -c "http.https://github.com.proxy=$proxyUrl" `
+      -c "https.https://github.com.proxy=$proxyUrl" `
+      push $Remote $Branch
+    return $LASTEXITCODE
+  }
+
+  Write-Host "未检测到本地代理，直连推送（忽略 Git 里写死的 GitHub 代理）…" -ForegroundColor Cyan
+  & git `
+    -c "http.https://github.com.proxy=" `
+    -c "https.https://github.com.proxy=" `
+    -c "http.proxy=" `
+    -c "https.proxy=" `
+    push $Remote $Branch
+  return $LASTEXITCODE
+}
+
+function Get-CommitsAheadOfOrigin {
+  try {
+    $count = git rev-list --count "origin/main..HEAD" 2>$null
+    if ($LASTEXITCODE -ne 0) { return 0 }
+    return [int]$count
+  } catch {
+    return 0
   }
 }
 
@@ -83,29 +149,37 @@ function Update-CloudDataFile {
 }
 
 Ensure-Git
+
+$remotes = @(git remote)
+$hasOrigin = $remotes -contains "origin"
+
 Update-SiteVersion
 Update-CloudDataFile
 
 git add .
 
 $status = git status --porcelain
-if (-not $status) {
-  Write-Host "没有需要上传的改动。" -ForegroundColor Yellow
-  exit 0
+if ($status) {
+  git commit -m $Message
+} else {
+  $aheadOnly = if ($hasOrigin) { Get-CommitsAheadOfOrigin } else { 0 }
+  if ($aheadOnly -le 0) {
+    Write-Host "没有需要上传的改动。" -ForegroundColor Yellow
+    exit 0
+  }
+  Write-Host "工作区无新改动，但本地还有 $aheadOnly 个提交未推送，继续上传…" -ForegroundColor Cyan
 }
 
-git commit -m $Message
-
-$remotes = @(git remote)
 $pushed = $false
 
-if ($remotes -contains "origin") {
+if ($hasOrigin) {
   Write-Host "正在推送到 GitHub…" -ForegroundColor Cyan
-  git push origin main
-  if ($LASTEXITCODE -ne 0) {
+  $pushCode = Invoke-GitHubPush -Remote "origin" -Branch "main"
+  if ($pushCode -ne 0) {
     Write-Host ""
-    Write-Host "推送到 GitHub 失败（多为网络问题）。本地提交已保存，网络恢复后请执行：" -ForegroundColor Yellow
-    Write-Host "  git push origin main" -ForegroundColor Yellow
+    Write-Host "推送到 GitHub 失败。" -ForegroundColor Yellow
+    Write-Host "若直连失败：先打开代理（端口 $ProxyPort）再运行 .\deploy.ps1" -ForegroundColor Yellow
+    Write-Host "本地提交已保存，不会丢。" -ForegroundColor Yellow
     Write-Host ""
     exit 1
   }

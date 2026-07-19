@@ -60,6 +60,7 @@ git push -u origin main</div>
       <div class="code-box">cd /d D:\RuanJian\合并评分
 powershell -ExecutionPolicy Bypass -File .\deploy.ps1</div>
       <p class="field-hint">脚本会提交并推送到 GitHub，GitHub Actions 自动发布到 Pages。</p>
+      <p class="field-hint">代理开/关都可：脚本会检测 <code>127.0.0.1:33210</code>，开着走代理，没开就直连。若直连 GitHub 失败，打开代理再运行一次即可。</p>
     </div>
 
     <div class="page-card">
