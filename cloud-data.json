@@ -196,8 +196,11 @@
       "rating": 0.5,
       "notes": "",
       "createdAt": "2026-07-11T06:59:16.764Z",
-      "updatedAt": "2026-07-11T06:59:56.350Z",
-      "category": ""
+      "updatedAt": "2026-07-19T04:33:54.080Z",
+      "category": "",
+      "shopMapAddress": "河北省邢台市沙河市褡裢街道建设路233号",
+      "shopLng": 114.5082,
+      "shopLat": 36.863081
     },
     {
       "id": "mrg1kkvjd48s7h",
@@ -443,5 +446,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-19T04:30:02.986Z"
+  "syncedAt": "2026-07-19T04:33:57.687Z"
 }
