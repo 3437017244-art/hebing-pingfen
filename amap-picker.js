@@ -758,12 +758,16 @@
   let browsePinnedPlaceId = null;
   let browsePinAt = 0;
   let browseMarkerClickLock = false;
+  let browseLongPressTimer = null;
+  let browseLongPressStart = null;
   let browseHoverSwitchTimer = null;
   let browseHoverClearTimer = null;
   let browseMyLocationMarker = null;
   const BROWSE_HOVER_SWITCH_MS = 90;
   const BROWSE_HOVER_CLEAR_MS = 50;
-  const BROWSE_PIN_REOPEN_GUARD_MS = 320;
+  // 500ms：Android/Material 与多数 App 长按约定，短于易与点按冲突，长于手感拖沓
+  const BROWSE_LONG_PRESS_MS = 500;
+  const BROWSE_LONG_PRESS_MOVE_PX = 14;
 
   function escapeBrowseText(str) {
     return String(str == null ? '' : str)
@@ -800,6 +804,11 @@
     browsePinnedPlaceId = null;
     browsePinAt = 0;
     browseMarkerClickLock = false;
+    if (browseLongPressTimer) {
+      clearTimeout(browseLongPressTimer);
+      browseLongPressTimer = null;
+    }
+    browseLongPressStart = null;
     browseMyLocationMarker = null;
   }
 
@@ -1141,10 +1150,108 @@
 
   function clearBrowsePinnedPlace() {
     if (browsePinnedPlaceId == null) return;
+    clearBrowseLongPress();
     browsePinnedPlaceId = null;
     browsePinAt = 0;
     browseHoverPlaceId = null;
     applyBrowseMarkerActiveState();
+  }
+
+  function clearBrowseLongPress() {
+    if (browseLongPressTimer) {
+      clearTimeout(browseLongPressTimer);
+      browseLongPressTimer = null;
+    }
+    browseLongPressStart = null;
+  }
+
+  function beginBrowseLongPress(placeId, clientX, clientY) {
+    clearBrowseLongPress();
+    const id = placeId != null ? String(placeId) : '';
+    // 仅已固定放大的招牌：长按进入详情
+    if (!id || browsePinnedPlaceId == null || browsePinnedPlaceId !== id) return;
+    browseLongPressStart = { id: id, x: clientX, y: clientY };
+    browseLongPressTimer = window.setTimeout(function () {
+      browseLongPressTimer = null;
+      const start = browseLongPressStart;
+      browseLongPressStart = null;
+      if (!start || browsePinnedPlaceId !== start.id) return;
+      const entry = browseMarkers.find(function (item) {
+        return String(item.place.id) === start.id;
+      });
+      if (!entry) return;
+      try {
+        if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+          navigator.vibrate(12);
+        }
+      } catch (_err) {
+        /* ignore */
+      }
+      selectBrowsePlace(entry.place);
+    }, BROWSE_LONG_PRESS_MS);
+  }
+
+  function moveBrowseLongPress(clientX, clientY) {
+    if (!browseLongPressStart) return;
+    const dx = clientX - browseLongPressStart.x;
+    const dy = clientY - browseLongPressStart.y;
+    if (dx * dx + dy * dy > BROWSE_LONG_PRESS_MOVE_PX * BROWSE_LONG_PRESS_MOVE_PX) {
+      clearBrowseLongPress();
+    }
+  }
+
+  function bindBrowseMarkerLongPress(mapEl) {
+    if (!mapEl || mapEl.dataset.browseLongPressBound === '1') return;
+    mapEl.dataset.browseLongPressBound = '1';
+
+    mapEl.addEventListener(
+      'touchstart',
+      function (event) {
+        if (event.touches.length !== 1) {
+          clearBrowseLongPress();
+          return;
+        }
+        const pin = event.target.closest?.('.amap-browse-pin');
+        if (!pin) {
+          clearBrowseLongPress();
+          return;
+        }
+        const touch = event.touches[0];
+        beginBrowseLongPress(pin.dataset.browseId, touch.clientX, touch.clientY);
+      },
+      { passive: true },
+    );
+
+    mapEl.addEventListener(
+      'touchmove',
+      function (event) {
+        if (!browseLongPressStart || !event.touches[0]) return;
+        const touch = event.touches[0];
+        moveBrowseLongPress(touch.clientX, touch.clientY);
+      },
+      { passive: true },
+    );
+
+    mapEl.addEventListener('touchend', clearBrowseLongPress, { passive: true });
+    mapEl.addEventListener('touchcancel', clearBrowseLongPress, { passive: true });
+
+    mapEl.addEventListener('mousedown', function (event) {
+      if (event.button !== 0) return;
+      const pin = event.target.closest?.('.amap-browse-pin');
+      if (!pin) {
+        clearBrowseLongPress();
+        return;
+      }
+      beginBrowseLongPress(pin.dataset.browseId, event.clientX, event.clientY);
+    });
+
+    mapEl.addEventListener('mousemove', function (event) {
+      if (!browseLongPressStart) return;
+      moveBrowseLongPress(event.clientX, event.clientY);
+    });
+
+    mapEl.addEventListener('mouseup', clearBrowseLongPress);
+    mapEl.addEventListener('mouseleave', clearBrowseLongPress);
   }
 
   function handleBrowseMarkerClick(entry) {
@@ -1152,16 +1259,15 @@
     window.setTimeout(function () {
       browseMarkerClickLock = false;
     }, 50);
+    clearBrowseLongPress();
 
     const id = String(entry.place.id);
-    // 已放大固定的同一家：再点一次才进入店铺
+    // 已放大固定：短按保持，进详情改为长按
     if (browsePinnedPlaceId != null && browsePinnedPlaceId === id) {
-      if (Date.now() - browsePinAt < BROWSE_PIN_REOPEN_GUARD_MS) return;
-      selectBrowsePlace(entry.place);
       return;
     }
 
-    // 第一次点 / 点另一家：放大并固定，不进详情；悬停不再抢焦点
+    // 第一次点 / 点另一家：仅放大固定，不移动地图、不进详情
     browsePinnedPlaceId = id;
     browsePinAt = Date.now();
     browseHoverPlaceId = null;
@@ -1335,29 +1441,11 @@
 
   function focusBrowsePlace(place) {
     if (!browseMap || !place) return;
-    const entry = browseMarkers.find(function (e) {
-      return String(e.place.id) === String(place.id);
-    });
-    const lng = entry ? entry.lng : Number(place.lng);
-    const lat = entry ? entry.lat : Number(place.lat);
-    if (!Number.isFinite(lng) || !Number.isFinite(lat)) return;
     const placeId = String(place.id);
     if (browsePinnedPlaceId == null) {
       browsePinnedPlaceId = placeId;
     }
-    browseMap.setZoomAndCenter(Math.max(browseMap.getZoom(), 16), [lng, lat]);
-    // 招牌在针尖上方：视野略上移，让钉落在偏下，顶部标签不被裁切、更好点
-    window.requestAnimationFrame(function () {
-      if (!browseMap) return;
-      try {
-        const size = browseMap.getSize?.();
-        const h = size?.height || window.innerHeight || 600;
-        const pad = Math.min(110, Math.max(64, Math.round(h * 0.14)));
-        browseMap.panBy(0, -pad);
-      } catch (_err) {
-        /* ignore */
-      }
-    });
+    // 只放大招牌，不改地图中心/缩放（以用户当前视野为准）
     if (browseHoverClearTimer) {
       clearTimeout(browseHoverClearTimer);
       browseHoverClearTimer = null;
@@ -1442,9 +1530,13 @@
     browseMap.on('click', function () {
       // 点空白处取消固定放大；点标记时由 marker click 处理
       if (browseMarkerClickLock) return;
+      clearBrowseLongPress();
       clearBrowsePinnedPlace();
     });
 
+    browseMap.on('dragging', clearBrowseLongPress);
+    browseMap.on('zoomstart', clearBrowseLongPress);
+    bindBrowseMarkerLongPress(mapEl);
     bindBrowseMarkerHover();
 
     if (emptyEl) emptyEl.hidden = browsePlaces.length > 0;
