@@ -34,6 +34,12 @@
   --no-rebuy: #e07a5f;
   --no-rebuy-bg: rgba(224, 122, 95, 0.16);
   --star: #e0b78a;
+  /* 地图定位钉（选点 / 浏览 / 缩略图统一） */
+  --map-pin: #e53935;
+  --map-pin-light: #ff6b6b;
+  --map-pin-dark: #b71c1c;
+  --map-pin-outline: #ffffff;
+  --map-pin-outline-outer: #141b22;
   --radius: 14px;
   --radius-sm: 10px;
   --radius-lg: 20px;
@@ -1483,9 +1489,11 @@ button.editing {
   margin-left: -11px;
   border-radius: 50% 50% 50% 4px;
   transform: rotate(-45deg);
-  background: linear-gradient(145deg, #f0c89a, var(--primary));
-  border: 2px solid rgba(255, 248, 236, 0.9);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+  background: linear-gradient(145deg, var(--map-pin-light) 0%, var(--map-pin) 55%, var(--map-pin-dark) 100%);
+  border: 2px solid var(--map-pin-outline);
+  box-shadow:
+    0 0 0 2px var(--map-pin-outline-outer),
+    0 3px 10px rgba(0, 0, 0, 0.4);
 }
 
 .shop-map-thumb .amap-logo,
@@ -1500,6 +1508,25 @@ button.editing {
 .amap-picker-pin-mini {
   transform: scale(0.85);
   transform-origin: bottom center;
+}
+
+/* 详情缩略图：红色定位钉（与地图浏览一致） */
+.shop-mini-map-pin {
+  position: relative;
+  width: 24px;
+  height: 34px;
+  pointer-events: none;
+  filter:
+    drop-shadow(0 0 0.5px var(--map-pin-outline))
+    drop-shadow(0 0 1.5px var(--map-pin-outline-outer))
+    drop-shadow(0 3px 6px rgba(0, 0, 0, 0.45));
+}
+
+.shop-mini-map-pin .amap-browse-pin-needle {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
 .brand-location-bar-label {
@@ -2500,12 +2527,15 @@ body.amap-browse-open {
   background: #1a222c;
 }
 
-/* 选点中心钉：比默认蓝点更醒目，可拖动 */
+/* 选点中心钉：红色 + 白/深色外轮廓，与浏览/缩略图统一 */
 .amap-picker-pin {
   position: relative;
   width: 44px;
   height: 56px;
   pointer-events: none;
+  filter:
+    drop-shadow(0 0 0.6px var(--map-pin-outline))
+    drop-shadow(0 0 1.8px var(--map-pin-outline-outer));
 }
 
 .amap-picker-pin-pulse {
@@ -2517,7 +2547,7 @@ body.amap-browse-open {
   margin-left: -14px;
   margin-top: -14px;
   border-radius: 50%;
-  background: rgba(212, 165, 116, 0.35);
+  background: rgba(229, 57, 53, 0.35);
   animation: amap-picker-pin-pulse 1.6s var(--ease) infinite;
 }
 
@@ -2530,9 +2560,11 @@ body.amap-browse-open {
   margin-left: -17px;
   border-radius: 50% 50% 50% 4px;
   transform: rotate(-45deg);
-  background: linear-gradient(145deg, #f0c89a 0%, var(--primary) 48%, #b8844f 100%);
-  border: 2px solid rgba(255, 248, 236, 0.95);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45), 0 0 0 3px rgba(212, 165, 116, 0.28);
+  background: linear-gradient(145deg, var(--map-pin-light) 0%, var(--map-pin) 48%, var(--map-pin-dark) 100%);
+  border: 3px solid var(--map-pin-outline);
+  box-shadow:
+    0 0 0 2px var(--map-pin-outline-outer),
+    0 4px 14px rgba(0, 0, 0, 0.5);
 }
 
 .amap-picker-pin-head::after {
@@ -2544,8 +2576,8 @@ body.amap-browse-open {
   height: 10px;
   margin: -5px 0 0 -5px;
   border-radius: 50%;
-  background: #fff8ec;
-  box-shadow: inset 0 0 0 2px rgba(15, 20, 25, 0.18);
+  background: #ffffff;
+  box-shadow: inset 0 0 0 2px rgba(15, 20, 25, 0.2);
 }
 
 .amap-picker-pin-point {
@@ -2556,8 +2588,8 @@ body.amap-browse-open {
   height: 8px;
   margin-left: -4px;
   border-radius: 50%;
-  background: rgba(212, 165, 116, 0.95);
-  box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.28);
+  background: var(--map-pin);
+  box-shadow: 0 0 0 2px var(--map-pin-outline), 0 0 0 4px var(--map-pin-outline-outer);
 }
 
 .amap-picker-pin-shadow {
@@ -2713,132 +2745,46 @@ body.amap-browse-open {
   }
 }
 
-/* 地图浏览已登记 */
-.amap-browse-header {
-  flex: 0 0 auto;
-  padding: 12px 14px 10px;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg-accent);
+/* 地图浏览：全幅地图，无标题/说明栏 */
+.amap-browse {
+  position: relative;
 }
 
-.amap-browse-title-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.amap-browse-title-wrap {
-  min-width: 0;
+.amap-browse .amap-picker-map-wrap {
   flex: 1 1 auto;
+  min-height: 0;
 }
 
-.amap-browse-title {
+.amap-browse-close {
+  appearance: none;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 8;
+  width: 40px;
+  height: 40px;
   margin: 0;
-  font-size: 1.15rem;
-  font-weight: 800;
-  letter-spacing: 0.01em;
-}
-
-.amap-browse-summary {
-  margin: 4px 0 0;
-  color: var(--text-muted);
-  font-size: 0.82rem;
-  line-height: 1.4;
-}
-
-.amap-browse-search-row {
-  margin-top: 10px;
-}
-
-.amap-browse-results {
-  list-style: none;
-  margin: 8px 0 0;
   padding: 0;
-  max-height: 150px;
-  overflow: auto;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-}
-
-.amap-browse-result-item {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--border);
-  cursor: pointer;
-}
-
-.amap-browse-result-item:last-child {
-  border-bottom: none;
-}
-
-.amap-browse-result-item:hover,
-.amap-browse-result-item:active {
-  background: var(--primary-soft);
-}
-
-.amap-browse-result-title {
-  font-size: 0.92rem;
-  font-weight: 700;
+  border: 1px solid rgba(232, 238, 244, 0.18);
+  border-radius: 50%;
+  background: rgba(20, 28, 36, 0.88);
   color: var(--text);
+  font-size: 1.45rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background 0.2s var(--ease), transform 0.15s var(--ease);
 }
 
-.amap-browse-result-sub {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  line-height: 1.35;
-  word-break: break-word;
-}
-
-.amap-browse-result-empty {
-  padding: 12px;
-  color: var(--text-muted);
-  font-size: 0.88rem;
-  text-align: center;
+.amap-browse-close:hover {
+  background: rgba(36, 48, 60, 0.95);
+  transform: scale(1.04);
 }
 
 .amap-browse-empty {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  z-index: 5;
-  transform: translate(-50%, -50%);
-  margin: 0;
-  padding: 14px 18px;
-  max-width: min(280px, calc(100% - 32px));
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-strong);
-  background: rgba(26, 34, 44, 0.92);
-  color: var(--text);
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-align: center;
-  line-height: 1.45;
-  pointer-events: none;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-}
-
-.amap-browse-footer {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
-  border-top: 1px solid var(--border);
-  background: var(--surface);
-}
-
-.amap-browse-hint {
-  margin: 0;
-  flex: 1 1 auto;
-  min-width: 0;
-  color: var(--text-muted);
-  font-size: 0.8rem;
-  line-height: 1.4;
+  display: none;
 }
 
 /* 锚点盒固定 24×34，底边中点=针尖；标签绝对定位，缩放时不左右漂移 */
@@ -2856,7 +2802,12 @@ body.amap-browse-open {
   font: inherit;
   color: inherit;
   overflow: visible;
-  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.4));
+  /* 整颗钉可点；招牌不挡鼠标，便于滑到后面的钉 */
+  pointer-events: auto;
+  filter:
+    drop-shadow(0 0 0.5px var(--map-pin-outline))
+    drop-shadow(0 0 1.6px var(--map-pin-outline-outer))
+    drop-shadow(0 3px 6px rgba(0, 0, 0, 0.45));
 }
 
 .amap-browse-pin-label {
@@ -2879,13 +2830,39 @@ body.amap-browse-open {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  pointer-events: none;
+  /* 悬停/点击招牌文字区也算选中该标记 */
+  pointer-events: auto;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.amap-browse-pin.is-active {
+  z-index: 5;
+}
+
+.amap-browse-pin.is-active .amap-browse-pin-label {
+  z-index: 6;
 }
 
 .amap-browse-pin-rating {
   flex: 0 0 auto;
   color: #ff6b6b;
   font-weight: 800;
+}
+
+.amap-browse-pin-cluster {
+  flex: 0 0 auto;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(229, 57, 53, 0.2);
+  color: #ff8a80;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.amap-browse-pin.has-cluster .amap-browse-pin-label {
+  border-color: rgba(229, 57, 53, 0.9);
 }
 
 .amap-browse-pin-needle {
@@ -2897,7 +2874,7 @@ body.amap-browse-open {
   height: 34px;
 }
 
-/* 圆头：尖端用三角落在盒子底边中点，保证缩放时对准经纬度 */
+/* 圆头：尖端用三角落在盒子底边中点；白边+深色外轮廓与地图图层分开 */
 .amap-browse-pin-needle::before {
   content: '';
   position: absolute;
@@ -2907,9 +2884,11 @@ body.amap-browse-open {
   height: 18px;
   margin-left: -9px;
   border-radius: 50%;
-  background: linear-gradient(145deg, #ff6b6b 0%, #e53935 55%, #c62828 100%);
-  border: 2px solid rgba(255, 255, 255, 0.95);
-  box-shadow: 0 2px 6px rgba(198, 40, 40, 0.55);
+  background: linear-gradient(145deg, var(--map-pin-light) 0%, var(--map-pin) 55%, var(--map-pin-dark) 100%);
+  border: 2px solid var(--map-pin-outline);
+  box-shadow:
+    0 0 0 2px var(--map-pin-outline-outer),
+    0 2px 6px rgba(0, 0, 0, 0.45);
   box-sizing: border-box;
 }
 
@@ -2923,25 +2902,36 @@ body.amap-browse-open {
   margin-left: -7px;
   border-left: 7px solid transparent;
   border-right: 7px solid transparent;
-  border-top: 16px solid #e53935;
+  border-top: 16px solid var(--map-pin);
   background: none;
   border-radius: 0;
   box-shadow: none;
+  filter:
+    drop-shadow(0 0 0.6px var(--map-pin-outline))
+    drop-shadow(0 0 1.4px var(--map-pin-outline-outer));
 }
 
 .amap-browse-pin.is-active .amap-browse-pin-label {
-  border-color: #e53935;
+  border-color: var(--map-pin);
   box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.35);
   background: rgba(36, 48, 60, 0.98);
 }
 
 .amap-browse-pin.is-active .amap-browse-pin-needle::before {
-  background: linear-gradient(145deg, #ff8a80 0%, #f44336 45%, #b71c1c 100%);
-  box-shadow: 0 3px 10px rgba(183, 28, 28, 0.7);
+  background: linear-gradient(145deg, #ff8a80 0%, #f44336 45%, var(--map-pin-dark) 100%);
+  box-shadow:
+    0 0 0 2px var(--map-pin-outline-outer),
+    0 3px 10px rgba(183, 28, 28, 0.7);
+}
+
+.amap-browse-overlay {
+  width: min(960px, calc(100vw - 12px));
+  height: min(92vh, 920px);
 }
 
 .amap-browse-overlay .amap-picker-map-wrap {
-  min-height: 260px;
+  min-height: 0;
+  height: 100%;
 }
 
 @media (max-width: 640px) {
@@ -2968,11 +2958,8 @@ body.amap-browse-open {
     flex: 1 1 auto;
   }
 
-  .amap-browse-footer {
-    flex-wrap: wrap;
-  }
-
-  .amap-browse-footer .btn {
-    width: 100%;
+  .amap-browse-overlay {
+    width: calc(100vw - 8px);
+    height: min(94vh, 100dvh);
   }
 }

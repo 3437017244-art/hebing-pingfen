@@ -508,7 +508,7 @@
     });
   }
 
-  function renderProductEditForm(item, shopLocation, shopMapAddress, shopLng, shopLat) {
+  function renderProductEditForm(item) {
     const unitPrice = formatUnitPrice(item.price, item.weight);
     const showUnitPrice = unitPrice !== '—';
     const showStockFields = hasStockQuantity(item);
@@ -544,12 +544,6 @@
           <label for="dialog-storage-location">所在位置</label>
           <input type="text" id="dialog-storage-location" value="${escapeHtml(item.storageLocation || '')}" placeholder="请输入所在位置">
         </div>
-        ${renderShopLocationFieldHtml({
-          address: shopLocation,
-          mapAddress: shopMapAddress,
-          lng: shopLng,
-          lat: shopLat,
-        })}
         <div class="form-row">
           <label for="dialog-price">价格（元）</label>
           <input type="number" id="dialog-price" min="0" step="0.01" value="${item.price != null ? item.price : ''}">
@@ -742,11 +736,15 @@
       $('#dialog-storage-location-row'),
     );
     $('#dialog-add-extra-product')?.addEventListener('click', () => addExtraProductRow());
-    bindShopLocationPicker();
   }
 
   function getDialogProductFormData() {
-    const coords = getShopLocationCoordsFromForm();
+    // 编辑页已去掉店铺位置；保存时保留原有定位，避免被清空
+    const existing =
+      selectedDetail?.type === 'product' && selectedDetail.id && !selectedDetail.isNew
+        ? items.find((i) => i.id === selectedDetail.id)
+        : null;
+    const shopInfo = existing ? getProductShopInfo(existing) : null;
     return sanitizeProductStockFields({
       name: ($('#dialog-name')?.value || '').trim(),
       brand: '',
@@ -755,10 +753,10 @@
       storageLocation: ($('#dialog-storage-location')?.value || '').trim(),
       quantity: $('#dialog-quantity')?.value !== '' ? parseInt($('#dialog-quantity').value, 10) : null,
       shopName: '',
-      shopLocation: ($('#dialog-shop-location')?.value || '').trim(),
-      shopMapAddress: getShopMapAddressFromForm(),
-      shopLng: coords.lng,
-      shopLat: coords.lat,
+      shopLocation: shopInfo?.shopLocation || '',
+      shopMapAddress: shopInfo?.shopMapAddress || '',
+      shopLng: shopInfo?.shopLng ?? null,
+      shopLat: shopInfo?.shopLat ?? null,
       price: $('#dialog-price')?.value !== '' ? parseFloat($('#dialog-price').value) : null,
       weight: $('#dialog-weight')?.value !== '' ? parseFloat($('#dialog-weight').value) : null,
       singleWeight: $('#dialog-single-weight')?.value !== '' ? parseFloat($('#dialog-single-weight').value) : null,
@@ -770,20 +768,9 @@
     const editItem = resolveEditItem(item);
     dialogEditMode = true;
     selectedDetail = { type: 'product', id: editItem.id };
-    const shopInfo = getProductShopInfo(editItem);
-    const shopLocation = editItem.shopLocation || shopInfo.shopLocation;
-    const shopMapAddress = editItem.shopMapAddress || shopInfo.shopMapAddress;
-    const shopLng = editItem.shopLng ?? shopInfo.shopLng;
-    const shopLat = editItem.shopLat ?? shopInfo.shopLat;
     productEls.dialogTitle.textContent = editItem.name || '编辑';
     window.AmapPicker?.destroyAllMiniMaps?.();
-    productEls.dialogBody.innerHTML = renderProductEditForm(
-      editItem,
-      shopLocation,
-      shopMapAddress,
-      shopLng,
-      shopLat,
-    );
+    productEls.dialogBody.innerHTML = renderProductEditForm(editItem);
     bindDialogProductEdit(editItem);
     productEls.dialogEditBtn.textContent = '保存';
     productEls.dialogEditBtn.className = 'btn btn-primary';
@@ -864,12 +851,6 @@
   function renderShopEditForm(shop) {
     return `
       <form id="dialog-edit-form" class="dialog-edit-form" onsubmit="return false">
-        ${renderShopLocationFieldHtml({
-          address: shop.location || '',
-          mapAddress: shop.mapAddress || '',
-          lng: shop.lng,
-          lat: shop.lat,
-        })}
         <div class="form-row">
           <label>评分</label>
           ${renderRatingEditorHtml(shop.rating, {
@@ -900,11 +881,7 @@
     if (!selectedDetail || selectedDetail.type !== 'shop') return;
     const shop = shops.find((s) => s.id === selectedDetail.id);
     if (!shop) return;
-    const coords = getShopLocationCoordsFromForm();
-    shop.location = ($('#dialog-shop-location')?.value || '').trim();
-    shop.mapAddress = getShopMapAddressFromForm();
-    shop.lng = coords.lng;
-    shop.lat = coords.lat;
+    // 编辑页已去掉店铺位置，定位字段保持原值
     shop.rating = ratingOrDefault($('#dialog-rating')?.value, 3);
     saveShops();
     setDialogViewMode();
@@ -1609,7 +1586,7 @@
     selectedDetail = { type: 'product', isNew: true, brand };
     productEls.dialogTitle.textContent = brand;
     window.AmapPicker?.destroyAllMiniMaps?.();
-    productEls.dialogBody.innerHTML = renderProductEditForm(emptyItem, '', '', null, null);
+    productEls.dialogBody.innerHTML = renderProductEditForm(emptyItem);
     bindDialogProductEdit(emptyItem);
     productEls.dialogEditBtn.textContent = '保存';
     productEls.dialogDeleteBtn.textContent = '取消';

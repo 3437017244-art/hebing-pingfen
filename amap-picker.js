@@ -754,7 +754,7 @@
   let browseMarkers = [];
   let browsePlaces = [];
   let browseOnSelect = null;
-  let browseFilterTimer = null;
+  let browseHoverPlaceId = null;
 
   function escapeBrowseText(str) {
     return String(str == null ? '' : str)
@@ -779,13 +779,10 @@
     }
     browseMap = null;
     browseMarkers = [];
+    browseHoverPlaceId = null;
   }
 
   function closeBrowseMap() {
-    if (browseFilterTimer) {
-      clearTimeout(browseFilterTimer);
-      browseFilterTimer = null;
-    }
     destroyBrowseMapInstance();
     browsePlaces = [];
     browseOnSelect = null;
@@ -800,61 +797,28 @@
 
     browseOverlayEl = document.createElement('dialog');
     browseOverlayEl.className = 'amap-picker-overlay amap-browse-overlay';
-    browseOverlayEl.setAttribute('aria-label', '地图查看已登记');
+    browseOverlayEl.setAttribute('aria-label', '地图');
     browseOverlayEl.innerHTML =
       '<div class="amap-picker amap-browse">' +
-      '<div class="amap-browse-header">' +
-      '<div class="amap-browse-title-row">' +
-      '<div class="amap-browse-title-wrap">' +
-      '<h2 class="amap-browse-title">地图查看</h2>' +
-      '<p class="amap-browse-summary" id="amap-browse-summary">加载中…</p>' +
-      '</div>' +
-      '<button type="button" class="dialog-close" id="amap-browse-close" aria-label="关闭">&times;</button>' +
-      '</div>' +
-      '<div class="amap-browse-search-row">' +
-      '<input type="search" class="amap-picker-search" id="amap-browse-search" placeholder="在已登记中搜索品牌、位置…" autocomplete="off">' +
-      '</div>' +
-      '<ul class="amap-browse-results" id="amap-browse-results" hidden></ul>' +
-      '</div>' +
+      '<button type="button" class="amap-browse-close" id="amap-browse-close" aria-label="关闭">&times;</button>' +
       '<div class="amap-picker-map-wrap">' +
       '<div class="amap-picker-map" id="amap-browse-map"></div>' +
       '<div class="amap-picker-zoom">' +
       '<button type="button" class="amap-picker-fab amap-picker-zoom-out" id="amap-browse-zoom-out" aria-label="缩小">−</button>' +
       '<button type="button" class="amap-picker-fab amap-picker-zoom-in" id="amap-browse-zoom-in" aria-label="放大">+</button>' +
       '</div>' +
-      '<p class="amap-browse-empty" id="amap-browse-empty" hidden>暂无带定位的登记，请先在编辑里用地图选点</p>' +
-      '</div>' +
-      '<div class="amap-browse-footer">' +
-      '<p class="amap-browse-hint">点击地图上的标记，可查看该品牌详情</p>' +
-      '<button type="button" class="btn btn-secondary" id="amap-browse-done">关闭</button>' +
+      '<p class="amap-browse-empty" id="amap-browse-empty" hidden></p>' +
       '</div>' +
       '</div>';
 
     document.body.appendChild(browseOverlayEl);
 
     browseOverlayEl.querySelector('#amap-browse-close').addEventListener('click', closeBrowseMap);
-    browseOverlayEl.querySelector('#amap-browse-done').addEventListener('click', closeBrowseMap);
     browseOverlayEl.querySelector('#amap-browse-zoom-in').addEventListener('click', function () {
       if (browseMap) browseMap.zoomIn();
     });
     browseOverlayEl.querySelector('#amap-browse-zoom-out').addEventListener('click', function () {
       if (browseMap) browseMap.zoomOut();
-    });
-    browseOverlayEl.querySelector('#amap-browse-search').addEventListener('input', function () {
-      if (browseFilterTimer) clearTimeout(browseFilterTimer);
-      browseFilterTimer = setTimeout(function () {
-        applyBrowseFilter();
-      }, 160);
-    });
-    browseOverlayEl.querySelector('#amap-browse-results').addEventListener('click', function (event) {
-      const item = event.target.closest('[data-browse-id]');
-      if (!item) return;
-      const place = browsePlaces.find(function (p) {
-        return String(p.id) === String(item.dataset.browseId);
-      });
-      if (!place) return;
-      focusBrowsePlace(place);
-      if (typeof browseOnSelect === 'function') browseOnSelect(place);
     });
     browseOverlayEl.addEventListener('cancel', function (event) {
       event.preventDefault();
@@ -870,17 +834,79 @@
   // 锚点盒固定尺寸：针尖在底边中点，标签绝对定位不参与宽高，避免缩放时左右漂移
   const BROWSE_PIN_ANCHOR_W = 24;
   const BROWSE_PIN_ANCHOR_H = 34;
+  // 小于该距离视为「挨得近」：只用于提示/点选列表，绝不改动登记坐标
+  const BROWSE_NEAR_METERS = 50;
 
-  function createBrowseMarkerContent(place, active) {
+  function haversineMeters(lng1, lat1, lng2, lat2) {
+    const toRad = Math.PI / 180;
+    const dLat = (lat2 - lat1) * toRad;
+    const dLng = (lng2 - lng1) * toRad;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * toRad) * Math.cos(lat2 * toRad) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    return 6371000 * 2 * Math.asin(Math.min(1, Math.sqrt(a)));
+  }
+
+  function groupNearbyBrowsePlaces(places, maxMeters) {
+    const groups = [];
+    const used = {};
+    for (let i = 0; i < places.length; i++) {
+      if (used[i]) continue;
+      const group = [places[i]];
+      used[i] = true;
+      const lng = Number(places[i].lng);
+      const lat = Number(places[i].lat);
+      if (!Number.isFinite(lng) || !Number.isFinite(lat)) {
+        groups.push(group);
+        continue;
+      }
+      for (let j = i + 1; j < places.length; j++) {
+        if (used[j]) continue;
+        const lng2 = Number(places[j].lng);
+        const lat2 = Number(places[j].lat);
+        if (!Number.isFinite(lng2) || !Number.isFinite(lat2)) continue;
+        if (haversineMeters(lng, lat, lng2, lat2) <= maxMeters) {
+          group.push(places[j]);
+          used[j] = true;
+        }
+      }
+      groups.push(group);
+    }
+    return groups;
+  }
+
+  // 标记位置 = 登记坐标，不做任何视觉偏移
+  function layoutBrowsePlaces(places) {
+    const groups = groupNearbyBrowsePlaces(places, BROWSE_NEAR_METERS);
+    const neighborMap = {};
+    groups.forEach(function (group) {
+      group.forEach(function (place) {
+        neighborMap[String(place.id)] = group;
+      });
+    });
+    return places.map(function (place) {
+      const neighbors = neighborMap[String(place.id)] || [place];
+      return {
+        place: place,
+        lng: Number(place.lng),
+        lat: Number(place.lat),
+        neighbors: neighbors.slice(),
+      };
+    });
+  }
+
+  function createBrowseMarkerContent(place, active, neighborCount) {
     const title = escapeBrowseText(place.title || '未命名');
     const rating =
       place.rating != null && Number(place.rating) > 0
         ? '<span class="amap-browse-pin-rating">' + escapeBrowseText(String(place.rating)) + '星</span>'
         : '';
     const activeClass = active ? ' is-active' : '';
+    const clusterClass = neighborCount > 1 ? ' has-cluster' : '';
     return (
       '<button type="button" class="amap-browse-pin' +
       activeClass +
+      clusterClass +
       '" data-browse-id="' +
       escapeBrowseText(place.id) +
       '">' +
@@ -918,115 +944,118 @@
     browseOnSelect(place);
   }
 
+  function handleBrowseMarkerClick(entry) {
+    focusBrowsePlace(entry.place);
+    selectBrowsePlace(entry.place);
+  }
+
+  function getBrowseMarkerDom(marker) {
+    return marker?.dom || marker?.getContentDom?.() || null;
+  }
+
+  function setBrowseMarkerHover(placeId) {
+    const nextId = placeId != null ? String(placeId) : null;
+    if (browseHoverPlaceId === nextId) return;
+    browseHoverPlaceId = nextId;
+    browseMarkers.forEach(function (item) {
+      const n = (item.neighbors && item.neighbors.length) || 1;
+      const isHover = nextId != null && String(item.place.id) === nextId;
+      item.marker.setzIndex(isHover ? 320 : 100 + n);
+      if (typeof item.marker.setTop === 'function') {
+        item.marker.setTop(isHover);
+      }
+      const root = getBrowseMarkerDom(item.marker);
+      const pin = root?.querySelector?.('.amap-browse-pin') || root;
+      if (pin?.classList) {
+        pin.classList.toggle('is-active', isHover);
+      }
+    });
+  }
+
+  function findBrowsePinNode(node) {
+    if (!node || !node.nodeType) return null;
+    // 红钉本体，或招牌文字（.amap-browse-pin-label）都算命中该标记
+    if (node.classList?.contains('amap-browse-pin')) return node;
+    if (node.classList?.contains('amap-browse-pin-label')) {
+      return node.closest?.('.amap-browse-pin') || null;
+    }
+    const fromClosest = node.closest?.('.amap-browse-pin');
+    if (fromClosest) return fromClosest;
+    return node.querySelector?.('.amap-browse-pin') || null;
+  }
+
+  function resolveBrowseHoverFromPoint(clientX, clientY) {
+    if (clientX == null || clientY == null) return null;
+    const stack = document.elementsFromPoint
+      ? document.elementsFromPoint(clientX, clientY)
+      : [document.elementFromPoint(clientX, clientY)].filter(Boolean);
+    for (let i = 0; i < stack.length; i++) {
+      const pin = findBrowsePinNode(stack[i]);
+      if (!pin) continue;
+      const id = pin.dataset?.browseId;
+      if (id == null) continue;
+      const entry = browseMarkers.find(function (e) {
+        return String(e.place.id) === String(id);
+      });
+      if (entry) return entry;
+    }
+    return null;
+  }
+
+  function bindBrowseMarkerHover() {
+    if (!browseMap) return;
+    browseMarkers.forEach(function (entry) {
+      entry.marker.on('mouseover', function () {
+        setBrowseMarkerHover(entry.place.id);
+      });
+      entry.marker.on('mouseout', function () {
+        // 交给地图 mousemove 判定，避免移到相邻钉时闪烁
+      });
+    });
+    browseMap.on('mousemove', function (event) {
+      const origin = event?.originEvent || event;
+      const x = origin?.clientX;
+      const y = origin?.clientY;
+      if (x == null || y == null) return;
+      const hit = resolveBrowseHoverFromPoint(x, y);
+      setBrowseMarkerHover(hit ? hit.place.id : null);
+    });
+    browseMap.on('mouseout', function () {
+      setBrowseMarkerHover(null);
+    });
+  }
+
   function focusBrowsePlace(place) {
     if (!browseMap || !place) return;
-    const lng = Number(place.lng);
-    const lat = Number(place.lat);
+    const entry = browseMarkers.find(function (e) {
+      return String(e.place.id) === String(place.id);
+    });
+    const lng = entry ? entry.lng : Number(place.lng);
+    const lat = entry ? entry.lat : Number(place.lat);
     if (!Number.isFinite(lng) || !Number.isFinite(lat)) return;
     browseMap.setZoomAndCenter(Math.max(browseMap.getZoom(), 16), [lng, lat]);
-    browseMarkers.forEach(function (entry) {
-      const active = String(entry.place.id) === String(place.id);
-      entry.marker.setzIndex(active ? 160 : 100);
-      entry.marker.setContent(createBrowseMarkerContent(entry.place, active));
-      syncBrowseMarkerAnchor(entry.marker);
+    setBrowseMarkerHover(place.id);
+    browseMarkers.forEach(function (item) {
+      const active = String(item.place.id) === String(place.id);
+      const n = (item.neighbors && item.neighbors.length) || 1;
+      item.marker.setContent(createBrowseMarkerContent(item.place, active, n));
+      syncBrowseMarkerAnchor(item.marker);
     });
+    setBrowseMarkerHover(place.id);
   }
 
-  function getBrowseQuery() {
-    return (browseOverlayEl?.querySelector('#amap-browse-search')?.value || '').trim().toLowerCase();
-  }
-
-  function placeMatchesQuery(place, query) {
-    if (!query) return true;
-    const hay = [place.title, place.subtitle, place.address]
-      .filter(Boolean)
-      .join(' ')
-      .toLowerCase();
-    return hay.includes(query);
-  }
-
-  function applyBrowseFilter() {
-    if (!browseOverlayEl) return;
-    const query = getBrowseQuery();
-    const summaryEl = browseOverlayEl.querySelector('#amap-browse-summary');
-    const resultsEl = browseOverlayEl.querySelector('#amap-browse-results');
-    const matched = browsePlaces.filter(function (place) {
-      return placeMatchesQuery(place, query);
-    });
-
-    if (summaryEl) {
-      if (!browsePlaces.length) {
-        summaryEl.textContent = '暂无带定位的登记';
-      } else if (query) {
-        summaryEl.textContent = '匹配 ' + matched.length + ' / ' + browsePlaces.length + ' 处';
-      } else {
-        summaryEl.textContent = '已登记 ' + browsePlaces.length + ' 处定位';
-      }
-    }
-
-    browseMarkers.forEach(function (entry) {
-      const visible = placeMatchesQuery(entry.place, query);
-      entry.marker.setMap(visible ? browseMap : null);
-    });
-
-    if (!resultsEl) return;
-    if (!query) {
-      resultsEl.hidden = true;
-      resultsEl.innerHTML = '';
-      if (browseMap && matched.length) {
-        try {
-          browseMap.setFitView(
-            browseMarkers.filter(function (e) {
-              return placeMatchesQuery(e.place, query);
-            }).map(function (e) {
-              return e.marker;
-            }),
-            false,
-            [60, 60, 60, 60],
-          );
-        } catch (_err) {
-          /* ignore */
-        }
-      }
-      return;
-    }
-
-    if (!matched.length) {
-      resultsEl.hidden = false;
-      resultsEl.innerHTML = '<li class="amap-browse-result-empty">没有匹配的已登记位置</li>';
-      return;
-    }
-
-    resultsEl.hidden = false;
-    resultsEl.innerHTML = matched
-      .map(function (place) {
-        const sub = escapeBrowseText(place.subtitle || place.address || '');
-        return (
-          '<li class="amap-browse-result-item" data-browse-id="' +
-          escapeBrowseText(place.id) +
-          '">' +
-          '<span class="amap-browse-result-title">' +
-          escapeBrowseText(place.title || '未命名') +
-          '</span>' +
-          (sub ? '<span class="amap-browse-result-sub">' + sub + '</span>' : '') +
-          '</li>'
-        );
-      })
-      .join('');
-
-    const visibleMarkers = browseMarkers
-      .filter(function (e) {
-        return placeMatchesQuery(e.place, query);
-      })
-      .map(function (e) {
-        return e.marker;
-      });
-    if (browseMap && visibleMarkers.length) {
-      try {
-        browseMap.setFitView(visibleMarkers, false, [60, 60, 60, 60]);
-      } catch (_err) {
-        /* ignore */
-      }
+  function fitBrowseMarkers() {
+    if (!browseMap || !browseMarkers.length) return;
+    try {
+      browseMap.setFitView(
+        browseMarkers.map(function (e) {
+          return e.marker;
+        }),
+        false,
+        [72, 72, 72, 72],
+      );
+    } catch (_err) {
+      /* ignore */
     }
   }
 
@@ -1037,36 +1066,45 @@
     destroyBrowseMapInstance();
     if (!mapEl) return;
 
+    const layouts = layoutBrowsePlaces(browsePlaces);
     const center =
-      browsePlaces.length > 0
-        ? [Number(browsePlaces[0].lng), Number(browsePlaces[0].lat)]
+      layouts.length > 0
+        ? [layouts[0].lng, layouts[0].lat]
         : DEFAULT_CENTER;
 
     browseMap = new AMap.Map(mapEl, {
-      zoom: browsePlaces.length ? 14 : 11,
+      zoom: layouts.length ? 14 : 11,
       center: center,
       viewMode: '2D',
       showIndoorMap: false,
       mapStyle: 'amap://styles/normal',
     });
 
-    browseMarkers = browsePlaces.map(function (place) {
-      const position = [Number(place.lng), Number(place.lat)];
+    browseMarkers = layouts.map(function (layout) {
+      const neighborCount = layout.neighbors.length;
       const marker = new AMap.Marker({
-        position: position,
+        position: [layout.lng, layout.lat],
         // 仅用 offset：内容盒底边中点=针尖（勿再叠加 anchor，避免双重偏移）
         offset: browseMarkerOffset(AMap),
-        content: createBrowseMarkerContent(place, false),
-        title: place.title || '',
-        zIndex: 100,
+        content: createBrowseMarkerContent(layout.place, false, neighborCount),
+        title: layout.place.title || '',
+        zIndex: 100 + neighborCount,
       });
+      const entry = {
+        marker: marker,
+        place: layout.place,
+        lng: layout.lng,
+        lat: layout.lat,
+        neighbors: layout.neighbors,
+      };
       marker.on('click', function () {
-        focusBrowsePlace(place);
-        selectBrowsePlace(place);
+        handleBrowseMarkerClick(entry);
       });
       browseMap.add(marker);
-      return { marker: marker, place: place };
+      return entry;
     });
+
+    bindBrowseMarkerHover();
 
     if (emptyEl) emptyEl.hidden = browsePlaces.length > 0;
 
@@ -1093,8 +1131,8 @@
         browseMarkers.forEach(function (entry) {
           syncBrowseMarkerAnchor(entry.marker);
         });
+        fitBrowseMarkers();
       });
-      applyBrowseFilter();
     });
   }
 
@@ -1111,8 +1149,6 @@
     browseOnSelect = typeof opts.onSelect === 'function' ? opts.onSelect : null;
 
     ensureBrowseOverlay();
-    const searchInput = browseOverlayEl.querySelector('#amap-browse-search');
-    if (searchInput) searchInput.value = '';
     document.body.classList.add('amap-browse-open');
     if (!browseOverlayEl.open) {
       browseOverlayEl.showModal();
@@ -1158,6 +1194,15 @@
     });
   }
 
+  // 详情/编辑缩略图：与地图浏览同一套红色钉
+  function createMiniMapRedPinContent() {
+    return (
+      '<div class="shop-mini-map-pin" aria-hidden="true">' +
+      '<span class="amap-browse-pin-needle"></span>' +
+      '</div>'
+    );
+  }
+
   function mountMiniMap(container, options) {
     const opts = options || {};
     const lng = opts.lng != null ? Number(opts.lng) : NaN;
@@ -1195,11 +1240,8 @@
         });
         const miniMarker = new AMap.Marker({
           position: center,
-          offset: new AMap.Pixel(-16, -40),
-          content: createCenterPinContent().replace(
-            'class="amap-picker-pin"',
-            'class="amap-picker-pin amap-picker-pin-mini"',
-          ),
+          offset: new AMap.Pixel(-12, -34),
+          content: createMiniMapRedPinContent(),
           zIndex: 120,
         });
         miniMap.add(miniMarker);
