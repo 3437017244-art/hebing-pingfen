@@ -6,10 +6,26 @@
     window.__IS_MOBILE_APP__ = true;
   }
 
+  function isMapGestureTarget(target) {
+    if (!target || !target.closest) return false;
+    return Boolean(
+      target.closest(
+        '.amap-picker-map, .amap-container, .amap-browse-overlay, .amap-picker-overlay, #amap-browse-map, #amap-picker-map',
+      ),
+    );
+  }
+
+  function isMapUiOpen() {
+    return Boolean(window.AmapPicker?.isOpen?.() || window.AmapPicker?.isBrowseMapOpen?.());
+  }
+
+  // 仅在非地图区域禁止双指，避免误触发页面缩放；地图上必须允许双指捏合
   document.addEventListener(
     'touchstart',
     function (event) {
-      if (event.touches.length > 1) event.preventDefault();
+      if (event.touches.length <= 1) return;
+      if (isMapUiOpen() || isMapGestureTarget(event.target)) return;
+      event.preventDefault();
     },
     { passive: false },
   );
@@ -18,6 +34,7 @@
   document.addEventListener(
     'touchend',
     function (event) {
+      if (isMapUiOpen() || isMapGestureTarget(event.target)) return;
       const now = Date.now();
       if (now - lastTouchEnd <= 300) {
         event.preventDefault();
@@ -115,11 +132,19 @@
     let startX = 0;
     let startY = 0;
     let moved = false;
+    let cancelledByMultiTouch = false;
 
     document.addEventListener(
       'touchstart',
       function (event) {
         if (event.touches.length !== 1) {
+          tracking = false;
+          cancelledByMultiTouch = true;
+          return;
+        }
+        cancelledByMultiTouch = false;
+        // 地图手势中不做边缘返回，避免双指缩放被当成返回
+        if (isMapUiOpen() || isMapGestureTarget(event.target)) {
           tracking = false;
           return;
         }
@@ -138,7 +163,12 @@
     document.addEventListener(
       'touchmove',
       function (event) {
-        if (!tracking || event.touches.length !== 1) return;
+        if (event.touches.length !== 1) {
+          tracking = false;
+          cancelledByMultiTouch = true;
+          return;
+        }
+        if (!tracking) return;
         const touch = event.touches[0];
         const dx = touch.clientX - startX;
         const dy = touch.clientY - startY;
@@ -156,6 +186,12 @@
     document.addEventListener(
       'touchend',
       function (event) {
+        if (cancelledByMultiTouch) {
+          cancelledByMultiTouch = false;
+          tracking = false;
+          moved = false;
+          return;
+        }
         if (!tracking) return;
         tracking = false;
         if (!moved) return;
@@ -180,6 +216,7 @@
       function () {
         tracking = false;
         moved = false;
+        cancelledByMultiTouch = false;
       },
       { passive: true },
     );
@@ -190,6 +227,7 @@
 
     let startY = 0;
     let pulling = false;
+    let multiTouch = false;
     let indicator = document.getElementById('app-pull-indicator');
     if (!indicator) {
       indicator = document.createElement('div');
@@ -202,8 +240,18 @@
     document.addEventListener(
       'touchstart',
       function (event) {
+        if (isMapUiOpen() || isMapGestureTarget(event.target)) {
+          pulling = false;
+          multiTouch = false;
+          return;
+        }
         if (window.scrollY > 8) return;
-        if (event.touches.length !== 1) return;
+        if (event.touches.length !== 1) {
+          multiTouch = true;
+          pulling = false;
+          return;
+        }
+        multiTouch = false;
         startY = event.touches[0].clientY;
         pulling = true;
       },
@@ -213,7 +261,18 @@
     document.addEventListener(
       'touchmove',
       function (event) {
-        if (!pulling) return;
+        if (event.touches.length !== 1) {
+          multiTouch = true;
+          pulling = false;
+          indicator.classList.remove('visible', 'ready');
+          return;
+        }
+        if (!pulling || multiTouch) return;
+        if (isMapUiOpen()) {
+          pulling = false;
+          indicator.classList.remove('visible', 'ready');
+          return;
+        }
         const delta = event.touches[0].clientY - startY;
         if (delta <= 0 || window.scrollY > 8) {
           indicator.classList.remove('visible', 'ready');
@@ -234,8 +293,18 @@
     document.addEventListener(
       'touchend',
       function (event) {
+        if (multiTouch) {
+          multiTouch = false;
+          pulling = false;
+          indicator.classList.remove('visible', 'ready');
+          return;
+        }
         if (!pulling) return;
         pulling = false;
+        if (isMapUiOpen()) {
+          indicator.classList.remove('visible', 'ready');
+          return;
+        }
         const delta = (event.changedTouches[0]?.clientY || 0) - startY;
         indicator.classList.remove('visible', 'ready');
         if (delta > 72 && window.scrollY <= 8) {

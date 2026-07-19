@@ -1313,6 +1313,9 @@
       viewMode: '2D',
       showIndoorMap: false,
       mapStyle: 'amap://styles/normal',
+      touchZoom: true,
+      touchZoomCenter: 1,
+      dragEnable: true,
     });
 
     browseMarkers = layouts.map(function (layout) {

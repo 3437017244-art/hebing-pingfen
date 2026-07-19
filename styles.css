@@ -3150,6 +3150,12 @@ body.amap-browse-open {
 .amap-browse-overlay .amap-picker-map-wrap {
   min-height: 0;
   height: 100%;
+  touch-action: none;
+}
+
+.amap-browse .amap-picker-map,
+.amap-browse .amap-container {
+  touch-action: none;
 }
 
 @media (max-width: 640px) {
