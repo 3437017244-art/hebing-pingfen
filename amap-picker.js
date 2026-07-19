@@ -767,7 +767,8 @@
   const BROWSE_HOVER_CLEAR_MS = 50;
   // 500ms：Android/Material 与多数 App 长按约定，短于易与点按冲突，长于手感拖沓
   const BROWSE_LONG_PRESS_MS = 500;
-  const BROWSE_LONG_PRESS_MOVE_PX = 14;
+  // 略放宽：长按时手指微抖不应取消；过大则拖地图会误触发进详情
+  const BROWSE_LONG_PRESS_MOVE_PX = 28;
 
   function escapeBrowseText(str) {
     return String(str == null ? '' : str)
@@ -1157,12 +1158,23 @@
     applyBrowseMarkerActiveState();
   }
 
+  function setBrowseMapDragEnabled(enabled) {
+    if (!browseMap) return;
+    try {
+      browseMap.setStatus({ dragEnable: Boolean(enabled) });
+    } catch (_err) {
+      /* ignore */
+    }
+  }
+
   function clearBrowseLongPress() {
     if (browseLongPressTimer) {
       clearTimeout(browseLongPressTimer);
       browseLongPressTimer = null;
     }
+    const wasPressing = Boolean(browseLongPressStart);
     browseLongPressStart = null;
+    if (wasPressing) setBrowseMapDragEnabled(true);
   }
 
   function beginBrowseLongPress(placeId, clientX, clientY) {
@@ -1171,10 +1183,13 @@
     // 仅已固定放大的招牌：长按进入详情
     if (!id || browsePinnedPlaceId == null || browsePinnedPlaceId !== id) return;
     browseLongPressStart = { id: id, x: clientX, y: clientY };
+    // 长按期间锁住拖图，避免微移被当成拖拽而取消长按
+    setBrowseMapDragEnabled(false);
     browseLongPressTimer = window.setTimeout(function () {
       browseLongPressTimer = null;
       const start = browseLongPressStart;
       browseLongPressStart = null;
+      setBrowseMapDragEnabled(true);
       if (!start || browsePinnedPlaceId !== start.id) return;
       const entry = browseMarkers.find(function (item) {
         return String(item.place.id) === start.id;
@@ -1534,8 +1549,6 @@
       clearBrowsePinnedPlace();
     });
 
-    browseMap.on('dragging', clearBrowseLongPress);
-    browseMap.on('zoomstart', clearBrowseLongPress);
     bindBrowseMarkerLongPress(mapEl);
     bindBrowseMarkerHover();
 
