@@ -1195,6 +1195,7 @@
         return String(item.place.id) === start.id;
       });
       if (!entry) return;
+      clearTextSelection();
       try {
         if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
           navigator.vibrate(12);
@@ -1215,10 +1216,20 @@
     }
   }
 
+  function clearTextSelection() {
+    try {
+      const sel = global.getSelection?.();
+      if (sel && sel.removeAllRanges) sel.removeAllRanges();
+    } catch (_err) {
+      /* ignore */
+    }
+  }
+
   function bindBrowseMarkerLongPress(mapEl) {
     if (!mapEl || mapEl.dataset.browseLongPressBound === '1') return;
     mapEl.dataset.browseLongPressBound = '1';
 
+    // 非 passive：已放大招牌上阻止系统长按选字/复制，留给进详情
     mapEl.addEventListener(
       'touchstart',
       function (event) {
@@ -1232,9 +1243,15 @@
           clearBrowseLongPress();
           return;
         }
+        const hitId = String(hit.place.id);
+        // 仅在「已固定」的招牌上拦截默认长按，避免挡掉首次点选的合成 click
+        if (browsePinnedPlaceId != null && browsePinnedPlaceId === hitId) {
+          event.preventDefault();
+          clearTextSelection();
+        }
         beginBrowseLongPress(hit.place.id, touch.clientX, touch.clientY);
       },
-      { passive: true },
+      { passive: false },
     );
 
     mapEl.addEventListener(
@@ -1257,6 +1274,7 @@
         clearBrowseLongPress();
         return;
       }
+      clearTextSelection();
       beginBrowseLongPress(hit.place.id, event.clientX, event.clientY);
     });
 
@@ -1267,6 +1285,27 @@
 
     mapEl.addEventListener('mouseup', clearBrowseLongPress);
     mapEl.addEventListener('mouseleave', clearBrowseLongPress);
+
+    mapEl.addEventListener(
+      'contextmenu',
+      function (event) {
+        if (resolveBrowsePinAtPoint(event.clientX, event.clientY)) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      },
+      true,
+    );
+
+    mapEl.addEventListener(
+      'selectstart',
+      function (event) {
+        if (event.target?.closest?.('.amap-browse-pin, .amap-browse-pin-label, .amap-browse-pin-needle')) {
+          event.preventDefault();
+        }
+      },
+      true,
+    );
   }
 
   function handleBrowseMarkerClick(entry) {

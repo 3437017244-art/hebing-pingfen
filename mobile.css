@@ -128,6 +128,16 @@ body {
   padding-bottom: 0;
 }
 
+/* APP：招牌长按不要弹出系统复制/选字 */
+.amap-browse-pin,
+.amap-browse-pin-label,
+.amap-browse-pin-needle,
+.amap-browse-pin-rating {
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  -webkit-touch-callout: none !important;
+}
+
 .amap-picker-header,
 .amap-picker-actions {
   padding-left: max(14px, env(safe-area-inset-left));

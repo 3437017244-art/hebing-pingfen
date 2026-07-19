@@ -3019,6 +3019,9 @@ body.amap-browse-open {
     drop-shadow(0 3px 6px rgba(0, 0, 0, 0.45));
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .amap-browse-pin-label {
@@ -3046,6 +3049,9 @@ body.amap-browse-open {
   cursor: pointer;
   z-index: 1;
   touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .amap-browse-pin.is-active {
@@ -3094,6 +3100,9 @@ body.amap-browse-open {
   margin-left: -12px;
   pointer-events: auto;
   touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 /* 圆头：尖端用三角落在盒子底边中点；白边+深色外轮廓与地图图层分开 */
@@ -3178,6 +3187,14 @@ body.amap-browse-open {
 .amap-browse .amap-container {
   touch-action: none;
   overflow: visible;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.amap-browse-overlay,
+.amap-browse-overlay * {
+  -webkit-touch-callout: none;
 }
 
 @media (max-width: 640px) {
