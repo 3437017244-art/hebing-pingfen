@@ -756,7 +756,9 @@
   let browseOnSelect = null;
   let browseHoverPlaceId = null;
   let browseHoverSwitchTimer = null;
+  let browseHoverClearTimer = null;
   const BROWSE_HOVER_SWITCH_MS = 90;
+  const BROWSE_HOVER_CLEAR_MS = 50;
 
   function escapeBrowseText(str) {
     return String(str == null ? '' : str)
@@ -775,6 +777,10 @@
     if (browseHoverSwitchTimer) {
       clearTimeout(browseHoverSwitchTimer);
       browseHoverSwitchTimer = null;
+    }
+    if (browseHoverClearTimer) {
+      clearTimeout(browseHoverClearTimer);
+      browseHoverClearTimer = null;
     }
     if (browseMap) {
       try {
@@ -977,6 +983,10 @@
 
   function requestBrowseMarkerHover(placeId) {
     const nextId = placeId != null ? String(placeId) : null;
+    if (browseHoverClearTimer) {
+      clearTimeout(browseHoverClearTimer);
+      browseHoverClearTimer = null;
+    }
     if (browseHoverPlaceId === nextId) {
       if (browseHoverSwitchTimer) {
         clearTimeout(browseHoverSwitchTimer);
@@ -999,11 +1009,23 @@
     }, BROWSE_HOVER_SWITCH_MS);
   }
 
+  function scheduleBrowseHoverClear() {
+    if (browseHoverPlaceId == null) return;
+    if (browseHoverClearTimer) return;
+    browseHoverClearTimer = setTimeout(function () {
+      browseHoverClearTimer = null;
+      requestBrowseMarkerHover(null);
+    }, BROWSE_HOVER_CLEAR_MS);
+  }
+
   function findBrowsePinNode(node) {
     if (!node || !node.nodeType) return null;
     // 红钉本体，或招牌文字都算命中该标记
     if (node.classList?.contains('amap-browse-pin')) return node;
     if (node.classList?.contains('amap-browse-pin-label')) {
+      return node.closest?.('.amap-browse-pin') || null;
+    }
+    if (node.classList?.contains('amap-browse-pin-needle')) {
       return node.closest?.('.amap-browse-pin') || null;
     }
     const fromClosest = node.closest?.('.amap-browse-pin');
@@ -1016,17 +1038,29 @@
     const stack = document.elementsFromPoint
       ? document.elementsFromPoint(clientX, clientY)
       : [document.elementFromPoint(clientX, clientY)].filter(Boolean);
+    const hits = [];
+    const seen = Object.create(null);
     for (let i = 0; i < stack.length; i++) {
       const pin = findBrowsePinNode(stack[i]);
       if (!pin) continue;
       const id = pin.dataset?.browseId;
-      if (id == null) continue;
+      if (id == null || seen[id]) continue;
+      seen[id] = true;
       const entry = browseMarkers.find(function (e) {
         return String(e.place.id) === String(id);
       });
-      if (entry) return entry;
+      if (entry) hits.push(entry);
     }
-    return null;
+    if (!hits.length) return null;
+    // 放大后命中盒也变大：指针仍在当前放大项上时优先粘住
+    if (browseHoverPlaceId != null) {
+      for (let j = 0; j < hits.length; j++) {
+        if (String(hits[j].place.id) === String(browseHoverPlaceId)) {
+          return hits[j];
+        }
+      }
+    }
+    return hits[0];
   }
 
   function bindBrowseMarkerHover() {
@@ -1035,8 +1069,27 @@
       entry.marker.on('mouseover', function () {
         requestBrowseMarkerHover(entry.place.id);
       });
-      entry.marker.on('mouseout', function () {
-        // 交给地图 mousemove 判定，避免移到相邻钉时闪烁
+      entry.marker.on('mouseout', function (event) {
+        const origin = event?.originEvent || event;
+        const related = origin?.relatedTarget;
+        if (related) {
+          const relatedPin = findBrowsePinNode(related);
+          if (relatedPin && String(relatedPin.dataset?.browseId) === String(entry.place.id)) {
+            return;
+          }
+        }
+        const x = origin?.clientX;
+        const y = origin?.clientY;
+        if (x != null && y != null) {
+          const hit = resolveBrowseHoverFromPoint(x, y);
+          // 还在放大后的命中框内 → 保持；真正离开 → 立刻缩小
+          if (hit && String(hit.place.id) === String(entry.place.id)) return;
+          requestBrowseMarkerHover(hit ? hit.place.id : null);
+          return;
+        }
+        if (browseHoverPlaceId != null && String(browseHoverPlaceId) === String(entry.place.id)) {
+          requestBrowseMarkerHover(null);
+        }
       });
     });
     browseMap.on('mousemove', function (event) {
@@ -1045,7 +1098,12 @@
       const y = origin?.clientY;
       if (x == null || y == null) return;
       const hit = resolveBrowseHoverFromPoint(x, y);
-      requestBrowseMarkerHover(hit ? hit.place.id : null);
+      if (hit) {
+        requestBrowseMarkerHover(hit.place.id);
+        return;
+      }
+      // 探测不到：可能是真离开，也可能短暂打到画布；短延迟后再缩，避免误抖
+      scheduleBrowseHoverClear();
     });
     browseMap.on('mouseout', function () {
       requestBrowseMarkerHover(null);
