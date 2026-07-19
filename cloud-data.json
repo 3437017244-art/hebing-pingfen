@@ -105,10 +105,11 @@
       "rating": 4,
       "notes": "",
       "createdAt": "2026-07-10T15:38:59.628Z",
-      "updatedAt": "2026-07-11T02:14:05.963Z",
+      "updatedAt": "2026-07-19T06:40:08.621Z",
       "shopName": "",
       "shopLocation": "",
-      "category": ""
+      "category": "",
+      "shopRating": 4
     },
     {
       "id": "mrf3pzeo8bh593",
@@ -470,5 +471,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-19T06:39:58.743Z"
+  "syncedAt": "2026-07-19T06:40:09.634Z"
 }
