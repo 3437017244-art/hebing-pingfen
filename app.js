@@ -71,6 +71,10 @@
     appMessageIsConfirm = false;
   }
 
+  function highlightDeleteWords(text) {
+    return escapeHtml(text || '').replace(/删除/g, '<span class="text-danger-em">删除</span>');
+  }
+
   function showAppMessageDialog({ message, title = '提示', confirmText = '确定', cancelText = '取消', showCancel = false }) {
     const dialog = $('#app-message-dialog');
     if (!dialog) {
@@ -81,8 +85,18 @@
     return new Promise((resolve) => {
       appMessageResolver = resolve;
       appMessageIsConfirm = showCancel;
-      $('#app-message-dialog-title').textContent = title;
-      $('#app-message-dialog-text').textContent = message;
+      const titleEl = $('#app-message-dialog-title');
+      const textEl = $('#app-message-dialog-text');
+      const hasDeleteWord = String(title).includes('删除') || String(message).includes('删除');
+      if (hasDeleteWord) {
+        if (titleEl) titleEl.innerHTML = highlightDeleteWords(title);
+        if (textEl) textEl.innerHTML = highlightDeleteWords(message);
+        dialog.classList.add('dialog-prompt-danger');
+      } else {
+        if (titleEl) titleEl.textContent = title;
+        if (textEl) textEl.textContent = message;
+        dialog.classList.remove('dialog-prompt-danger');
+      }
       $('#app-message-dialog-ok').textContent = confirmText;
       const cancelBtn = $('#app-message-dialog-cancel');
       cancelBtn.hidden = !showCancel;
@@ -335,76 +349,166 @@
     return `${text} <span class="geo-located-hint">已定位</span>`;
   }
 
-  function renderShopLocationFieldHtml({ address, lng, lat }) {
+  function renderShopMapThumbHtml({ lng, lat, buttonId }) {
     const hasGeo = parseCoord(lng) != null && parseCoord(lat) != null;
+    const idAttr = buttonId ? ` id="${escapeHtml(buttonId)}"` : '';
+    const body = hasGeo
+      ? `<div class="shop-map-thumb-map" data-lng="${escapeHtml(String(lng))}" data-lat="${escapeHtml(String(lat))}"></div>`
+      : `<div class="shop-map-thumb-empty"><span class="shop-map-thumb-pin" aria-hidden="true"></span></div>`;
+    return `
+      <button type="button" class="shop-map-thumb${hasGeo ? ' has-geo' : ''}"${idAttr} aria-label="打开地图选点">
+        ${body}
+      </button>
+    `;
+  }
+
+  function mountShopMapThumb(thumbBtn) {
+    if (!thumbBtn || !window.AmapPicker?.mountMiniMap) return;
+    const mapHost = thumbBtn.querySelector('.shop-map-thumb-map');
+    if (!mapHost) return;
+    const lng = parseCoord(mapHost.dataset.lng);
+    const lat = parseCoord(mapHost.dataset.lat);
+    if (lng == null || lat == null) return;
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        AmapPicker.mountMiniMap(mapHost, { lng, lat, zoom: 16 });
+      });
+    });
+  }
+
+  function refreshShopMapThumbElement(thumbBtn, lng, lat) {
+    if (!thumbBtn) return;
+    const host = thumbBtn.querySelector('.shop-map-thumb-map');
+    if (host && window.AmapPicker?.destroyMiniMap) {
+      AmapPicker.destroyMiniMap(host);
+    }
+    const html = renderShopMapThumbHtml({ lng, lat, buttonId: thumbBtn.id || '' });
+    const wrap = document.createElement('div');
+    wrap.innerHTML = html.trim();
+    const next = wrap.firstElementChild;
+    if (!next) return;
+    thumbBtn.replaceWith(next);
+    mountShopMapThumb(next);
+    return next;
+  }
+
+  function renderShopLocationFieldHtml({ address, mapAddress, lng, lat }) {
+    const hasGeo = parseCoord(lng) != null && parseCoord(lat) != null;
+    const official = (mapAddress || '').trim();
+    const mapHint = official
+      ? `地图官方地址：${escapeHtml(official)}${hasGeo ? ' <span class="geo-located-hint">已定位</span>' : ''}`
+      : hasGeo
+        ? '已在地图选点（可与上方手填位置不同）'
+        : '未选地图位置；与上方手填位置互不影响';
     return `
       <div class="form-row form-row-shop-location">
         <label for="dialog-shop-location">店铺位置</label>
-        <div class="shop-location-field">
-          <input type="text" id="dialog-shop-location" value="${escapeHtml(address || '')}" placeholder="手填或地图选点">
-          <button type="button" class="btn btn-secondary btn-sm" id="dialog-amap-pick-btn">地图选点</button>
+        <input type="text" id="dialog-shop-location" value="${escapeHtml(address || '')}" placeholder="手填方便辨认的位置，例如：建设路李记">
+        <p class="field-hint">可随意填写，不必和地图官方地址一致</p>
+      </div>
+      <div class="form-row form-row-shop-map">
+        <label>地图定位</label>
+        ${renderShopMapThumbHtml({ lng, lat, buttonId: 'dialog-amap-thumb' })}
+        <div class="shop-map-field">
+          <button type="button" class="btn btn-secondary btn-sm" id="dialog-amap-pick-btn">打开大图选点</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="dialog-amap-clear-btn"${hasGeo || official ? '' : ' hidden'}>清除定位</button>
         </div>
+        <input type="hidden" id="dialog-shop-map-address" value="${escapeHtml(official)}">
         <input type="hidden" id="dialog-shop-lng" value="${hasGeo ? escapeHtml(String(lng)) : ''}">
         <input type="hidden" id="dialog-shop-lat" value="${hasGeo ? escapeHtml(String(lat)) : ''}">
-        <p class="field-hint shop-location-geo-hint" id="dialog-shop-geo-hint"${hasGeo ? '' : ' hidden'}>已定位到地图坐标</p>
+        <p class="field-hint shop-location-geo-hint" id="dialog-shop-geo-hint">${mapHint}</p>
       </div>
     `;
   }
 
   function getShopLocationCoordsFromForm() {
-    const address = ($('#dialog-shop-location')?.value || '').trim();
-    if (!address) {
-      return { lng: null, lat: null };
-    }
     return {
       lng: parseCoord($('#dialog-shop-lng')?.value),
       lat: parseCoord($('#dialog-shop-lat')?.value),
     };
   }
 
-  function bindShopLocationPicker() {
-    const updateGeoHint = () => {
-      const hint = $('#dialog-shop-geo-hint');
-      if (!hint) return;
-      const coords = getShopLocationCoordsFromForm();
-      const address = ($('#dialog-shop-location')?.value || '').trim();
-      hint.hidden = !(address && coords.lng != null && coords.lat != null);
-    };
+  function getShopMapAddressFromForm() {
+    return ($('#dialog-shop-map-address')?.value || '').trim();
+  }
 
-    $('#dialog-shop-location')?.addEventListener('input', () => {
-      const address = ($('#dialog-shop-location')?.value || '').trim();
-      if (!address) {
-        if ($('#dialog-shop-lng')) $('#dialog-shop-lng').value = '';
-        if ($('#dialog-shop-lat')) $('#dialog-shop-lat').value = '';
+  function updateShopMapHint() {
+    const hint = $('#dialog-shop-geo-hint');
+    const clearBtn = $('#dialog-amap-clear-btn');
+    const coords = getShopLocationCoordsFromForm();
+    const official = getShopMapAddressFromForm();
+    const hasGeo = coords.lng != null && coords.lat != null;
+    if (hint) {
+      if (official) {
+        hint.innerHTML =
+          '地图官方地址：' +
+          escapeHtml(official) +
+          (hasGeo ? ' <span class="geo-located-hint">已定位</span>' : '');
+      } else if (hasGeo) {
+        hint.textContent = '已在地图选点（可与上方手填位置不同）';
+      } else {
+        hint.textContent = '未选地图位置；与上方手填位置互不影响';
       }
-      updateGeoHint();
+    }
+    if (clearBtn) clearBtn.hidden = !(hasGeo || official);
+    const thumb = $('#dialog-amap-thumb');
+    if (thumb) {
+      const next = refreshShopMapThumbElement(thumb, coords.lng, coords.lat);
+      next?.addEventListener('click', openShopMapPickerFromForm);
+    }
+  }
+
+  async function openShopMapPickerFromForm() {
+    if (!window.AmapPicker?.open) {
+      alert('地图选点模块未加载');
+      return;
+    }
+    window.AmapPicker.destroyAllMiniMaps?.();
+    const mapAddress = getShopMapAddressFromForm();
+    const nick = ($('#dialog-shop-location')?.value || '').trim();
+    const lng = parseCoord($('#dialog-shop-lng')?.value);
+    const lat = parseCoord($('#dialog-shop-lat')?.value);
+    const hasGeo = lng != null && lat != null;
+    const result = await AmapPicker.open({
+      address: mapAddress || (hasGeo ? nick : ''),
+      lng: lng,
+      lat: lat,
     });
+    if (!result) {
+      mountShopMapThumb($('#dialog-amap-thumb'));
+      return;
+    }
+    if ($('#dialog-shop-map-address')) {
+      $('#dialog-shop-map-address').value = result.address || '';
+    }
+    if ($('#dialog-shop-lng')) {
+      $('#dialog-shop-lng').value = result.lng != null ? String(result.lng) : '';
+    }
+    if ($('#dialog-shop-lat')) {
+      $('#dialog-shop-lat').value = result.lat != null ? String(result.lat) : '';
+    }
+    const nickInput = $('#dialog-shop-location');
+    if (nickInput && !(nickInput.value || '').trim() && result.address) {
+      nickInput.value = result.address;
+    }
+    updateShopMapHint();
+  }
 
-    $('#dialog-amap-pick-btn')?.addEventListener('click', async () => {
-      if (!window.AmapPicker?.open) {
-        alert('地图选点模块未加载');
-        return;
-      }
-      const result = await AmapPicker.open({
-        address: ($('#dialog-shop-location')?.value || '').trim(),
-        lng: parseCoord($('#dialog-shop-lng')?.value),
-        lat: parseCoord($('#dialog-shop-lat')?.value),
-      });
-      if (!result) return;
-      if ($('#dialog-shop-location')) {
-        $('#dialog-shop-location').value = result.address || '';
-      }
-      if ($('#dialog-shop-lng')) {
-        $('#dialog-shop-lng').value = result.lng != null ? String(result.lng) : '';
-      }
-      if ($('#dialog-shop-lat')) {
-        $('#dialog-shop-lat').value = result.lat != null ? String(result.lat) : '';
-      }
-      updateGeoHint();
+  function bindShopLocationPicker() {
+    $('#dialog-amap-pick-btn')?.addEventListener('click', openShopMapPickerFromForm);
+    const thumb = $('#dialog-amap-thumb');
+    thumb?.addEventListener('click', openShopMapPickerFromForm);
+    mountShopMapThumb(thumb);
+
+    $('#dialog-amap-clear-btn')?.addEventListener('click', () => {
+      if ($('#dialog-shop-map-address')) $('#dialog-shop-map-address').value = '';
+      if ($('#dialog-shop-lng')) $('#dialog-shop-lng').value = '';
+      if ($('#dialog-shop-lat')) $('#dialog-shop-lat').value = '';
+      updateShopMapHint();
     });
   }
 
-  function renderProductEditForm(item, shopLocation, shopLng, shopLat) {
+  function renderProductEditForm(item, shopLocation, shopMapAddress, shopLng, shopLat) {
     const unitPrice = formatUnitPrice(item.price, item.weight);
     const showUnitPrice = unitPrice !== '—';
     const showStockFields = hasStockQuantity(item);
@@ -442,6 +546,7 @@
         </div>
         ${renderShopLocationFieldHtml({
           address: shopLocation,
+          mapAddress: shopMapAddress,
           lng: shopLng,
           lat: shopLat,
         })}
@@ -588,6 +693,7 @@
       quantity: extra.quantity,
       shopName: '',
       shopLocation: baseData.shopLocation || '',
+      shopMapAddress: baseData.shopMapAddress || '',
       shopLng: baseData.shopLng ?? null,
       shopLat: baseData.shopLat ?? null,
       price: extra.price,
@@ -650,6 +756,7 @@
       quantity: $('#dialog-quantity')?.value !== '' ? parseInt($('#dialog-quantity').value, 10) : null,
       shopName: '',
       shopLocation: ($('#dialog-shop-location')?.value || '').trim(),
+      shopMapAddress: getShopMapAddressFromForm(),
       shopLng: coords.lng,
       shopLat: coords.lat,
       price: $('#dialog-price')?.value !== '' ? parseFloat($('#dialog-price').value) : null,
@@ -663,11 +770,20 @@
     const editItem = resolveEditItem(item);
     dialogEditMode = true;
     selectedDetail = { type: 'product', id: editItem.id };
-    const shopLocation = editItem.shopLocation || getProductShopInfo(editItem).shopLocation;
-    const shopLng = editItem.shopLng ?? getProductShopInfo(editItem).shopLng;
-    const shopLat = editItem.shopLat ?? getProductShopInfo(editItem).shopLat;
+    const shopInfo = getProductShopInfo(editItem);
+    const shopLocation = editItem.shopLocation || shopInfo.shopLocation;
+    const shopMapAddress = editItem.shopMapAddress || shopInfo.shopMapAddress;
+    const shopLng = editItem.shopLng ?? shopInfo.shopLng;
+    const shopLat = editItem.shopLat ?? shopInfo.shopLat;
     productEls.dialogTitle.textContent = editItem.name || '编辑';
-    productEls.dialogBody.innerHTML = renderProductEditForm(editItem, shopLocation, shopLng, shopLat);
+    window.AmapPicker?.destroyAllMiniMaps?.();
+    productEls.dialogBody.innerHTML = renderProductEditForm(
+      editItem,
+      shopLocation,
+      shopMapAddress,
+      shopLng,
+      shopLat,
+    );
     bindDialogProductEdit(editItem);
     productEls.dialogEditBtn.textContent = '保存';
     productEls.dialogEditBtn.className = 'btn btn-primary';
@@ -750,6 +866,7 @@
       <form id="dialog-edit-form" class="dialog-edit-form" onsubmit="return false">
         ${renderShopLocationFieldHtml({
           address: shop.location || '',
+          mapAddress: shop.mapAddress || '',
           lng: shop.lng,
           lat: shop.lat,
         })}
@@ -769,6 +886,7 @@
     dialogEditMode = true;
     selectedDetail = { type: 'shop', id: shop.id };
     productEls.dialogTitle.textContent = shop.name || '编辑';
+    window.AmapPicker?.destroyAllMiniMaps?.();
     productEls.dialogBody.innerHTML = renderShopEditForm(shop);
     bindDialogProductEdit({ rating: ratingOrDefault(shop.rating, 3) });
     productEls.dialogEditBtn.textContent = '保存';
@@ -784,6 +902,7 @@
     if (!shop) return;
     const coords = getShopLocationCoordsFromForm();
     shop.location = ($('#dialog-shop-location')?.value || '').trim();
+    shop.mapAddress = getShopMapAddressFromForm();
     shop.lng = coords.lng;
     shop.lat = coords.lat;
     shop.rating = ratingOrDefault($('#dialog-rating')?.value, 3);
@@ -936,15 +1055,20 @@
   }
 
   function closeDetailDialog() {
+    window.AmapPicker?.destroyAllMiniMaps?.();
     productEls.detailDialog.close();
     selectedDetail = null;
     setDialogViewMode();
   }
 
   function getProductShopInfo(item) {
+    const shopLocation = (item.shopLocation || '').trim();
+    const shopMapAddress = (item.shopMapAddress || '').trim();
     return {
       shopName: (item.shopName || '').trim(),
-      shopLocation: (item.shopLocation || '').trim(),
+      shopLocation,
+      // 旧数据没有 mapAddress 时，地图侧可回退用手填内容打开，但不强制两边一致
+      shopMapAddress,
       shopLng: parseCoord(item.shopLng),
       shopLat: parseCoord(item.shopLat),
     };
@@ -1295,6 +1419,92 @@
       </li>`;
   }
 
+  function getBrandShopLocationInfo(group) {
+    const products = group?.products || [];
+    for (const item of products) {
+      const info = getProductShopInfo(item);
+      if (info.shopLocation || info.shopMapAddress || (info.shopLng != null && info.shopLat != null)) {
+        return info;
+      }
+    }
+    if (group?.shopLocation || group?.shopMapAddress || group?.shopLng != null || group?.shopLat != null) {
+      return {
+        shopName: group.brand || '',
+        shopLocation: (group.shopLocation || '').trim(),
+        shopMapAddress: (group.shopMapAddress || group.mapAddress || '').trim(),
+        shopLng: parseCoord(group.shopLng),
+        shopLat: parseCoord(group.shopLat),
+      };
+    }
+    return {
+      shopName: group?.brand || '',
+      shopLocation: '',
+      shopMapAddress: '',
+      shopLng: null,
+      shopLat: null,
+    };
+  }
+
+  function renderBrandLocationBar(group) {
+    const { shopLng, shopLat } = getBrandShopLocationInfo(group);
+    const hasGeo = parseCoord(shopLng) != null && parseCoord(shopLat) != null;
+    const emptyClass = hasGeo ? '' : ' is-empty';
+
+    return `
+      <div class="brand-location-bar${emptyClass}" role="group" aria-label="店铺位置" data-brand="${escapeHtml(group.brand || '')}">
+        ${renderShopMapThumbHtml({ lng: shopLng, lat: shopLat, buttonId: 'brand-amap-thumb' })}
+      </div>
+    `;
+  }
+
+  async function openBrandMapEditor(brand) {
+    const brandName = (brand || '').trim();
+    if (!brandName) return;
+    if (!window.AmapPicker?.open) {
+      alert('地图选点模块未加载');
+      return;
+    }
+    const group = groupProductsByBrand(items).find((g) => g.brand === brandName);
+    if (!group) return;
+    const info = getBrandShopLocationInfo(group);
+    window.AmapPicker.destroyAllMiniMaps?.();
+    const result = await AmapPicker.open({
+      address: info.shopMapAddress || (info.shopLng != null ? info.shopLocation : ''),
+      lng: info.shopLng,
+      lat: info.shopLat,
+    });
+    if (!result) {
+      mountShopMapThumb($('#brand-amap-thumb'));
+      return;
+    }
+    const now = new Date().toISOString();
+    let changed = false;
+    items = items.map((item) => {
+      if (getBrandName(item) !== brandName) return item;
+      changed = true;
+      return {
+        ...item,
+        shopMapAddress: result.address || '',
+        shopLng: result.lng,
+        shopLat: result.lat,
+        updatedAt: now,
+      };
+    });
+    if (!changed) return;
+    saveItems();
+    const updated = groupProductsByBrand(items).find((g) => g.brand === brandName);
+    if (updated) showBrandDetail(updated);
+    else renderBrowse();
+  }
+
+  function bindBrandLocationMapThumb(group) {
+    const thumb = $('#brand-amap-thumb');
+    if (!thumb) return;
+    const brand = group?.brand || '';
+    thumb.addEventListener('click', () => openBrandMapEditor(brand));
+    mountShopMapThumb(thumb);
+  }
+
   function renderBrandDetailBody(group) {
     const { products } = group;
     const rows = products
@@ -1323,7 +1533,63 @@
       })
       .join('');
 
-    return `<div class="brand-products-list">${rows}</div>`;
+    return `
+      ${renderBrandLocationBar(group)}
+      <div class="brand-products-list">${rows}</div>
+    `;
+  }
+
+  function shopToBrandGroup(shop) {
+    const brand = (shop.name || '').trim() || '未命名';
+    const shopLocation = (shop.location || '').trim();
+    const shopMapAddress = (shop.mapAddress || '').trim();
+    const shopLng = parseCoord(shop.lng);
+    const shopLat = parseCoord(shop.lat);
+    const shopProducts = getShopProducts(shop);
+    const products = shopProducts.length
+      ? shopProducts.map((product, index) => ({
+          id: product.id || `${shop.id || brand}-${index}`,
+          name: brand,
+          flavor: (product.name || '').trim(),
+          shopName: brand,
+          shopLocation,
+          shopMapAddress,
+          shopLng,
+          shopLat,
+          rating: product.rating ?? shop.rating ?? 3,
+          storageLocation: '',
+          category: '',
+          quantity: null,
+          price: null,
+          weight: null,
+          singleWeight: null,
+          notes: '',
+        }))
+      : [
+          {
+            id: shop.id || brand,
+            name: brand,
+            flavor: '',
+            shopName: brand,
+            shopLocation,
+            shopMapAddress,
+            shopLng,
+            shopLat,
+            rating: shop.rating ?? 3,
+          },
+        ];
+    const ratings = products.map((p) => Number(p.rating || 0)).filter((r) => r > 0);
+    return {
+      brand,
+      products,
+      shopLocation,
+      shopMapAddress,
+      shopLng,
+      shopLat,
+      maxRating: ratings.length ? Math.max(...ratings) : 0,
+      avgRating: ratings.length ? ratings.reduce((s, r) => s + r, 0) / ratings.length : 0,
+      hasStock: false,
+    };
   }
 
   function showAddProductDialog(brand) {
@@ -1342,7 +1608,8 @@
     dialogEditMode = true;
     selectedDetail = { type: 'product', isNew: true, brand };
     productEls.dialogTitle.textContent = brand;
-    productEls.dialogBody.innerHTML = renderProductEditForm(emptyItem, '');
+    window.AmapPicker?.destroyAllMiniMaps?.();
+    productEls.dialogBody.innerHTML = renderProductEditForm(emptyItem, '', '', null, null);
     bindDialogProductEdit(emptyItem);
     productEls.dialogEditBtn.textContent = '保存';
     productEls.dialogDeleteBtn.textContent = '取消';
@@ -1402,12 +1669,61 @@
       brand: group.brand,
     };
     setDialogViewMode();
+    window.AmapPicker?.destroyAllMiniMaps?.();
     productEls.dialogTitle.textContent = group.brand;
     productEls.dialogBody.innerHTML = renderBrandDetailBody(group);
+    bindBrandLocationMapThumb(group);
     productEls.dialogEditBtn.textContent = '添加新商品';
     productEls.dialogEditBtn.hidden = false;
     productEls.dialogDeleteBtn.hidden = true;
     productEls.detailDialog.showModal();
+  }
+
+  function collectMappedBrandPlaces() {
+    const groups = groupProductsByBrand(items);
+    const places = [];
+    for (const group of groups) {
+      const info = getBrandShopLocationInfo(group);
+      const lng = parseCoord(info.shopLng);
+      const lat = parseCoord(info.shopLat);
+      if (lng == null || lat == null) continue;
+      places.push({
+        id: group.brand,
+        title: group.brand,
+        subtitle: info.shopLocation || info.shopMapAddress || '',
+        address: info.shopMapAddress || info.shopLocation || '',
+        lng,
+        lat,
+        rating: group.maxRating > 0 ? formatRating(group.maxRating) : '',
+        brand: group.brand,
+      });
+    }
+    return places;
+  }
+
+  async function openBrowseMapView() {
+    if (!window.AmapPicker?.openBrowseMap) {
+      alert('地图模块未加载');
+      return;
+    }
+    if (!AmapPicker.hasKey?.()) {
+      alert('尚未配置高德 Key，无法打开地图查看');
+      return;
+    }
+    const places = collectMappedBrandPlaces();
+    try {
+      await AmapPicker.openBrowseMap({
+        places,
+        onSelect(place) {
+          const brand = (place?.brand || place?.id || '').trim();
+          if (!brand) return;
+          const group = groupProductsByBrand(items).find((g) => g.brand === brand);
+          if (group) showBrandDetail(group);
+        },
+      });
+    } catch (error) {
+      alert(error?.message || '打开地图查看失败');
+    }
   }
 
   function clearSearch() {
@@ -1946,6 +2262,9 @@
       if (!chip) return;
       browseFilter = chip.dataset.browseFilter || 'all';
       renderBrowse();
+    });
+    $('#browse-map-btn')?.addEventListener('click', () => {
+      openBrowseMapView();
     });
     $('#unified-search').addEventListener('keydown', (event) => {
       if (event.key !== 'Enter') return;

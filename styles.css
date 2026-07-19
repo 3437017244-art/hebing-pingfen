@@ -76,6 +76,7 @@ a:hover {
   padding: 28px 18px 56px;
   position: relative;
   z-index: 1;
+  overflow: visible;
 }
 
 .app {
@@ -841,6 +842,36 @@ button.home-meta-link:disabled {
   color: #0f1419;
 }
 
+/* 详情弹窗里的删除：文字链，仅红色字、无红底，降低误触 */
+.dialog-actions .btn-danger {
+  flex: 0 0 auto;
+  align-self: center;
+  min-width: 0;
+  width: auto;
+  margin-right: auto;
+  padding: 6px 4px;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  color: var(--danger);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.dialog-actions .btn-danger:hover,
+.dialog-actions .btn-danger:focus-visible {
+  background: transparent;
+  color: #f48a90;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.dialog-actions .btn-danger:active {
+  background: transparent;
+  color: #f07178;
+}
+
 button.editing {
   background: #10b981 !important;
 }
@@ -887,6 +918,7 @@ button.editing {
 }
 
 .search-row {
+  position: relative;
   display: flex;
   gap: 8px;
   align-items: center;
@@ -895,6 +927,7 @@ button.editing {
 .search-row .search-input {
   flex: 1;
   min-width: 0;
+  width: 100%;
 }
 
 /* 谷歌式居中搜索舞台 */
@@ -941,8 +974,55 @@ button.editing {
 
 .search-hero .browse-category-chips {
   justify-content: center;
+  align-items: center;
   margin-bottom: 0;
   gap: 12px;
+}
+
+/*
+  地图按钮在搜索框外侧左侧，不挤占搜索框宽度；
+  宽高随搜索框高度走，上下对齐。
+*/
+.search-hero .browse-map-icon-btn {
+  appearance: none;
+  position: absolute;
+  right: calc(100% + 12px);
+  top: 0;
+  bottom: 0;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: 100%;
+  aspect-ratio: 1;
+  margin: 0;
+  padding: 0;
+  border-radius: 50%;
+  border: 1.5px solid rgba(212, 165, 116, 0.55);
+  background: linear-gradient(160deg, rgba(212, 165, 116, 0.28), rgba(212, 165, 116, 0.12));
+  color: var(--primary);
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease), transform 0.15s var(--ease), box-shadow 0.2s var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.search-hero .browse-map-icon-btn:hover {
+  border-color: var(--primary);
+  background: linear-gradient(160deg, rgba(212, 165, 116, 0.4), rgba(212, 165, 116, 0.18));
+  box-shadow: 0 0 0 3px var(--primary-ring), 0 6px 16px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+}
+
+.browse-map-icon {
+  width: 38%;
+  height: 38%;
+  min-width: 18px;
+  min-height: 18px;
+  max-width: 28px;
+  max-height: 28px;
+  display: block;
 }
 
 .search-hero .chip {
@@ -1323,28 +1403,160 @@ button.editing {
   color: var(--text-muted);
 }
 
+.brand-location-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  margin: 0 0 14px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.brand-location-bar.is-empty {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.shop-map-thumb {
+  appearance: none;
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(212, 165, 116, 0.4);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: #dce3ea;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  position: relative;
+  height: 168px;
+  transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease), transform 0.2s var(--ease);
+}
+
+.shop-map-thumb:hover {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-ring), 0 10px 24px rgba(0, 0, 0, 0.28);
+  transform: translateY(-1px);
+}
+
+.shop-map-thumb-map,
+.shop-map-thumb-canvas {
+  width: 100%;
+  height: 100%;
+  min-height: 168px;
+  pointer-events: none;
+}
+
+.shop-map-thumb-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 168px;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(212, 165, 116, 0.16), transparent 52%),
+    linear-gradient(180deg, #24303c 0%, #1a222c 100%);
+}
+
+.shop-map-thumb-pin {
+  width: 28px;
+  height: 36px;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.shop-map-thumb-pin::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 22px;
+  height: 22px;
+  margin-left: -11px;
+  border-radius: 50% 50% 50% 4px;
+  transform: rotate(-45deg);
+  background: linear-gradient(145deg, #f0c89a, var(--primary));
+  border: 2px solid rgba(255, 248, 236, 0.9);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+}
+
+.shop-map-thumb .amap-logo,
+.shop-map-thumb .amap-copyright {
+  display: none !important;
+}
+
+.form-row-shop-map .shop-map-thumb {
+  margin-bottom: 10px;
+}
+
+.amap-picker-pin-mini {
+  transform: scale(0.85);
+  transform-origin: bottom center;
+}
+
+.brand-location-bar-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+
+.brand-location-bar.is-empty .brand-location-bar-label {
+  color: var(--text-muted);
+}
+
+.brand-location-bar-text {
+  font-size: 1.02rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--text);
+  word-break: break-word;
+}
+
+.brand-location-bar.is-empty .brand-location-bar-text {
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.brand-location-bar-text .geo-located-hint {
+  margin-left: 8px;
+  vertical-align: 0.15em;
+}
+
 .brand-products-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .brand-product-row {
   width: 100%;
   text-align: left;
-  padding: 12px 14px;
-  border: 1px solid var(--border);
+  padding: 14px 16px;
+  border: 2px solid rgba(61, 155, 143, 0.55);
   border-radius: var(--radius-sm);
-  background: var(--surface);
+  background: linear-gradient(180deg, #24303c 0%, #1c2630 100%);
+  box-shadow: 0 2px 0 rgba(61, 155, 143, 0.18), 0 6px 16px rgba(0, 0, 0, 0.22);
   cursor: pointer;
   font-family: inherit;
   transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease), background 0.2s var(--ease), transform 0.2s var(--ease);
 }
 
 .brand-product-row:hover {
-  border-color: var(--border-strong);
-  background: var(--surface-soft);
-  box-shadow: 0 2px 8px rgba(20, 32, 28, 0.06);
+  border-color: rgba(61, 155, 143, 0.9);
+  background: linear-gradient(180deg, #2a3846 0%, #222e3a 100%);
+  box-shadow: 0 2px 0 rgba(61, 155, 143, 0.28), 0 10px 22px rgba(0, 0, 0, 0.28);
+  transform: translateY(-1px);
 }
 
 .brand-product-row-main {
@@ -1532,7 +1744,9 @@ button.editing {
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
+  /* 标题层 / 内容层分界 */
+  border-bottom: 2px solid #3d9b8f;
+  box-shadow: 0 1px 0 rgba(61, 155, 143, 0.28);
 }
 
 .dialog-header h2 {
@@ -1582,13 +1796,21 @@ button.editing {
 
 .dialog-actions {
   display: flex;
+  align-items: center;
   gap: 10px;
   padding: 12px 20px 16px;
-  border-top: 1px solid var(--border);
+  /* 内容层 / 操作层分界：绿色，与顶部分层区分 */
+  border-top: 2px solid #3d9b8f;
+  box-shadow: 0 -1px 0 rgba(61, 155, 143, 0.28);
 }
 
 .dialog-actions .btn {
   flex: 1;
+}
+
+.dialog-actions .btn-primary {
+  flex: 1 1 auto;
+  min-width: 40%;
 }
 
 .dialog-editing .dialog-body {
@@ -1814,6 +2036,11 @@ button.editing {
   color: var(--text);
 }
 
+.text-danger-em {
+  color: var(--danger);
+  font-weight: 800;
+}
+
 .dialog-prompt .dialog-actions {
   padding: 16px 24px 24px;
   gap: 14px;
@@ -2028,6 +2255,29 @@ button.editing {
   margin-top: 16px;
 }
 
+/* 侧边空间不够时：图标改到搜索框上方左侧，仍不挤占搜索框宽度 */
+@media (max-width: 900px) {
+  .search-hero .browse-map-icon-btn {
+    position: static;
+    width: 58px;
+    height: 58px;
+    aspect-ratio: auto;
+    margin: 0 0 8px;
+    transform: none;
+  }
+
+  .search-hero .browse-map-icon-btn:hover {
+    transform: translateY(-1px);
+  }
+
+  .browse-map-icon {
+    width: 24px;
+    height: 24px;
+    max-width: none;
+    max-height: none;
+  }
+}
+
 @media (max-width: 520px) {
   .app,
   .page-shell {
@@ -2056,6 +2306,16 @@ button.editing {
     padding: 18px 24px;
   }
 
+  .search-hero .browse-map-icon-btn {
+    width: 52px;
+    height: 52px;
+  }
+
+  .browse-map-icon {
+    width: 22px;
+    height: 22px;
+  }
+
   .search-hero .chip {
     padding: 10px 18px;
     font-size: 0.98rem;
@@ -2067,27 +2327,41 @@ button.editing {
   }
 }
 
-/* 店铺位置：文字 + 地图选点 */
-.shop-location-field {
+/* 店铺位置（手填）与地图定位相互独立 */
+.form-row-shop-location input[type="text"] {
+  width: 100%;
+}
+
+.shop-map-field {
   display: flex;
   align-items: stretch;
   gap: 8px;
 }
 
-.shop-location-field input[type="text"] {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.shop-location-field .btn {
+.shop-map-field .btn {
   flex: 0 0 auto;
   white-space: nowrap;
 }
 
 .shop-location-geo-hint {
-  margin: 6px 0 0;
-  color: var(--success-text);
+  margin: 8px 0 0;
+  color: var(--text-muted);
   font-size: 0.78rem;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.shop-location-geo-hint .geo-located-hint {
+  color: var(--success-text);
+}
+
+.brand-location-bar-map {
+  margin-top: 6px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  line-height: 1.4;
+  word-break: break-word;
 }
 
 .geo-located-hint {
@@ -2104,7 +2378,8 @@ button.editing {
 }
 
 /* 高德地图选点：原生 dialog，盖在编辑弹窗最上层 */
-body.amap-picker-open {
+body.amap-picker-open,
+body.amap-browse-open {
   overflow: hidden;
 }
 
@@ -2223,6 +2498,93 @@ body.amap-picker-open {
   height: 100%;
   min-height: 220px;
   background: #1a222c;
+}
+
+/* 选点中心钉：比默认蓝点更醒目，可拖动 */
+.amap-picker-pin {
+  position: relative;
+  width: 44px;
+  height: 56px;
+  pointer-events: none;
+}
+
+.amap-picker-pin-pulse {
+  position: absolute;
+  left: 50%;
+  top: 18px;
+  width: 28px;
+  height: 28px;
+  margin-left: -14px;
+  margin-top: -14px;
+  border-radius: 50%;
+  background: rgba(212, 165, 116, 0.35);
+  animation: amap-picker-pin-pulse 1.6s var(--ease) infinite;
+}
+
+.amap-picker-pin-head {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 34px;
+  height: 34px;
+  margin-left: -17px;
+  border-radius: 50% 50% 50% 4px;
+  transform: rotate(-45deg);
+  background: linear-gradient(145deg, #f0c89a 0%, var(--primary) 48%, #b8844f 100%);
+  border: 2px solid rgba(255, 248, 236, 0.95);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45), 0 0 0 3px rgba(212, 165, 116, 0.28);
+}
+
+.amap-picker-pin-head::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  background: #fff8ec;
+  box-shadow: inset 0 0 0 2px rgba(15, 20, 25, 0.18);
+}
+
+.amap-picker-pin-point {
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  border-radius: 50%;
+  background: rgba(212, 165, 116, 0.95);
+  box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.28);
+}
+
+.amap-picker-pin-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  width: 18px;
+  height: 6px;
+  margin-left: -9px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.35);
+  filter: blur(1px);
+}
+
+@keyframes amap-picker-pin-pulse {
+  0% {
+    transform: scale(0.75);
+    opacity: 0.85;
+  }
+  70% {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.1);
+    opacity: 0;
+  }
 }
 
 .amap-picker-fab {
@@ -2351,12 +2713,243 @@ body.amap-picker-open {
   }
 }
 
+/* 地图浏览已登记 */
+.amap-browse-header {
+  flex: 0 0 auto;
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-accent);
+}
+
+.amap-browse-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.amap-browse-title-wrap {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.amap-browse-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.amap-browse-summary {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.amap-browse-search-row {
+  margin-top: 10px;
+}
+
+.amap-browse-results {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  max-height: 150px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.amap-browse-result-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.amap-browse-result-item:last-child {
+  border-bottom: none;
+}
+
+.amap-browse-result-item:hover,
+.amap-browse-result-item:active {
+  background: var(--primary-soft);
+}
+
+.amap-browse-result-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.amap-browse-result-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.amap-browse-result-empty {
+  padding: 12px;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  text-align: center;
+}
+
+.amap-browse-empty {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 5;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  padding: 14px 18px;
+  max-width: min(280px, calc(100% - 32px));
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: rgba(26, 34, 44, 0.92);
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.45;
+  pointer-events: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.amap-browse-footer {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.amap-browse-hint {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+/* 锚点盒固定 24×34，底边中点=针尖；标签绝对定位，缩放时不左右漂移 */
+.amap-browse-pin {
+  appearance: none;
+  position: relative;
+  display: block;
+  width: 24px;
+  height: 34px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  overflow: visible;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.4));
+}
+
+.amap-browse-pin-label {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 4px);
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 140px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(229, 57, 53, 0.75);
+  background: rgba(20, 28, 36, 0.94);
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+.amap-browse-pin-rating {
+  flex: 0 0 auto;
+  color: #ff6b6b;
+  font-weight: 800;
+}
+
+.amap-browse-pin-needle {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 24px;
+  height: 34px;
+}
+
+/* 圆头：尖端用三角落在盒子底边中点，保证缩放时对准经纬度 */
+.amap-browse-pin-needle::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 18px;
+  height: 18px;
+  margin-left: -9px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #ff6b6b 0%, #e53935 55%, #c62828 100%);
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 6px rgba(198, 40, 40, 0.55);
+  box-sizing: border-box;
+}
+
+.amap-browse-pin-needle::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 0;
+  height: 0;
+  margin-left: -7px;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 16px solid #e53935;
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.amap-browse-pin.is-active .amap-browse-pin-label {
+  border-color: #e53935;
+  box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.35);
+  background: rgba(36, 48, 60, 0.98);
+}
+
+.amap-browse-pin.is-active .amap-browse-pin-needle::before {
+  background: linear-gradient(145deg, #ff8a80 0%, #f44336 45%, #b71c1c 100%);
+  box-shadow: 0 3px 10px rgba(183, 28, 28, 0.7);
+}
+
+.amap-browse-overlay .amap-picker-map-wrap {
+  min-height: 260px;
+}
+
 @media (max-width: 640px) {
-  .shop-location-field {
+  .shop-map-field {
     flex-wrap: wrap;
   }
 
-  .shop-location-field .btn {
+  .shop-map-field .btn {
     width: 100%;
   }
 
@@ -2373,5 +2966,13 @@ body.amap-picker-open {
   .amap-picker-actions .btn {
     min-width: 0;
     flex: 1 1 auto;
+  }
+
+  .amap-browse-footer {
+    flex-wrap: wrap;
+  }
+
+  .amap-browse-footer .btn {
+    width: 100%;
   }
 }
