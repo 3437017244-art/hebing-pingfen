@@ -122,6 +122,12 @@ body {
   padding-bottom: max(0px, env(safe-area-inset-bottom));
 }
 
+/* 浏览大地图：不要顶部安全区空白挡触摸，关闭钮自己避让刘海 */
+.amap-browse-overlay.amap-picker-overlay {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
 .amap-picker-header,
 .amap-picker-actions {
   padding-left: max(14px, env(safe-area-inset-left));

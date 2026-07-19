@@ -2994,13 +2994,13 @@ body.amap-browse-open {
   display: none;
 }
 
-/* 锚点盒固定 24×34，底边中点=针尖；标签绝对定位，缩放时不左右漂移 */
+/* 锚点盒含招牌+针尖：底边中点=针尖；整盒都在命中范围内，顶部也能灵敏点到 */
 .amap-browse-pin {
   appearance: none;
   position: relative;
   display: block;
-  width: 24px;
-  height: 34px;
+  width: 148px;
+  height: 78px;
   margin: 0;
   padding: 0;
   border: none;
@@ -3009,7 +3009,6 @@ body.amap-browse-open {
   font: inherit;
   color: inherit;
   overflow: visible;
-  /* 整颗钉可点；招牌不挡鼠标，便于滑到后面的钉 */
   pointer-events: auto;
   transform: scale(1);
   transform-origin: 50% 100%;
@@ -3018,12 +3017,15 @@ body.amap-browse-open {
     drop-shadow(0 0 0.5px var(--map-pin-outline))
     drop-shadow(0 0 1.6px var(--map-pin-outline-outer))
     drop-shadow(0 3px 6px rgba(0, 0, 0, 0.45));
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .amap-browse-pin-label {
   position: absolute;
   left: 50%;
-  bottom: calc(100% + 4px);
+  top: 0;
+  bottom: auto;
   transform: translateX(-50%);
   display: inline-flex;
   align-items: center;
@@ -3040,7 +3042,6 @@ body.amap-browse-open {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  /* 悬停/点击招牌文字区也算选中该标记 */
   pointer-events: auto;
   cursor: pointer;
   z-index: 1;
@@ -3084,11 +3085,11 @@ body.amap-browse-open {
 
 .amap-browse-pin-needle {
   position: absolute;
-  left: 0;
-  right: 0;
+  left: 50%;
   bottom: 0;
   width: 24px;
   height: 34px;
+  margin-left: -12px;
 }
 
 /* 圆头：尖端用三角落在盒子底边中点；白边+深色外轮廓与地图图层分开 */
@@ -3145,6 +3146,22 @@ body.amap-browse-open {
   width: min(960px, calc(100vw - 12px));
   height: min(92vh, 920px);
   z-index: 40;
+  /* 浏览地图全幅可点，安全区交给关闭按钮自己避让 */
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.amap-browse-close {
+  top: max(12px, env(safe-area-inset-top, 0px));
+  right: max(12px, env(safe-area-inset-right, 0px));
+}
+
+/* 高德标记容器勿裁切招牌，否则靠上的标签点不中 */
+.amap-browse .amap-marker,
+.amap-browse .amap-markers,
+.amap-browse .amap-marker-content,
+.amap-browse .amap-container .amap-marker {
+  overflow: visible !important;
 }
 
 .amap-browse-overlay .amap-picker-map-wrap {
@@ -3156,6 +3173,7 @@ body.amap-browse-open {
 .amap-browse .amap-picker-map,
 .amap-browse .amap-container {
   touch-action: none;
+  overflow: visible;
 }
 
 @media (max-width: 640px) {

@@ -1005,9 +1005,11 @@
     return browseOverlayEl;
   }
 
-  // 锚点盒固定尺寸：针尖在底边中点，标签绝对定位不参与宽高，避免缩放时左右漂移
-  const BROWSE_PIN_ANCHOR_W = 24;
-  const BROWSE_PIN_ANCHOR_H = 34;
+  // 锚点盒含上方招牌区：底边中点仍是针尖，避免标签伸出 AMap 命中盒导致顶部难点
+  const BROWSE_PIN_ANCHOR_W = 148;
+  const BROWSE_PIN_NEEDLE_H = 34;
+  const BROWSE_PIN_LABEL_SPACE = 44;
+  const BROWSE_PIN_ANCHOR_H = BROWSE_PIN_NEEDLE_H + BROWSE_PIN_LABEL_SPACE;
   // 小于该距离视为「挨得近」：只用于提示/点选列表，绝不改动登记坐标
   const BROWSE_NEAR_METERS = 50;
 
@@ -1344,6 +1346,18 @@
       browsePinnedPlaceId = placeId;
     }
     browseMap.setZoomAndCenter(Math.max(browseMap.getZoom(), 16), [lng, lat]);
+    // 招牌在针尖上方：视野略上移，让钉落在偏下，顶部标签不被裁切、更好点
+    window.requestAnimationFrame(function () {
+      if (!browseMap) return;
+      try {
+        const size = browseMap.getSize?.();
+        const h = size?.height || window.innerHeight || 600;
+        const pad = Math.min(110, Math.max(64, Math.round(h * 0.14)));
+        browseMap.panBy(0, -pad);
+      } catch (_err) {
+        /* ignore */
+      }
+    });
     if (browseHoverClearTimer) {
       clearTimeout(browseHoverClearTimer);
       browseHoverClearTimer = null;
