@@ -457,7 +457,7 @@
     },
     {
       "id": "mrrkxc1mdenz2v",
-      "name": "羊肉烩面",
+      "name": "端记河南烩面",
       "brand": "",
       "flavor": "羊肉烩面",
       "category": "",
@@ -473,7 +473,8 @@
       "singleWeight": null,
       "rating": 0,
       "createdAt": "2026-07-19T09:14:27.514Z",
-      "updatedAt": "2026-07-19T09:15:03.621Z"
+      "updatedAt": "2026-07-19T09:15:49.908Z",
+      "shopRating": 0
     }
   ],
   "shops": [
@@ -507,5 +508,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-19T09:15:07.772Z"
+  "syncedAt": "2026-07-19T09:15:51.918Z"
 }
