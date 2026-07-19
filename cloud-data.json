@@ -515,7 +515,8 @@
       "singleWeight": null,
       "rating": 0.5,
       "createdAt": "2026-07-19T11:10:07.376Z",
-      "updatedAt": "2026-07-19T11:10:48.561Z"
+      "updatedAt": "2026-07-19T11:11:03.037Z",
+      "shopRating": 0.5
     }
   ],
   "shops": [
@@ -550,5 +551,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-19T11:10:53.672Z"
+  "syncedAt": "2026-07-19T11:11:06.993Z"
 }
