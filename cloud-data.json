@@ -475,6 +475,26 @@
       "createdAt": "2026-07-19T09:14:27.514Z",
       "updatedAt": "2026-07-19T09:15:49.908Z",
       "shopRating": 0
+    },
+    {
+      "id": "mrrl060wcmc2wy",
+      "name": "端记河南烩面",
+      "brand": "",
+      "flavor": "鸡蛋炒饼",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "createdAt": "2026-07-19T09:16:39.680Z",
+      "updatedAt": "2026-07-19T09:16:39.680Z"
     }
   ],
   "shops": [
@@ -508,5 +528,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-19T09:15:51.918Z"
+  "syncedAt": "2026-07-19T09:16:43.996Z"
 }
