@@ -77,20 +77,19 @@
     overlayEl.setAttribute('aria-label', '地图选点');
     overlayEl.innerHTML =
       '<div class="amap-picker">' +
-      '<div class="amap-picker-header">' +
-      '<div class="amap-picker-search-row">' +
-      '<input type="search" class="amap-picker-search" id="amap-picker-search" placeholder="输入地名，下方自动出现结果…" autocomplete="off">' +
-      '<button type="button" class="btn btn-secondary btn-sm" id="amap-picker-search-btn">搜索</button>' +
-      '</div>' +
-      '<p class="amap-picker-selected" id="amap-picker-selected">可点底部定位图标、输入地名，或直接点地图选点</p>' +
-      '<ul class="amap-picker-results" id="amap-picker-results" hidden></ul>' +
-      '</div>' +
       '<div class="amap-picker-map-wrap">' +
       '<div class="amap-picker-map" id="amap-picker-map"></div>' +
+      '<div class="amap-picker-header">' +
+      '<div class="amap-picker-search-row">' +
+      '<input type="search" class="amap-picker-search" id="amap-picker-search" placeholder="输入地名搜索…" autocomplete="off">' +
+      '<button type="button" class="btn btn-secondary btn-sm amap-picker-search-btn" id="amap-picker-search-btn">搜索</button>' +
+      '</div>' +
+      '<p class="amap-picker-selected" id="amap-picker-selected">点地图选点，或搜索地名</p>' +
+      '<ul class="amap-picker-results" id="amap-picker-results" hidden></ul>' +
+      '</div>' +
       '<div class="amap-picker-zoom">' +
       '<button type="button" class="amap-picker-fab amap-picker-zoom-out" id="amap-picker-zoom-out" aria-label="缩小">−</button>' +
       '<button type="button" class="amap-picker-fab amap-picker-zoom-in" id="amap-picker-zoom-in" aria-label="放大">+</button>' +
-      '</div>' +
       '</div>' +
       '<div class="amap-picker-actions">' +
       '<button type="button" class="amap-picker-locate-btn" id="amap-picker-locate-btn" aria-label="我的位置" title="我的位置">' +
@@ -101,8 +100,9 @@
       '</svg>' +
       '</button>' +
       '<div class="amap-picker-actions-right">' +
-      '<button type="button" class="btn btn-secondary" id="amap-picker-cancel">取消</button>' +
-      '<button type="button" class="btn btn-primary" id="amap-picker-confirm">确认位置</button>' +
+      '<button type="button" class="btn btn-secondary amap-picker-action-btn" id="amap-picker-cancel">取消</button>' +
+      '<button type="button" class="btn btn-primary amap-picker-action-btn" id="amap-picker-confirm">确认位置</button>' +
+      '</div>' +
       '</div>' +
       '</div>' +
       '</div>';
@@ -755,6 +755,8 @@
   let browsePlaces = [];
   let browseOnSelect = null;
   let browseHoverPlaceId = null;
+  let browseHoverSwitchTimer = null;
+  const BROWSE_HOVER_SWITCH_MS = 140;
 
   function escapeBrowseText(str) {
     return String(str == null ? '' : str)
@@ -770,6 +772,10 @@
   }
 
   function destroyBrowseMapInstance() {
+    if (browseHoverSwitchTimer) {
+      clearTimeout(browseHoverSwitchTimer);
+      browseHoverSwitchTimer = null;
+    }
     if (browseMap) {
       try {
         browseMap.destroy();
@@ -826,6 +832,12 @@
     });
     browseOverlayEl.addEventListener('click', function (event) {
       if (event.target === browseOverlayEl) closeBrowseMap();
+    });
+    // 避免 Ctrl+A 全选地图上所有招牌文字；截图快捷键冲突请在 QQ/系统里改
+    browseOverlayEl.addEventListener('keydown', function (event) {
+      if ((event.ctrlKey || event.metaKey) && String(event.key || '').toLowerCase() === 'a') {
+        event.preventDefault();
+      }
     });
 
     return browseOverlayEl;
@@ -926,17 +938,8 @@
   function syncBrowseMarkerAnchor(marker) {
     const AMap = global.AMap;
     if (!marker || !AMap) return;
-    // 以锚点盒为准；若 DOM 已渲染则按实测微调，保证针尖对准经纬度
-    const root = marker.dom || marker.getContentDom?.();
-    const pin = root?.querySelector?.('.amap-browse-pin') || root;
-    if (!pin || !pin.getBoundingClientRect) {
-      marker.setOffset(browseMarkerOffset(AMap));
-      return;
-    }
-    const rect = pin.getBoundingClientRect();
-    const w = Math.max(1, Math.round(rect.width));
-    const h = Math.max(1, Math.round(rect.height));
-    marker.setOffset(new AMap.Pixel(-Math.round(w / 2), -h));
+    // 固定用锚点盒尺寸，避免悬停放大后 getBoundingClientRect 把针尖算偏
+    marker.setOffset(browseMarkerOffset(AMap));
   }
 
   function selectBrowsePlace(place) {
@@ -972,16 +975,37 @@
     });
   }
 
+  function requestBrowseMarkerHover(placeId) {
+    const nextId = placeId != null ? String(placeId) : null;
+    if (browseHoverSwitchTimer) {
+      clearTimeout(browseHoverSwitchTimer);
+      browseHoverSwitchTimer = null;
+    }
+    // 同一目标：立刻确认，取消待切换
+    if (browseHoverPlaceId === nextId) return;
+    // 首次悬停：立刻放大
+    if (browseHoverPlaceId == null && nextId != null) {
+      setBrowseMarkerHover(nextId);
+      return;
+    }
+    // 切到另一家或取消：稍作迟滞，避免两块招牌交界处来回跳
+    browseHoverSwitchTimer = setTimeout(function () {
+      browseHoverSwitchTimer = null;
+      setBrowseMarkerHover(nextId);
+    }, BROWSE_HOVER_SWITCH_MS);
+  }
+
   function findBrowsePinNode(node) {
     if (!node || !node.nodeType) return null;
-    // 红钉本体，或招牌文字（.amap-browse-pin-label）都算命中该标记
+    // 只认点在钉/招牌内部；禁止向子树 querySelector（会误命中地图里别的钉）
     if (node.classList?.contains('amap-browse-pin')) return node;
     if (node.classList?.contains('amap-browse-pin-label')) {
       return node.closest?.('.amap-browse-pin') || null;
     }
-    const fromClosest = node.closest?.('.amap-browse-pin');
-    if (fromClosest) return fromClosest;
-    return node.querySelector?.('.amap-browse-pin') || null;
+    if (node.classList?.contains('amap-browse-pin-needle')) {
+      return node.closest?.('.amap-browse-pin') || null;
+    }
+    return node.closest?.('.amap-browse-pin') || null;
   }
 
   function resolveBrowseHoverFromPoint(clientX, clientY) {
@@ -989,39 +1013,70 @@
     const stack = document.elementsFromPoint
       ? document.elementsFromPoint(clientX, clientY)
       : [document.elementFromPoint(clientX, clientY)].filter(Boolean);
+    const hits = [];
+    const seen = Object.create(null);
     for (let i = 0; i < stack.length; i++) {
       const pin = findBrowsePinNode(stack[i]);
       if (!pin) continue;
       const id = pin.dataset?.browseId;
-      if (id == null) continue;
+      if (id == null || seen[id]) continue;
+      seen[id] = true;
       const entry = browseMarkers.find(function (e) {
         return String(e.place.id) === String(id);
       });
-      if (entry) return entry;
+      if (entry) hits.push(entry);
     }
-    return null;
+    if (!hits.length) return null;
+    // 指针仍压在当前悬停项上时，优先粘住，不抢给叠在上面的另一家
+    if (browseHoverPlaceId != null) {
+      for (let j = 0; j < hits.length; j++) {
+        if (String(hits[j].place.id) === String(browseHoverPlaceId)) {
+          return hits[j];
+        }
+      }
+    }
+    return hits[0];
   }
 
   function bindBrowseMarkerHover() {
     if (!browseMap) return;
     browseMarkers.forEach(function (entry) {
       entry.marker.on('mouseover', function () {
-        setBrowseMarkerHover(entry.place.id);
+        requestBrowseMarkerHover(entry.place.id);
       });
-      entry.marker.on('mouseout', function () {
-        // 交给地图 mousemove 判定，避免移到相邻钉时闪烁
+      entry.marker.on('mouseout', function (event) {
+        const origin = event?.originEvent || event;
+        const related = origin?.relatedTarget;
+        if (related) {
+          const relatedPin = findBrowsePinNode(related);
+          if (relatedPin && String(relatedPin.dataset?.browseId) === String(entry.place.id)) {
+            return;
+          }
+        }
+        const x = origin?.clientX;
+        const y = origin?.clientY;
+        if (x != null && y != null) {
+          const hit = resolveBrowseHoverFromPoint(x, y);
+          if (hit && String(hit.place.id) === String(entry.place.id)) return;
+          requestBrowseMarkerHover(hit ? hit.place.id : null);
+          return;
+        }
+        if (browseHoverPlaceId != null && String(browseHoverPlaceId) === String(entry.place.id)) {
+          requestBrowseMarkerHover(null);
+        }
       });
     });
+    // 只在明确命中招牌/红钉时切换；空白处不靠地图 mousemove 强行清除
     browseMap.on('mousemove', function (event) {
       const origin = event?.originEvent || event;
       const x = origin?.clientX;
       const y = origin?.clientY;
       if (x == null || y == null) return;
       const hit = resolveBrowseHoverFromPoint(x, y);
-      setBrowseMarkerHover(hit ? hit.place.id : null);
+      if (hit) requestBrowseMarkerHover(hit.place.id);
     });
     browseMap.on('mouseout', function () {
-      setBrowseMarkerHover(null);
+      requestBrowseMarkerHover(null);
     });
   }
 

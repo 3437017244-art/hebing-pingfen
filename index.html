@@ -8,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260719-140100">
-  <link rel="stylesheet" href="mobile.css?v=20260719-140100">
+  <link rel="stylesheet" href="styles.css?v=20260719-145800">
+  <link rel="stylesheet" href="mobile.css?v=20260719-145800">
 </head>
 <body>
   <div class="app">
@@ -102,8 +102,19 @@
   <!-- 详情弹层（商品与商店共用） -->
   <dialog id="detail-dialog" class="dialog">
     <div class="dialog-header">
-      <h2 id="dialog-title">详情</h2>
-      <button type="button" class="dialog-close" id="dialog-close" aria-label="关闭">&times;</button>
+      <div class="dialog-header-leading">
+        <h2 id="dialog-title">详情</h2>
+        <div class="dialog-header-name" id="dialog-header-name" hidden>
+          <div class="form-row form-row-key form-row-key-brand dialog-header-name-field">
+            <label for="dialog-name">名称 <span class="required">*</span></label>
+            <input type="text" id="dialog-name" required value="" autocomplete="off" placeholder="请输入名称">
+          </div>
+        </div>
+      </div>
+      <div class="dialog-header-trailing">
+        <button type="button" class="btn btn-secondary btn-sm dialog-header-edit-btn" id="dialog-header-edit-btn" hidden>编辑</button>
+        <button type="button" class="dialog-close" id="dialog-close" aria-label="关闭">&times;</button>
+      </div>
     </div>
     <div class="dialog-body" id="dialog-body"></div>
     <div class="dialog-actions">
@@ -112,12 +123,12 @@
     </div>
   </dialog>
 
-  <script src="site-config.js?v=20260719-140100"></script>
-  <script src="mobile-bridge.js?v=20260719-140100"></script>
-  <script src="app-update.js?v=20260719-140100"></script>
-  <script src="sync-service.js?v=20260719-140100"></script>
-  <script src="amap-picker.js?v=20260719-140100"></script>
-  <script src="app.js?v=20260719-140100"></script>
+  <script src="site-config.js?v=20260719-145800"></script>
+  <script src="mobile-bridge.js?v=20260719-145800"></script>
+  <script src="app-update.js?v=20260719-145800"></script>
+  <script src="sync-service.js?v=20260719-145800"></script>
+  <script src="amap-picker.js?v=20260719-145800"></script>
+  <script src="app.js?v=20260719-145800"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       const versionLine = document.getElementById('site-version-line');

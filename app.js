@@ -298,6 +298,9 @@
   const productEls = {
     detailDialog: $('#detail-dialog'),
     dialogTitle: $('#dialog-title'),
+    dialogHeaderName: $('#dialog-header-name'),
+    dialogNameInput: $('#dialog-name'),
+    dialogHeaderEditBtn: $('#dialog-header-edit-btn'),
     dialogBody: $('#dialog-body'),
     dialogClose: $('#dialog-close'),
     dialogEditBtn: $('#dialog-edit-btn'),
@@ -306,6 +309,44 @@
 
   let dialogEditMode = false;
   let dialogSetStars = null;
+
+  function resetDialogHeader() {
+    if (productEls.dialogTitle) {
+      productEls.dialogTitle.hidden = false;
+    }
+    if (productEls.dialogHeaderName) {
+      productEls.dialogHeaderName.hidden = true;
+    }
+    if (productEls.dialogNameInput) {
+      productEls.dialogNameInput.value = '';
+    }
+    if (productEls.dialogHeaderEditBtn) {
+      productEls.dialogHeaderEditBtn.hidden = true;
+    }
+  }
+
+  function showDialogTitle(text) {
+    resetDialogHeader();
+    if (productEls.dialogTitle) {
+      productEls.dialogTitle.textContent = text || '详情';
+      productEls.dialogTitle.hidden = false;
+    }
+  }
+
+  function showDialogNameField(value) {
+    if (productEls.dialogTitle) {
+      productEls.dialogTitle.hidden = true;
+    }
+    if (productEls.dialogHeaderName) {
+      productEls.dialogHeaderName.hidden = false;
+    }
+    if (productEls.dialogNameInput) {
+      productEls.dialogNameInput.value = value || '';
+    }
+    if (productEls.dialogHeaderEditBtn) {
+      productEls.dialogHeaderEditBtn.hidden = true;
+    }
+  }
 
   function setDialogViewMode() {
     dialogEditMode = false;
@@ -316,7 +357,16 @@
     productEls.dialogDeleteBtn.textContent = '删除';
     productEls.dialogDeleteBtn.className = 'btn btn-danger';
     productEls.dialogDeleteBtn.hidden = false;
-    productEls.detailDialog.classList.remove('dialog-editing');
+    productEls.detailDialog.classList.remove('dialog-editing', 'dialog-renaming');
+    if (productEls.dialogHeaderEditBtn) {
+      productEls.dialogHeaderEditBtn.hidden = true;
+    }
+    if (productEls.dialogHeaderName) {
+      productEls.dialogHeaderName.hidden = true;
+    }
+    if (productEls.dialogTitle) {
+      productEls.dialogTitle.hidden = false;
+    }
   }
 
   function updateDialogUnitPriceDisplay() {
@@ -514,10 +564,6 @@
     const showStockFields = hasStockQuantity(item);
     return `
       <form id="dialog-edit-form" class="dialog-edit-form" onsubmit="return false">
-        <div class="form-row form-row-key form-row-key-brand">
-          <label for="dialog-name">品牌 <span class="required">*</span></label>
-          <input type="text" id="dialog-name" required value="${escapeHtml(item.name)}">
-        </div>
         <div class="form-row form-row-key form-row-key-name">
           <label for="dialog-flavor">商品名1</label>
           <input type="text" id="dialog-flavor" value="${escapeHtml(item.flavor || '')}" placeholder="请输入商品名1">
@@ -745,8 +791,12 @@
         ? items.find((i) => i.id === selectedDetail.id)
         : null;
     const shopInfo = existing ? getProductShopInfo(existing) : null;
+    const name =
+      (selectedDetail?.brand || '').trim() ||
+      (existing ? getBrandName(existing) : '') ||
+      (productEls.dialogNameInput?.value || $('#dialog-name')?.value || '').trim();
     return sanitizeProductStockFields({
-      name: ($('#dialog-name')?.value || '').trim(),
+      name,
       brand: '',
       flavor: ($('#dialog-flavor')?.value || '').trim(),
       category: ($('#dialog-category')?.value || '').trim(),
@@ -767,8 +817,8 @@
   function showProductEditDialog(item) {
     const editItem = resolveEditItem(item);
     dialogEditMode = true;
-    selectedDetail = { type: 'product', id: editItem.id };
-    productEls.dialogTitle.textContent = editItem.name || '编辑';
+    selectedDetail = { type: 'product', id: editItem.id, brand: getBrandName(editItem) };
+    showDialogTitle(getBrandName(editItem));
     window.AmapPicker?.destroyAllMiniMaps?.();
     productEls.dialogBody.innerHTML = renderProductEditForm(editItem);
     bindDialogProductEdit(editItem);
@@ -780,7 +830,7 @@
     productEls.dialogDeleteBtn.hidden = false;
     productEls.detailDialog.classList.add('dialog-editing');
     if (!productEls.detailDialog.open) productEls.detailDialog.showModal();
-    $('#dialog-name')?.focus();
+    $('#dialog-flavor')?.focus();
   }
 
   function resolveEditItem(item) {
@@ -804,7 +854,7 @@
     const data = getDialogProductFormData();
     const extras = getExtraProductsFormData();
     if (!data.name) {
-      $('#dialog-name')?.focus();
+      productEls.dialogNameInput?.focus();
       return;
     }
     if (!hasMainProductContent(data) && !extras.length) {
@@ -866,7 +916,7 @@
   function showShopEditDialog(shop) {
     dialogEditMode = true;
     selectedDetail = { type: 'shop', id: shop.id };
-    productEls.dialogTitle.textContent = shop.name || '编辑';
+    showDialogTitle(shop.name || '编辑');
     window.AmapPicker?.destroyAllMiniMaps?.();
     productEls.dialogBody.innerHTML = renderShopEditForm(shop);
     bindDialogProductEdit({ rating: ratingOrDefault(shop.rating, 3) });
@@ -891,8 +941,14 @@
 
   function cancelDialogEdit() {
     if (!selectedDetail) return;
-    const { type, id, isNew, brand } = selectedDetail;
+    const { type, id, isNew, brand, renaming } = selectedDetail;
     setDialogViewMode();
+    if (type === 'brand' && (renaming || brand)) {
+      const group = groupProductsByBrand(items).find((g) => g.brand === brand);
+      if (group) showBrandDetail(group);
+      else closeDetailDialog();
+      return;
+    }
     if (type === 'product') {
       if (isNew && brand) {
         const group = groupProductsByBrand(items).find((g) => g.brand === brand);
@@ -906,6 +962,110 @@
     } else {
       closeDetailDialog();
     }
+  }
+
+  function getGroupShopRating(groupOrProducts) {
+    const products = Array.isArray(groupOrProducts)
+      ? groupOrProducts
+      : groupOrProducts?.products || [];
+    for (const item of products) {
+      if (item && item.shopRating != null && item.shopRating !== '') {
+        return ratingOrDefault(item.shopRating, 0);
+      }
+    }
+    return 0;
+  }
+
+  function startBrandNameEdit(brand) {
+    const brandName = (brand || '').trim();
+    if (!brandName) return;
+    const group = groupProductsByBrand(items).find((g) => g.brand === brandName);
+    const shopRating = getGroupShopRating(group);
+    dialogEditMode = true;
+    selectedDetail = { type: 'brand', brand: brandName, renaming: true };
+    window.AmapPicker?.destroyAllMiniMaps?.();
+    showDialogNameField(brandName);
+    if (productEls.dialogBody) {
+      productEls.dialogBody.innerHTML = `
+        <form id="dialog-edit-form" class="dialog-edit-form dialog-brand-edit-form" onsubmit="return false">
+          <div class="form-row">
+            <label>评分</label>
+            ${renderRatingEditorHtml(shopRating, {
+              ratingId: 'dialog-star-rating',
+              currentId: 'dialog-rating-current',
+              hiddenId: 'dialog-rating',
+            })}
+          </div>
+        </form>
+      `;
+    }
+    const starContainer = $('#dialog-star-rating');
+    const hiddenInput = $('#dialog-rating');
+    const ratingDisplay = $('#dialog-rating-current');
+    dialogSetStars = bindStarRating(starContainer, hiddenInput, ratingDisplay, 0);
+    dialogSetStars(ratingOrDefault(shopRating, 0));
+    productEls.dialogEditBtn.textContent = '保存';
+    productEls.dialogEditBtn.className = 'btn btn-primary';
+    productEls.dialogEditBtn.hidden = false;
+    productEls.dialogDeleteBtn.textContent = '取消';
+    productEls.dialogDeleteBtn.className = 'btn btn-secondary';
+    productEls.dialogDeleteBtn.hidden = false;
+    productEls.detailDialog.classList.add('dialog-editing', 'dialog-renaming');
+    productEls.dialogNameInput?.focus();
+    productEls.dialogNameInput?.select?.();
+  }
+
+  function saveBrandNameFromDialog() {
+    if (!selectedDetail || selectedDetail.type !== 'brand' || !selectedDetail.renaming) return;
+    const oldName = (selectedDetail.brand || '').trim();
+    const newName = (productEls.dialogNameInput?.value || '').trim();
+    if (!newName) {
+      productEls.dialogNameInput?.focus();
+      return;
+    }
+    const shopRating = ratingOrDefault($('#dialog-rating')?.value, 0);
+    const now = new Date().toISOString();
+    let changed = false;
+    items = items.map((item) => {
+      if (getBrandName(item) !== oldName) return item;
+      changed = true;
+      const next = {
+        ...item,
+        name: newName,
+        shopRating,
+        updatedAt: now,
+      };
+      if ((item.shopName || '').trim() === oldName) {
+        next.shopName = newName;
+      }
+      return next;
+    });
+    if (!changed) {
+      items.push({
+        id: generateId(),
+        name: newName,
+        brand: '',
+        flavor: '',
+        category: '',
+        storageLocation: '',
+        quantity: null,
+        shopName: '',
+        shopLocation: '',
+        shopMapAddress: '',
+        shopLng: null,
+        shopLat: null,
+        price: null,
+        weight: null,
+        singleWeight: null,
+        rating: 0,
+        shopRating,
+        notes: '',
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
+    saveItems();
+    window.location.reload();
   }
 
   function mergeById(existing, incoming) {
@@ -1024,7 +1184,7 @@
 
   function showDetailDialog(title, rows) {
     setDialogViewMode();
-    productEls.dialogTitle.textContent = title;
+    showDialogTitle(title);
     productEls.dialogBody.innerHTML = renderDetailBody(rows);
     productEls.dialogEditBtn.hidden = false;
     productEls.dialogDeleteBtn.hidden = false;
@@ -1259,9 +1419,11 @@
       .map(([brand, products]) => {
         const sorted = [...products].sort(compareStockPriority);
         const ratings = sorted.map((p) => Number(p.rating || 0)).filter((r) => r > 0);
+        const shopRating = getGroupShopRating(sorted);
         return {
           brand,
           products: sorted,
+          shopRating,
           maxRating: ratings.length ? Math.max(...ratings) : 0,
           avgRating: ratings.length ? ratings.reduce((s, r) => s + r, 0) / ratings.length : 0,
           hasStock: sorted.some(hasStockQuantity),
@@ -1270,6 +1432,8 @@
       .sort((a, b) => {
         const stockDiff = Number(b.hasStock) - Number(a.hasStock);
         if (stockDiff !== 0) return stockDiff;
+        const shopDiff = Number(b.shopRating || 0) - Number(a.shopRating || 0);
+        if (shopDiff !== 0) return shopDiff;
         const diff = b.maxRating - a.maxRating;
         if (diff !== 0) return diff;
         const aLatest = a.products[0]?.updatedAt || a.products[0]?.createdAt || '';
@@ -1323,7 +1487,7 @@
     const { shopName, shopLocation, shopLng, shopLat } = getProductShopInfo(item);
     return [
       ['评分', renderStarsDisplay(item.rating, isLow)],
-      ['品牌', escapeHtml(getBrandName(item))],
+      ['名称', escapeHtml(getBrandName(item))],
       ['商品名', escapeHtml(item.flavor) || '—'],
       ['分类', escapeHtml(getItemCategory(item)) || '—'],
       ['所在位置', escapeHtml(getItemStorageLocation(item)) || '—'],
@@ -1375,10 +1539,9 @@
   }
 
   function renderBrandCard(group) {
-    const { brand, products, maxRating } = group;
-    const count = products.length;
-    const isLow = maxRating > 0 && maxRating <= 2;
-    const displayRating = count === 1 ? products[0].rating : maxRating;
+    const { brand, products, shopRating } = group;
+    const displayRating = ratingOrDefault(shopRating, 0);
+    const isLow = isLowRating(displayRating);
     const stockClass = getBrandStockClass(products);
     const stockPreview = renderBrandStockPreview(products);
     const bodyHtml = `<p class="brand-count-hint">${renderBrandCountHint(products)}</p>`;
@@ -1584,7 +1747,7 @@
     };
     dialogEditMode = true;
     selectedDetail = { type: 'product', isNew: true, brand };
-    productEls.dialogTitle.textContent = brand;
+    showDialogTitle(brand || '添加商品');
     window.AmapPicker?.destroyAllMiniMaps?.();
     productEls.dialogBody.innerHTML = renderProductEditForm(emptyItem);
     bindDialogProductEdit(emptyItem);
@@ -1647,7 +1810,10 @@
     };
     setDialogViewMode();
     window.AmapPicker?.destroyAllMiniMaps?.();
-    productEls.dialogTitle.textContent = group.brand;
+    showDialogTitle(group.brand);
+    if (productEls.dialogHeaderEditBtn) {
+      productEls.dialogHeaderEditBtn.hidden = false;
+    }
     productEls.dialogBody.innerHTML = renderBrandDetailBody(group);
     bindBrandLocationMapThumb(group);
     productEls.dialogEditBtn.textContent = '添加新商品';
@@ -1671,7 +1837,7 @@
         address: info.shopMapAddress || info.shopLocation || '',
         lng,
         lat,
-        rating: group.maxRating > 0 ? formatRating(group.maxRating) : '',
+        rating: group.shopRating > 0 ? formatRating(group.shopRating) : '',
         brand: group.brand,
       });
     }
@@ -2191,9 +2357,27 @@
     }
 
     productEls.dialogClose.addEventListener('click', closeDetailDialog);
+    productEls.dialogHeaderEditBtn?.addEventListener('click', () => {
+      if (!selectedDetail || selectedDetail.type !== 'brand' || dialogEditMode) return;
+      startBrandNameEdit(selectedDetail.brand);
+    });
+    productEls.dialogNameInput?.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter') return;
+      if (!dialogEditMode || selectedDetail?.type !== 'brand' || !selectedDetail.renaming) return;
+      event.preventDefault();
+      saveBrandNameFromDialog();
+    });
     productEls.dialogEditBtn.addEventListener('click', async () => {
       if (!selectedDetail) return;
       if (dialogEditMode) {
+        if (selectedDetail.type === 'brand' && selectedDetail.renaming) {
+          saveBrandNameFromDialog();
+          return;
+        }
+        if (selectedDetail.type === 'shop') {
+          saveShopFromDialog();
+          return;
+        }
         await saveProductFromDialog();
         return;
       }
@@ -2208,7 +2392,11 @@
     productEls.dialogDeleteBtn.addEventListener('click', async () => {
       if (!selectedDetail) return;
       if (dialogEditMode) {
-        if (selectedDetail.isNew) {
+        if (selectedDetail.type === 'brand' && selectedDetail.renaming) {
+          cancelDialogEdit();
+          return;
+        }
+        if (selectedDetail.isNew || selectedDetail.type === 'shop') {
           cancelDialogEdit();
           return;
         }

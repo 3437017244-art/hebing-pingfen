@@ -1770,10 +1770,16 @@ button.editing {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 10px;
   padding: 16px 20px;
   /* 标题层 / 内容层分界 */
   border-bottom: 2px solid #3d9b8f;
   box-shadow: 0 1px 0 rgba(61, 155, 143, 0.28);
+}
+
+.dialog-header-leading {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .dialog-header h2 {
@@ -1781,6 +1787,30 @@ button.editing {
   font-size: 1.15rem;
   font-weight: 700;
   letter-spacing: -0.01em;
+}
+
+.dialog-header-trailing {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.dialog-header-edit-btn {
+  min-width: 64px;
+}
+
+.dialog-header-name {
+  width: 100%;
+}
+
+.dialog-header-name-field {
+  margin: 0;
+  text-align: center;
+}
+
+.dialog-header-name-field label {
+  text-align: center;
 }
 
 .dialog-close {
@@ -1845,6 +1875,28 @@ button.editing {
   overflow-y: auto;
 }
 
+.dialog-renaming .dialog-body {
+  display: block;
+  max-height: none;
+  overflow: visible;
+  padding-top: 12px;
+}
+
+.dialog-renaming .dialog-header-trailing,
+.dialog-renaming .dialog-close {
+  display: none !important;
+}
+
+.dialog-renaming .dialog-header {
+  padding-right: 20px;
+}
+
+.dialog-renaming .dialog-header-leading,
+.dialog-renaming .dialog-header-name {
+  width: 100%;
+  flex: 1 1 auto;
+}
+
 .dialog-edit-form .form-row {
   margin-bottom: 12px;
   text-align: center;
@@ -1854,7 +1906,8 @@ button.editing {
   text-align: center;
 }
 
-.dialog-edit-form .form-row-key {
+.dialog-edit-form .form-row-key,
+.dialog-header-name-field {
   position: relative;
   margin-bottom: 14px;
   padding: 14px 16px 14px 20px;
@@ -1865,7 +1918,12 @@ button.editing {
   overflow: hidden;
 }
 
-.dialog-edit-form .form-row-key::before {
+.dialog-header-name-field {
+  margin-bottom: 0;
+}
+
+.dialog-edit-form .form-row-key::before,
+.dialog-header-name-field::before {
   content: '';
   position: absolute;
   left: 0;
@@ -1875,7 +1933,8 @@ button.editing {
   background: var(--field-accent);
 }
 
-.dialog-edit-form .form-row-key label {
+.dialog-edit-form .form-row-key label,
+.dialog-header-name-field label {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1891,18 +1950,23 @@ button.editing {
   letter-spacing: 0.02em;
 }
 
-.dialog-edit-form .form-row-key label::before {
+.dialog-edit-form .form-row-key label::before,
+.dialog-header-name-field label::before {
   display: none;
 }
 
-.dialog-edit-form .form-row-key label .required {
+.dialog-edit-form .form-row-key label .required,
+.dialog-header-name-field label .required {
   color: #fff;
   opacity: 0.92;
 }
 
 .dialog-edit-form .form-row-key input[type="text"],
 .dialog-edit-form .form-row-key input[type="number"],
-.dialog-edit-form .form-row-key select {
+.dialog-edit-form .form-row-key select,
+.dialog-header-name-field input[type="text"] {
+  width: 100%;
+  box-sizing: border-box;
   background: var(--bg);
   font-weight: 700;
   border: 2px solid var(--field-accent);
@@ -1911,13 +1975,16 @@ button.editing {
 }
 
 .dialog-edit-form .form-row-key input:focus,
-.dialog-edit-form .form-row-key select:focus {
+.dialog-edit-form .form-row-key select:focus,
+.dialog-header-name-field input:focus {
+  outline: none;
   border-color: var(--field-accent);
   background: var(--bg);
   box-shadow: 0 0 0 5px color-mix(in srgb, var(--field-accent) 30%, transparent);
 }
 
-.dialog-edit-form .form-row-key-brand {
+.dialog-edit-form .form-row-key-brand,
+.dialog-header-name-field {
   --field-accent: #e11d48;
   --field-bg: #fecdd3;
 }
@@ -2431,22 +2498,35 @@ body.amap-browse-open {
 }
 
 .amap-picker {
-  display: flex;
-  flex-direction: column;
+  position: relative;
+  display: block;
   width: 100%;
   height: 100%;
-  background: var(--surface);
-  border: 1px solid var(--border-strong);
+  background: #1a222c;
+  border: 1px solid rgba(232, 238, 244, 0.12);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-hover);
   overflow: hidden;
 }
 
 .amap-picker-header {
-  flex: 0 0 auto;
-  padding: 12px 14px 10px;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg-accent);
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 6;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  pointer-events: none;
+}
+
+.amap-picker-header > * {
+  pointer-events: auto;
 }
 
 .amap-picker-search-row {
@@ -2455,50 +2535,62 @@ body.amap-browse-open {
   align-items: stretch;
 }
 
-.amap-picker-search-row .btn {
+.amap-picker-search-row .btn,
+.amap-picker-search-btn {
   flex: 0 0 auto;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
 }
 
 .amap-picker-search {
   flex: 1 1 auto;
   min-width: 0;
   padding: 10px 12px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-strong);
-  background: var(--surface-soft);
+  border-radius: 12px;
+  border: 1px solid rgba(232, 238, 244, 0.28);
+  background: rgba(26, 34, 44, 0.55);
   color: var(--text);
   font: inherit;
   font-size: 0.95rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 .amap-picker-search:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-ring);
+  border-color: rgba(212, 165, 116, 0.55);
+  background: rgba(26, 34, 44, 0.72);
+  box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.18), 0 4px 14px rgba(0, 0, 0, 0.28);
 }
 
 .amap-picker-selected {
-  margin: 8px 0 0;
-  color: var(--text-muted);
+  margin: 8px 4px 0;
+  color: #f4f7fb;
   font-size: 0.82rem;
   line-height: 1.4;
-  min-height: 1.4em;
+  min-height: 0;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.85),
+    0 0 8px rgba(0, 0, 0, 0.55);
 }
 
 .amap-picker-results {
   list-style: none;
   margin: 8px 0 0;
   padding: 0;
-  max-height: 160px;
+  max-height: min(36vh, 220px);
   overflow: auto;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
+  border: 1px solid rgba(232, 238, 244, 0.16);
+  border-radius: 12px;
+  background: rgba(14, 20, 28, 0.72);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .amap-picker-result-item {
   padding: 10px 12px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(232, 238, 244, 0.08);
   color: var(--text);
   font-size: 0.88rem;
   cursor: pointer;
@@ -2510,20 +2602,20 @@ body.amap-browse-open {
 
 .amap-picker-result-item:hover,
 .amap-picker-result-item:active {
-  background: var(--primary-soft);
-  color: var(--primary-hover);
+  background: rgba(212, 165, 116, 0.16);
+  color: #f0d2ad;
 }
 
 .amap-picker-map-wrap {
-  position: relative;
-  flex: 1 1 auto;
-  min-height: 220px;
+  position: absolute;
+  inset: 0;
+  min-height: 0;
 }
 
 .amap-picker-map {
   width: 100%;
   height: 100%;
-  min-height: 220px;
+  min-height: 0;
   background: #1a222c;
 }
 
@@ -2651,10 +2743,14 @@ body.amap-browse-open {
   position: absolute;
   right: 12px;
   bottom: 12px;
-  z-index: 2;
+  z-index: 5;
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.amap-picker:not(.amap-browse) .amap-picker-zoom {
+  bottom: 68px;
 }
 
 .amap-picker-zoom .amap-picker-fab {
@@ -2669,14 +2765,28 @@ body.amap-browse-open {
 }
 
 .amap-picker-actions {
-  flex: 0 0 auto;
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 6;
   display: flex;
   align-items: center;
   gap: 10px;
   justify-content: space-between;
-  padding: 12px 14px;
-  border-top: 1px solid var(--border);
-  background: var(--bg-accent);
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  pointer-events: none;
+}
+
+.amap-picker-actions > *,
+.amap-picker-actions-right > * {
+  pointer-events: auto;
 }
 
 .amap-picker-actions-right {
@@ -2685,8 +2795,18 @@ body.amap-browse-open {
   margin-left: auto;
 }
 
-.amap-picker-actions .btn {
+.amap-picker-actions .btn,
+.amap-picker-action-btn {
   min-width: 96px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+.amap-picker-actions .btn-secondary,
+.amap-picker-action-btn.btn-secondary {
+  background: rgba(26, 34, 44, 0.72);
+  border-color: rgba(232, 238, 244, 0.28);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 .amap-picker-locate-btn {
@@ -2698,19 +2818,22 @@ body.amap-browse-open {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
-  border: 1px solid rgba(125, 205, 194, 0.45);
-  background: var(--success-bg);
+  border-radius: 12px;
+  border: 1px solid rgba(125, 205, 194, 0.55);
+  background: rgba(26, 34, 44, 0.72);
   color: var(--success-text);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
   cursor: pointer;
   flex: 0 0 auto;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   transition: background 0.2s var(--ease), border-color 0.2s var(--ease), transform 0.15s var(--ease);
   -webkit-tap-highlight-color: transparent;
 }
 
 .amap-picker-locate-btn:hover {
   border-color: rgba(125, 205, 194, 0.7);
-  background: rgba(61, 155, 143, 0.28);
+  background: rgba(36, 48, 60, 0.96);
 }
 
 .amap-picker-locate-btn:active {
@@ -2748,10 +2871,12 @@ body.amap-browse-open {
 /* 地图浏览：全幅地图，无标题/说明栏 */
 .amap-browse {
   position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 .amap-browse .amap-picker-map-wrap {
-  flex: 1 1 auto;
+  inset: 0;
   min-height: 0;
 }
 
@@ -2804,6 +2929,11 @@ body.amap-browse-open {
   overflow: visible;
   /* 整颗钉可点；招牌不挡鼠标，便于滑到后面的钉 */
   pointer-events: auto;
+  user-select: none;
+  -webkit-user-select: none;
+  transform: scale(1);
+  transform-origin: 50% 100%;
+  transition: transform 0.16s ease, filter 0.16s ease;
   filter:
     drop-shadow(0 0 0.5px var(--map-pin-outline))
     drop-shadow(0 0 1.6px var(--map-pin-outline-outer))
@@ -2834,14 +2964,23 @@ body.amap-browse-open {
   pointer-events: auto;
   cursor: pointer;
   z-index: 1;
+  transform-origin: 50% 100%;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease, border-color 0.16s ease;
 }
 
 .amap-browse-pin.is-active {
-  z-index: 5;
+  z-index: 30;
+  transform: scale(1.42);
+  filter:
+    drop-shadow(0 0 0.5px var(--map-pin-outline))
+    drop-shadow(0 0 1.6px var(--map-pin-outline-outer))
+    drop-shadow(0 6px 12px rgba(0, 0, 0, 0.5));
 }
 
 .amap-browse-pin.is-active .amap-browse-pin-label {
-  z-index: 6;
+  z-index: 31;
+  max-width: 180px;
+  box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.35);
 }
 
 .amap-browse-pin-rating {
@@ -2944,7 +3083,8 @@ body.amap-browse-open {
   }
 
   .amap-picker-actions {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    gap: 8px;
   }
 
   .amap-picker-actions-right {
@@ -2953,9 +3093,14 @@ body.amap-browse-open {
     justify-content: flex-end;
   }
 
-  .amap-picker-actions .btn {
+  .amap-picker-actions .btn,
+  .amap-picker-action-btn {
     min-width: 0;
     flex: 1 1 auto;
+  }
+
+  .amap-picker:not(.amap-browse) .amap-picker-zoom {
+    bottom: 68px;
   }
 
   .amap-browse-overlay {
