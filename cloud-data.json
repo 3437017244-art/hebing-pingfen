@@ -332,10 +332,11 @@
       "singleWeight": null,
       "rating": 5,
       "createdAt": "2026-07-16T05:26:09.667Z",
-      "updatedAt": "2026-07-19T04:25:39.545Z",
+      "updatedAt": "2026-07-19T06:37:55.219Z",
       "shopLng": 114.507968,
       "shopLat": 36.861038,
-      "shopMapAddress": "河北省邢台市沙河市褡裢街道建设路美家美户墙布窗帘软装工作室"
+      "shopMapAddress": "河北省邢台市沙河市褡裢街道建设路美家美户墙布窗帘软装工作室",
+      "shopRating": 5
     },
     {
       "id": "mrn2ijz6c4yiib",
@@ -460,5 +461,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-19T06:37:44.070Z"
+  "syncedAt": "2026-07-19T06:37:56.030Z"
 }
