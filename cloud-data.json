@@ -338,7 +338,7 @@
     },
     {
       "id": "mrn2ijz6c4yiib",
-      "name": "二小对面水果摊",
+      "name": "五小水果摊",
       "brand": "",
       "flavor": "西瓜",
       "category": "",
@@ -351,7 +351,7 @@
       "singleWeight": null,
       "rating": 0.5,
       "createdAt": "2026-07-16T05:28:00.162Z",
-      "updatedAt": "2026-07-19T06:19:20.037Z",
+      "updatedAt": "2026-07-19T06:20:03.123Z",
       "shopMapAddress": "河北省邢台市沙河市褡裢街道广阳街美家美户墙布窗帘软装工作室",
       "shopLng": 114.508824,
       "shopLat": 36.861114
@@ -458,5 +458,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-19T06:19:28.885Z"
+  "syncedAt": "2026-07-19T06:20:10.294Z"
 }
