@@ -501,7 +501,7 @@
       "id": "mrrlt4lo5n0vbs",
       "name": "比奇堡",
       "brand": "",
-      "flavor": "1",
+      "flavor": "不开门",
       "category": "",
       "storageLocation": "",
       "quantity": null,
@@ -513,9 +513,9 @@
       "price": null,
       "weight": null,
       "singleWeight": null,
-      "rating": 0,
+      "rating": 0.5,
       "createdAt": "2026-07-19T09:39:10.860Z",
-      "updatedAt": "2026-07-19T09:39:36.487Z"
+      "updatedAt": "2026-07-19T11:08:29.975Z"
     }
   ],
   "shops": [
@@ -549,5 +549,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-19T11:08:01.247Z"
+  "syncedAt": "2026-07-19T11:08:33.682Z"
 }
