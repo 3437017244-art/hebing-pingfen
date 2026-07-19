@@ -2929,8 +2929,6 @@ body.amap-browse-open {
   overflow: visible;
   /* 整颗钉可点；招牌不挡鼠标，便于滑到后面的钉 */
   pointer-events: auto;
-  user-select: none;
-  -webkit-user-select: none;
   transform: scale(1);
   transform-origin: 50% 100%;
   transition: transform 0.16s ease, filter 0.16s ease;
@@ -2964,8 +2962,6 @@ body.amap-browse-open {
   pointer-events: auto;
   cursor: pointer;
   z-index: 1;
-  transform-origin: 50% 100%;
-  transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease, border-color 0.16s ease;
 }
 
 .amap-browse-pin.is-active {
@@ -2979,7 +2975,7 @@ body.amap-browse-open {
 
 .amap-browse-pin.is-active .amap-browse-pin-label {
   z-index: 31;
-  max-width: 180px;
+  max-width: 200px;
   box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.35);
 }
 

@@ -756,7 +756,7 @@
   let browseOnSelect = null;
   let browseHoverPlaceId = null;
   let browseHoverSwitchTimer = null;
-  const BROWSE_HOVER_SWITCH_MS = 140;
+  const BROWSE_HOVER_SWITCH_MS = 90;
 
   function escapeBrowseText(str) {
     return String(str == null ? '' : str)
@@ -977,18 +977,22 @@
 
   function requestBrowseMarkerHover(placeId) {
     const nextId = placeId != null ? String(placeId) : null;
+    if (browseHoverPlaceId === nextId) {
+      if (browseHoverSwitchTimer) {
+        clearTimeout(browseHoverSwitchTimer);
+        browseHoverSwitchTimer = null;
+      }
+      return;
+    }
     if (browseHoverSwitchTimer) {
       clearTimeout(browseHoverSwitchTimer);
       browseHoverSwitchTimer = null;
     }
-    // 同一目标：立刻确认，取消待切换
-    if (browseHoverPlaceId === nextId) return;
-    // 首次悬停：立刻放大
-    if (browseHoverPlaceId == null && nextId != null) {
+    // 首次放大、离开缩小：立刻生效；只对「换另一家」轻微防抖
+    if (browseHoverPlaceId == null || nextId == null) {
       setBrowseMarkerHover(nextId);
       return;
     }
-    // 切到另一家或取消：稍作迟滞，避免两块招牌交界处来回跳
     browseHoverSwitchTimer = setTimeout(function () {
       browseHoverSwitchTimer = null;
       setBrowseMarkerHover(nextId);
@@ -997,15 +1001,14 @@
 
   function findBrowsePinNode(node) {
     if (!node || !node.nodeType) return null;
-    // 只认点在钉/招牌内部；禁止向子树 querySelector（会误命中地图里别的钉）
+    // 红钉本体，或招牌文字都算命中该标记
     if (node.classList?.contains('amap-browse-pin')) return node;
     if (node.classList?.contains('amap-browse-pin-label')) {
       return node.closest?.('.amap-browse-pin') || null;
     }
-    if (node.classList?.contains('amap-browse-pin-needle')) {
-      return node.closest?.('.amap-browse-pin') || null;
-    }
-    return node.closest?.('.amap-browse-pin') || null;
+    const fromClosest = node.closest?.('.amap-browse-pin');
+    if (fromClosest) return fromClosest;
+    return null;
   }
 
   function resolveBrowseHoverFromPoint(clientX, clientY) {
@@ -1013,29 +1016,17 @@
     const stack = document.elementsFromPoint
       ? document.elementsFromPoint(clientX, clientY)
       : [document.elementFromPoint(clientX, clientY)].filter(Boolean);
-    const hits = [];
-    const seen = Object.create(null);
     for (let i = 0; i < stack.length; i++) {
       const pin = findBrowsePinNode(stack[i]);
       if (!pin) continue;
       const id = pin.dataset?.browseId;
-      if (id == null || seen[id]) continue;
-      seen[id] = true;
+      if (id == null) continue;
       const entry = browseMarkers.find(function (e) {
         return String(e.place.id) === String(id);
       });
-      if (entry) hits.push(entry);
+      if (entry) return entry;
     }
-    if (!hits.length) return null;
-    // 指针仍压在当前悬停项上时，优先粘住，不抢给叠在上面的另一家
-    if (browseHoverPlaceId != null) {
-      for (let j = 0; j < hits.length; j++) {
-        if (String(hits[j].place.id) === String(browseHoverPlaceId)) {
-          return hits[j];
-        }
-      }
-    }
-    return hits[0];
+    return null;
   }
 
   function bindBrowseMarkerHover() {
@@ -1044,36 +1035,17 @@
       entry.marker.on('mouseover', function () {
         requestBrowseMarkerHover(entry.place.id);
       });
-      entry.marker.on('mouseout', function (event) {
-        const origin = event?.originEvent || event;
-        const related = origin?.relatedTarget;
-        if (related) {
-          const relatedPin = findBrowsePinNode(related);
-          if (relatedPin && String(relatedPin.dataset?.browseId) === String(entry.place.id)) {
-            return;
-          }
-        }
-        const x = origin?.clientX;
-        const y = origin?.clientY;
-        if (x != null && y != null) {
-          const hit = resolveBrowseHoverFromPoint(x, y);
-          if (hit && String(hit.place.id) === String(entry.place.id)) return;
-          requestBrowseMarkerHover(hit ? hit.place.id : null);
-          return;
-        }
-        if (browseHoverPlaceId != null && String(browseHoverPlaceId) === String(entry.place.id)) {
-          requestBrowseMarkerHover(null);
-        }
+      entry.marker.on('mouseout', function () {
+        // 交给地图 mousemove 判定，避免移到相邻钉时闪烁
       });
     });
-    // 只在明确命中招牌/红钉时切换；空白处不靠地图 mousemove 强行清除
     browseMap.on('mousemove', function (event) {
       const origin = event?.originEvent || event;
       const x = origin?.clientX;
       const y = origin?.clientY;
       if (x == null || y == null) return;
       const hit = resolveBrowseHoverFromPoint(x, y);
-      if (hit) requestBrowseMarkerHover(hit.place.id);
+      requestBrowseMarkerHover(hit ? hit.place.id : null);
     });
     browseMap.on('mouseout', function () {
       requestBrowseMarkerHover(null);
