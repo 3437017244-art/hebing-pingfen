@@ -8,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260719-100600">
-  <link rel="stylesheet" href="mobile.css?v=20260719-100600">
+  <link rel="stylesheet" href="styles.css?v=20260719-111600">
+  <link rel="stylesheet" href="mobile.css?v=20260719-111600">
 </head>
 <body>
   <div class="app">
@@ -61,6 +61,8 @@
       <span class="home-meta-version" id="site-version-line">…</span>
       <span class="home-meta-sep" aria-hidden="true">·</span>
       <a class="home-meta-link" href="同步.html">同步</a>
+      <span class="home-meta-sep" aria-hidden="true">·</span>
+      <button type="button" class="home-meta-link home-meta-update" id="check-update-btn">检查更新</button>
     </footer>
   </div>
 
@@ -105,24 +107,48 @@
     </div>
   </dialog>
 
-  <script src="site-config.js?v=20260719-094800"></script>
-  <script src="mobile-bridge.js?v=20260719-094800"></script>
-  <script src="app-update.js?v=20260719-094800"></script>
-  <script src="sync-service.js?v=20260719-094800"></script>
-  <script src="amap-picker.js?v=20260719-102000"></script>
-  <script src="app.js?v=20260719-102000"></script>
+  <script src="site-config.js?v=20260719-111600"></script>
+  <script src="mobile-bridge.js?v=20260719-111600"></script>
+  <script src="app-update.js?v=20260719-111600"></script>
+  <script src="sync-service.js?v=20260719-111600"></script>
+  <script src="amap-picker.js?v=20260719-111600"></script>
+  <script src="app.js?v=20260719-111600"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       const versionLine = document.getElementById('site-version-line');
-      if (!versionLine || !window.HEBING_SITE) return;
-      const versionText = window.AppUpdate?.formatVersionLine
-        ? AppUpdate.formatVersionLine(HEBING_SITE)
-        : 'v' + HEBING_SITE.version;
-      versionLine.textContent = versionText;
-      versionLine.title = [
-        window.MobileAppBridge?.isNativeApp?.() ? 'APP 在线版' : '在线版',
-        HEBING_SITE.buildId ? '构建 ' + HEBING_SITE.buildId : '',
-      ].filter(Boolean).join(' · ');
+      if (versionLine && window.HEBING_SITE) {
+        const versionText = window.AppUpdate?.formatVersionLine
+          ? AppUpdate.formatVersionLine(HEBING_SITE)
+          : 'v' + HEBING_SITE.version;
+        versionLine.textContent = versionText;
+        versionLine.title = [
+          window.MobileAppBridge?.isNativeApp?.() ? 'APP 在线版' : '在线版',
+          HEBING_SITE.buildId ? '构建 ' + HEBING_SITE.buildId : '',
+        ].filter(Boolean).join(' · ');
+      }
+
+      const updateBtn = document.getElementById('check-update-btn');
+      if (updateBtn) {
+        updateBtn.addEventListener('click', async function () {
+          if (!window.AppUpdate?.checkUpdateForUser) {
+            alert('更新模块未加载');
+            return;
+          }
+          updateBtn.disabled = true;
+          updateBtn.textContent = '检查中…';
+          try {
+            const result = await AppUpdate.checkUpdateForUser();
+            if (!result.willReload) {
+              alert(result.message);
+            }
+          } catch (err) {
+            alert('检查更新失败：' + (err && err.message ? err.message : err));
+          } finally {
+            updateBtn.disabled = false;
+            updateBtn.textContent = '检查更新';
+          }
+        });
+      }
     });
   </script>
 </body>

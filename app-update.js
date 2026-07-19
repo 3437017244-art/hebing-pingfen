@@ -179,8 +179,54 @@
     });
   }
 
+  async function checkUpdateForUser(options) {
+    const opts = options || {};
+    const result = await checkForUpdate();
+    const localLine = formatVersionLine(result.local) || '未知版本';
+    const remoteLine = formatVersionLine(result.remote) || '';
+
+    if (result.error) {
+      return {
+        ...result,
+        message: '检查失败：' + result.error,
+        willReload: false,
+      };
+    }
+
+    if (result.hasUpdate && result.remote) {
+      if (opts.autoReload !== false) {
+        try {
+          sessionStorage.removeItem(RELOAD_GUARD_KEY);
+        } catch (_err) {
+          /* ignore */
+        }
+        // 稍等一帧，方便调用方先提示用户
+        setTimeout(function () {
+          reloadForUpdate();
+        }, opts.reloadDelayMs == null ? 400 : opts.reloadDelayMs);
+      }
+      return {
+        ...result,
+        message:
+          '发现新版本 ' +
+          remoteLine +
+          '（当前 ' +
+          localLine +
+          '），正在更新…',
+        willReload: opts.autoReload !== false,
+      };
+    }
+
+    return {
+      ...result,
+      message: '已是最新网页版 ' + localLine,
+      willReload: false,
+    };
+  }
+
   global.AppUpdate = {
     checkForUpdate: checkForUpdate,
+    checkUpdateForUser: checkUpdateForUser,
     runAutoCheck: runAutoCheck,
     startAutoCheck: startAutoCheck,
     reloadForUpdate: reloadForUpdate,

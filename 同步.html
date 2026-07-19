@@ -58,6 +58,15 @@
       <p class="field-hint" id="sync-status-hint"></p>
     </div>
 
+    <div class="page-card">
+      <h2>检查网页更新</h2>
+      <p class="field-hint">这和「数据同步」不同：更新会拉取最新页面功能（地图选点等）；同步只合并你登记的商品/商店数据。APP 打开的是在线网页，部署后点检查更新或稍等自动刷新即可。</p>
+      <p class="stat-line" id="app-update-status">当前版本加载中…</p>
+      <div class="page-actions">
+        <button type="button" class="btn btn-primary" id="check-update-btn">检查更新</button>
+      </div>
+    </div>
+
     <div class="page-card" id="site-sync-card" hidden>
       <h2>旧版 jsonblob 同步码（可忽略）</h2>
       <p class="field-hint">当前使用 GitHub 云同步，一般无需再管同步码。</p>
@@ -105,10 +114,10 @@
     </div>
   </div>
 
-  <script src="site-config.js?v=20260719-094800"></script>
-  <script src="mobile-bridge.js?v=20260719-094800"></script>
-  <script src="app-update.js?v=20260719-094800"></script>
-  <script src="sync-service.js?v=20260719-094800"></script>
+  <script src="site-config.js?v=20260719-111600"></script>
+  <script src="mobile-bridge.js?v=20260719-111600"></script>
+  <script src="app-update.js?v=20260719-111600"></script>
+  <script src="sync-service.js?v=20260719-111600"></script>
   <script>
     (function () {
       'use strict';
@@ -317,6 +326,38 @@
           showBox(syncResult, '', formatSyncSuccess(result));
           updateStats();
           updateRemoteStats();
+        });
+      }
+
+      const updateStatus = document.getElementById('app-update-status');
+      const checkUpdateBtn = document.getElementById('check-update-btn');
+      if (updateStatus && window.AppUpdate?.formatVersionLine && window.HEBING_SITE) {
+        updateStatus.textContent =
+          '当前网页版 ' +
+          AppUpdate.formatVersionLine(HEBING_SITE) +
+          (window.MobileAppBridge?.isNativeApp?.() ? '（APP 壳加载在线网页）' : '');
+      }
+      if (checkUpdateBtn) {
+        checkUpdateBtn.addEventListener('click', async function () {
+          if (!window.AppUpdate?.checkUpdateForUser) {
+            alert('更新模块未加载');
+            return;
+          }
+          setBusy(checkUpdateBtn, true);
+          if (updateStatus) updateStatus.textContent = '正在检查更新…';
+          try {
+            const result = await AppUpdate.checkUpdateForUser();
+            if (updateStatus) updateStatus.textContent = result.message;
+            if (!result.willReload) {
+              alert(result.message);
+            }
+          } catch (err) {
+            const message = '检查更新失败：' + (err && err.message ? err.message : err);
+            if (updateStatus) updateStatus.textContent = message;
+            alert(message);
+          } finally {
+            setBusy(checkUpdateBtn, false);
+          }
         });
       }
     })();
