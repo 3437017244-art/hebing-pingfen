@@ -366,13 +366,15 @@
       "storageLocation": "",
       "quantity": null,
       "shopName": "",
-      "shopLocation": "贸易街东头儿",
+      "shopLocation": "河北省邢台市沙河市褡裢街道建设路178号美家美户墙布窗帘软装工作室",
       "price": null,
       "weight": null,
       "singleWeight": null,
       "rating": 4,
       "createdAt": "2026-07-17T02:22:59.856Z",
-      "updatedAt": "2026-07-17T02:50:55.859Z"
+      "updatedAt": "2026-07-19T03:46:01.630Z",
+      "shopLng": 114.507884,
+      "shopLat": 36.86101
     },
     {
       "id": "mrobydobj47ot2",
@@ -439,5 +441,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-19T03:45:28.432Z"
+  "syncedAt": "2026-07-19T03:46:05.443Z"
 }
