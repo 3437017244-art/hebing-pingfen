@@ -755,11 +755,15 @@
   let browsePlaces = [];
   let browseOnSelect = null;
   let browseHoverPlaceId = null;
+  let browsePinnedPlaceId = null;
+  let browsePinAt = 0;
+  let browseMarkerClickLock = false;
   let browseHoverSwitchTimer = null;
   let browseHoverClearTimer = null;
   let browseMyLocationMarker = null;
   const BROWSE_HOVER_SWITCH_MS = 90;
   const BROWSE_HOVER_CLEAR_MS = 50;
+  const BROWSE_PIN_REOPEN_GUARD_MS = 320;
 
   function escapeBrowseText(str) {
     return String(str == null ? '' : str)
@@ -793,6 +797,9 @@
     browseMap = null;
     browseMarkers = [];
     browseHoverPlaceId = null;
+    browsePinnedPlaceId = null;
+    browsePinAt = 0;
+    browseMarkerClickLock = false;
     browseMyLocationMarker = null;
   }
 
@@ -1107,9 +1114,53 @@
     }, 0);
   }
 
+  function getBrowseVisualActiveId() {
+    if (browseHoverPlaceId != null) return browseHoverPlaceId;
+    return browsePinnedPlaceId;
+  }
+
+  function applyBrowseMarkerActiveState() {
+    const activeId = getBrowseVisualActiveId();
+    browseMarkers.forEach(function (item) {
+      const n = (item.neighbors && item.neighbors.length) || 1;
+      const isActive = activeId != null && String(item.place.id) === String(activeId);
+      item.marker.setzIndex(isActive ? 320 : 100 + n);
+      if (typeof item.marker.setTop === 'function') {
+        item.marker.setTop(isActive);
+      }
+      const root = getBrowseMarkerDom(item.marker);
+      const pin = root?.querySelector?.('.amap-browse-pin') || root;
+      if (pin?.classList) {
+        pin.classList.toggle('is-active', isActive);
+      }
+    });
+  }
+
+  function clearBrowsePinnedPlace() {
+    if (browsePinnedPlaceId == null) return;
+    browsePinnedPlaceId = null;
+    browsePinAt = 0;
+    applyBrowseMarkerActiveState();
+  }
+
   function handleBrowseMarkerClick(entry) {
+    browseMarkerClickLock = true;
+    window.setTimeout(function () {
+      browseMarkerClickLock = false;
+    }, 50);
+
+    const id = String(entry.place.id);
+    // 已放大固定的同一家：再点一次才进入店铺
+    if (browsePinnedPlaceId != null && browsePinnedPlaceId === id) {
+      if (Date.now() - browsePinAt < BROWSE_PIN_REOPEN_GUARD_MS) return;
+      selectBrowsePlace(entry.place);
+      return;
+    }
+
+    // 第一次点：放大并固定，不进详情
+    browsePinnedPlaceId = id;
+    browsePinAt = Date.now();
     focusBrowsePlace(entry.place);
-    selectBrowsePlace(entry.place);
   }
 
   function getBrowseMarkerDom(marker) {
@@ -1120,19 +1171,7 @@
     const nextId = placeId != null ? String(placeId) : null;
     if (browseHoverPlaceId === nextId) return;
     browseHoverPlaceId = nextId;
-    browseMarkers.forEach(function (item) {
-      const n = (item.neighbors && item.neighbors.length) || 1;
-      const isHover = nextId != null && String(item.place.id) === nextId;
-      item.marker.setzIndex(isHover ? 320 : 100 + n);
-      if (typeof item.marker.setTop === 'function') {
-        item.marker.setTop(isHover);
-      }
-      const root = getBrowseMarkerDom(item.marker);
-      const pin = root?.querySelector?.('.amap-browse-pin') || root;
-      if (pin?.classList) {
-        pin.classList.toggle('is-active', isHover);
-      }
-    });
+    applyBrowseMarkerActiveState();
   }
 
   function requestBrowseMarkerHover(placeId) {
@@ -1207,9 +1246,10 @@
     }
     if (!hits.length) return null;
     // 放大后命中盒也变大：指针仍在当前放大项上时优先粘住
-    if (browseHoverPlaceId != null) {
+    const stickyId = getBrowseVisualActiveId();
+    if (stickyId != null) {
       for (let j = 0; j < hits.length; j++) {
-        if (String(hits[j].place.id) === String(browseHoverPlaceId)) {
+        if (String(hits[j].place.id) === String(stickyId)) {
           return hits[j];
         }
       }
@@ -1272,15 +1312,27 @@
     const lng = entry ? entry.lng : Number(place.lng);
     const lat = entry ? entry.lat : Number(place.lat);
     if (!Number.isFinite(lng) || !Number.isFinite(lat)) return;
+    const placeId = String(place.id);
+    if (browsePinnedPlaceId == null) {
+      browsePinnedPlaceId = placeId;
+    }
     browseMap.setZoomAndCenter(Math.max(browseMap.getZoom(), 16), [lng, lat]);
-    setBrowseMarkerHover(place.id);
+    if (browseHoverClearTimer) {
+      clearTimeout(browseHoverClearTimer);
+      browseHoverClearTimer = null;
+    }
+    if (browseHoverSwitchTimer) {
+      clearTimeout(browseHoverSwitchTimer);
+      browseHoverSwitchTimer = null;
+    }
+    browseHoverPlaceId = null;
     browseMarkers.forEach(function (item) {
-      const active = String(item.place.id) === String(place.id);
+      const active = String(item.place.id) === placeId;
       const n = (item.neighbors && item.neighbors.length) || 1;
       item.marker.setContent(createBrowseMarkerContent(item.place, active, n));
       syncBrowseMarkerAnchor(item.marker);
     });
-    setBrowseMarkerHover(place.id);
+    applyBrowseMarkerActiveState();
   }
 
   function fitBrowseMarkers() {
@@ -1344,6 +1396,12 @@
       });
       browseMap.add(marker);
       return entry;
+    });
+
+    browseMap.on('click', function () {
+      // 点空白处取消固定放大；点标记时由 marker click 处理
+      if (browseMarkerClickLock) return;
+      clearBrowsePinnedPlace();
     });
 
     bindBrowseMarkerHover();
