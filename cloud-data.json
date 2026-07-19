@@ -454,6 +454,26 @@
       "createdAt": "2026-07-18T21:53:07.975Z",
       "updatedAt": "2026-07-19T06:41:07.742Z",
       "shopRating": 4.5
+    },
+    {
+      "id": "mrrkxc1mdenz2v",
+      "name": "羊肉烩面",
+      "brand": "",
+      "flavor": "羊肉烩面",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "createdAt": "2026-07-19T09:14:27.514Z",
+      "updatedAt": "2026-07-19T09:14:27.514Z"
     }
   ],
   "shops": [
@@ -487,5 +507,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-19T09:13:49.361Z"
+  "syncedAt": "2026-07-19T09:14:31.590Z"
 }
