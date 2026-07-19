@@ -298,7 +298,8 @@
       "singleWeight": null,
       "rating": 5,
       "createdAt": "2026-07-14T02:07:28.861Z",
-      "updatedAt": "2026-07-15T01:58:46.466Z"
+      "updatedAt": "2026-07-19T06:38:31.679Z",
+      "shopRating": 5
     },
     {
       "id": "mrkavu6p0rk68w",
@@ -462,5 +463,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-19T06:38:21.057Z"
+  "syncedAt": "2026-07-19T06:38:32.749Z"
 }
