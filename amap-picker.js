@@ -1115,8 +1115,9 @@
   }
 
   function getBrowseVisualActiveId() {
-    if (browseHoverPlaceId != null) return browseHoverPlaceId;
-    return browsePinnedPlaceId;
+    // 已点击固定时只显示固定招牌，鼠标移到别家也不切换
+    if (browsePinnedPlaceId != null) return browsePinnedPlaceId;
+    return browseHoverPlaceId;
   }
 
   function applyBrowseMarkerActiveState() {
@@ -1140,6 +1141,7 @@
     if (browsePinnedPlaceId == null) return;
     browsePinnedPlaceId = null;
     browsePinAt = 0;
+    browseHoverPlaceId = null;
     applyBrowseMarkerActiveState();
   }
 
@@ -1157,9 +1159,10 @@
       return;
     }
 
-    // 第一次点：放大并固定，不进详情
+    // 第一次点 / 点另一家：放大并固定，不进详情；悬停不再抢焦点
     browsePinnedPlaceId = id;
     browsePinAt = Date.now();
+    browseHoverPlaceId = null;
     focusBrowsePlace(entry.place);
   }
 
@@ -1168,6 +1171,14 @@
   }
 
   function setBrowseMarkerHover(placeId) {
+    // 有固定放大时忽略悬停预览
+    if (browsePinnedPlaceId != null) {
+      if (browseHoverPlaceId != null) {
+        browseHoverPlaceId = null;
+        applyBrowseMarkerActiveState();
+      }
+      return;
+    }
     const nextId = placeId != null ? String(placeId) : null;
     if (browseHoverPlaceId === nextId) return;
     browseHoverPlaceId = nextId;
@@ -1175,6 +1186,21 @@
   }
 
   function requestBrowseMarkerHover(placeId) {
+    if (browsePinnedPlaceId != null) {
+      if (browseHoverSwitchTimer) {
+        clearTimeout(browseHoverSwitchTimer);
+        browseHoverSwitchTimer = null;
+      }
+      if (browseHoverClearTimer) {
+        clearTimeout(browseHoverClearTimer);
+        browseHoverClearTimer = null;
+      }
+      if (browseHoverPlaceId != null) {
+        browseHoverPlaceId = null;
+        applyBrowseMarkerActiveState();
+      }
+      return;
+    }
     const nextId = placeId != null ? String(placeId) : null;
     if (browseHoverClearTimer) {
       clearTimeout(browseHoverClearTimer);
@@ -1203,6 +1229,7 @@
   }
 
   function scheduleBrowseHoverClear() {
+    if (browsePinnedPlaceId != null) return;
     if (browseHoverPlaceId == null) return;
     if (browseHoverClearTimer) return;
     browseHoverClearTimer = setTimeout(function () {
