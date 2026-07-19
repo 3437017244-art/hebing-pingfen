@@ -2919,6 +2919,77 @@ body.amap-browse-open {
   transform: scale(1.04);
 }
 
+.amap-browse-locate {
+  appearance: none;
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 6;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(125, 205, 194, 0.55);
+  background: rgba(26, 34, 44, 0.88);
+  color: var(--success-text);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: background 0.2s var(--ease), border-color 0.2s var(--ease), transform 0.15s var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.amap-browse-locate:hover {
+  border-color: rgba(125, 205, 194, 0.75);
+  background: rgba(36, 48, 60, 0.96);
+}
+
+.amap-browse-locate:active {
+  transform: scale(0.96);
+}
+
+.amap-browse-locate:disabled,
+.amap-browse-locate.is-busy {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.amap-browse-locate-icon {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+.amap-browse-locate.is-busy .amap-browse-locate-icon {
+  animation: amap-locate-pulse 1s ease-in-out infinite;
+}
+
+.amap-browse-me-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(61, 155, 143, 0.28);
+  box-shadow: 0 0 0 6px rgba(61, 155, 143, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.amap-browse-me-dot-core {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #3d9b8f;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
 .amap-browse-empty {
   display: none;
 }

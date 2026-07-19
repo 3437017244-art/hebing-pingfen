@@ -757,6 +757,7 @@
   let browseHoverPlaceId = null;
   let browseHoverSwitchTimer = null;
   let browseHoverClearTimer = null;
+  let browseMyLocationMarker = null;
   const BROWSE_HOVER_SWITCH_MS = 90;
   const BROWSE_HOVER_CLEAR_MS = 50;
 
@@ -792,6 +793,7 @@
     browseMap = null;
     browseMarkers = [];
     browseHoverPlaceId = null;
+    browseMyLocationMarker = null;
   }
 
   function closeBrowseMap() {
@@ -813,6 +815,134 @@
     }
   }
 
+  function setBrowseLocateBusy(busy) {
+    const btn = browseOverlayEl && browseOverlayEl.querySelector('#amap-browse-locate');
+    if (!btn) return;
+    btn.disabled = Boolean(busy);
+    btn.classList.toggle('is-busy', Boolean(busy));
+    btn.title = busy ? '定位中…' : '我的位置';
+    btn.setAttribute('aria-label', busy ? '定位中' : '我的位置');
+  }
+
+  function showBrowseMyLocation(lng, lat) {
+    const AMap = global.AMap;
+    if (!browseMap || !AMap || !Number.isFinite(lng) || !Number.isFinite(lat)) return;
+    const pos = [lng, lat];
+    if (browseMyLocationMarker) {
+      browseMyLocationMarker.setPosition(pos);
+    } else {
+      browseMyLocationMarker = new AMap.Marker({
+        position: pos,
+        offset: new AMap.Pixel(-10, -10),
+        zIndex: 200,
+        content:
+          '<div class="amap-browse-me-dot" aria-hidden="true">' +
+          '<span class="amap-browse-me-dot-core"></span>' +
+          '</div>',
+      });
+      browseMap.add(browseMyLocationMarker);
+    }
+    browseMap.setZoomAndCenter(Math.max(browseMap.getZoom(), 16), pos);
+  }
+
+  function convertBrowsePosition(lng, lat, done) {
+    const AMap = global.AMap;
+    if (!AMap || typeof AMap.convertFrom !== 'function') {
+      done(lng, lat);
+      return;
+    }
+    AMap.convertFrom([lng, lat], 'gps', function (status, result) {
+      if (status === 'complete' && result?.locations?.length) {
+        const loc = result.locations[0];
+        done(loc.lng, loc.lat);
+      } else {
+        done(lng, lat);
+      }
+    });
+  }
+
+  function locateBrowseWithBrowser() {
+    if (!global.navigator?.geolocation) {
+      setBrowseLocateBusy(false);
+      alert('当前环境不支持定位');
+      return;
+    }
+    global.navigator.geolocation.getCurrentPosition(
+      function (position) {
+        const lng = position.coords.longitude;
+        const lat = position.coords.latitude;
+        if (!Number.isFinite(lng) || !Number.isFinite(lat)) {
+          setBrowseLocateBusy(false);
+          alert('获取到的坐标无效');
+          return;
+        }
+        convertBrowsePosition(lng, lat, function (gcjLng, gcjLat) {
+          setBrowseLocateBusy(false);
+          showBrowseMyLocation(gcjLng, gcjLat);
+        });
+      },
+      function (error) {
+        setBrowseLocateBusy(false);
+        alert(locateErrorMessage(error));
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 20000,
+        maximumAge: 0,
+      },
+    );
+  }
+
+  function locateBrowseMyPosition() {
+    if (!browseMap || !isBrowseMapOpen()) return;
+    setBrowseLocateBusy(true);
+    const AMap = global.AMap;
+    if (!AMap) {
+      locateBrowseWithBrowser();
+      return;
+    }
+
+    const run = function () {
+      try {
+        if (!amapGeolocation) {
+          amapGeolocation = new AMap.Geolocation({
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 0,
+            convert: true,
+            showButton: false,
+            showMarker: false,
+            showCircle: false,
+            panToLocation: false,
+            zoomToAccuracy: false,
+          });
+        }
+        amapGeolocation.getCurrentPosition(function (status, result) {
+          if (status === 'complete' && result?.position) {
+            setBrowseLocateBusy(false);
+            showBrowseMyLocation(result.position.lng, result.position.lat);
+            return;
+          }
+          locateBrowseWithBrowser();
+        });
+      } catch (_err) {
+        locateBrowseWithBrowser();
+      }
+    };
+
+    if (typeof AMap.Geolocation === 'function') {
+      run();
+      return;
+    }
+    AMap.plugin('AMap.Geolocation', function () {
+      if (typeof AMap.Geolocation !== 'function') {
+        locateBrowseWithBrowser();
+        return;
+      }
+      run();
+    });
+  }
+
   function ensureBrowseOverlay() {
     if (browseOverlayEl) return browseOverlayEl;
 
@@ -824,6 +954,13 @@
       '<button type="button" class="amap-browse-close" id="amap-browse-close" aria-label="关闭">&times;</button>' +
       '<div class="amap-picker-map-wrap">' +
       '<div class="amap-picker-map" id="amap-browse-map"></div>' +
+      '<button type="button" class="amap-browse-locate" id="amap-browse-locate" aria-label="我的位置" title="我的位置">' +
+      '<svg class="amap-browse-locate-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+      '<circle cx="12" cy="12" r="3" fill="currentColor"></circle>' +
+      '<path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"></path>' +
+      '<circle cx="12" cy="12" r="7.2" stroke="currentColor" stroke-width="1.8" fill="none"></circle>' +
+      '</svg>' +
+      '</button>' +
       '<div class="amap-picker-zoom">' +
       '<button type="button" class="amap-picker-fab amap-picker-zoom-out" id="amap-browse-zoom-out" aria-label="缩小">−</button>' +
       '<button type="button" class="amap-picker-fab amap-picker-zoom-in" id="amap-browse-zoom-in" aria-label="放大">+</button>' +
@@ -835,6 +972,9 @@
     document.body.appendChild(browseOverlayEl);
 
     browseOverlayEl.querySelector('#amap-browse-close').addEventListener('click', closeBrowseMap);
+    browseOverlayEl.querySelector('#amap-browse-locate').addEventListener('click', function () {
+      locateBrowseMyPosition();
+    });
     browseOverlayEl.querySelector('#amap-browse-zoom-in').addEventListener('click', function () {
       if (browseMap) browseMap.zoomIn();
     });
