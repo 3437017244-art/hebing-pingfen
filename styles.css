@@ -1750,6 +1750,17 @@ button.editing {
   animation: dialog-in 0.28s var(--ease);
 }
 
+/* 详情叠在大地图浏览之上，关掉后仍回到大地图 */
+body.amap-browse-open #detail-dialog {
+  z-index: 80;
+}
+
+body.amap-browse-open #detail-dialog::backdrop {
+  background: rgba(8, 11, 14, 0.42);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
 @keyframes dialog-in {
   from {
     opacity: 0;
@@ -3062,6 +3073,7 @@ body.amap-browse-open {
 .amap-browse-overlay {
   width: min(960px, calc(100vw - 12px));
   height: min(92vh, 920px);
+  z-index: 40;
 }
 
 .amap-browse-overlay .amap-picker-map-wrap {

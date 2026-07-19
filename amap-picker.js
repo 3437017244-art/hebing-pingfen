@@ -804,6 +804,15 @@
     }
   }
 
+  function resizeBrowseMap() {
+    if (!browseMap || !isBrowseMapOpen()) return;
+    try {
+      browseMap.resize();
+    } catch (_err) {
+      /* ignore */
+    }
+  }
+
   function ensureBrowseOverlay() {
     if (browseOverlayEl) return browseOverlayEl;
 
@@ -950,10 +959,8 @@
 
   function selectBrowsePlace(place) {
     if (!place || typeof browseOnSelect !== 'function') return;
-    const cb = browseOnSelect;
-    // 先关浏览层，避免与详情叠层；也减少移动端穿透点击
-    closeBrowseMap();
-    cb(place);
+    // 不关闭大地图：详情叠在上面，关掉详情后仍停在原地图位置
+    browseOnSelect(place);
   }
 
   function handleBrowseMarkerClick(entry) {
@@ -1355,6 +1362,7 @@
     open: openAmapPicker,
     openBrowseMap: openBrowseMap,
     closeBrowseMap: closeBrowseMap,
+    resizeBrowseMap: resizeBrowseMap,
     hasKey: hasKey,
     isOpen: isOpen,
     isBrowseMapOpen: isBrowseMapOpen,

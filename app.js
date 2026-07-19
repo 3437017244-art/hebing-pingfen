@@ -1198,6 +1198,16 @@
     productEls.detailDialog.close();
     selectedDetail = null;
     setDialogViewMode();
+    // 详情盖在大地图上时，关掉后刷新一下地图，避免空白/错位
+    if (window.AmapPicker?.isBrowseMapOpen?.()) {
+      requestAnimationFrame(function () {
+        try {
+          window.AmapPicker?.resizeBrowseMap?.();
+        } catch (_err) {
+          /* ignore */
+        }
+      });
+    }
   }
 
   function getProductShopInfo(item) {
@@ -1825,7 +1835,7 @@
     }
     productEls.dialogBody.innerHTML = renderBrandDetailBody(group);
     if (options.fromBrowseMap) {
-      suppressBrandMapThumbUntil = Date.now() + 500;
+      suppressBrandMapThumbUntil = Date.now() + 600;
     }
     bindBrandLocationMapThumb(group);
     productEls.dialogEditBtn.textContent = '添加新商品';
