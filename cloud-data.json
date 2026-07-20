@@ -537,6 +537,29 @@
       "rating": 2.5,
       "createdAt": "2026-07-20T07:07:31.019Z",
       "updatedAt": "2026-07-20T07:07:31.019Z"
+    },
+    {
+      "id": "mrsw69teoz9h39",
+      "name": "孙记板面",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "createdAt": "2026-07-20T07:17:06.482Z",
+      "updatedAt": "2026-07-20T07:17:06.482Z"
     }
   ],
   "shops": [
@@ -571,5 +594,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-20T07:15:49.456Z"
+  "syncedAt": "2026-07-20T07:17:10.329Z"
 }
