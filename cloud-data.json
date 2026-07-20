@@ -606,6 +606,26 @@
       "notes": "",
       "createdAt": "2026-07-20T07:46:17.517Z",
       "updatedAt": "2026-07-20T07:46:44.416Z"
+    },
+    {
+      "id": "mrsz90xpeq3me2",
+      "name": "魏庄凉皮",
+      "brand": "",
+      "flavor": "凉皮",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": 6,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 2.5,
+      "createdAt": "2026-07-20T08:43:13.789Z",
+      "updatedAt": "2026-07-20T08:43:13.789Z"
     }
   ],
   "shops": [
@@ -640,5 +660,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-20T08:42:52.235Z"
+  "syncedAt": "2026-07-20T08:43:18.386Z"
 }
