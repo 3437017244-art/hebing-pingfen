@@ -1106,6 +1106,7 @@
       items.push({
         id: generateId(),
         name: newName,
+        isBrandPlaceholder: true,
         brand: '',
         flavor: '',
         category,
@@ -1285,6 +1286,10 @@
 
   function getBrandName(item) {
     return (item.name || '').trim() || '未命名';
+  }
+
+  function isBrandPlaceholder(item) {
+    return item?.isBrandPlaceholder === true;
   }
 
   const PRODUCT_CATEGORIES = ['食品', '速食', '其他'];
@@ -1602,11 +1607,13 @@
   }
 
   function renderBrandCountHint(products) {
-    const count = products.length;
-    const stockedCount = products.filter(hasStockQuantity).length;
+    const actualProducts = products.filter((item) => !isBrandPlaceholder(item));
+    const count = actualProducts.length;
+    const stockedCount = actualProducts.filter(hasStockQuantity).length;
     if (stockedCount > 0) {
       return '点击查看全部商品';
     }
+    if (count === 0) return '待定，点击查看详情';
     return count === 1 ? '共 1 种商品，点击查看详情' : `共 ${count} 种商品，点击查看详情`;
   }
 
@@ -1725,7 +1732,7 @@
   }
 
   function renderBrandDetailBody(group) {
-    const { products } = group;
+    const products = group.products.filter((item) => !isBrandPlaceholder(item));
     const rows = products
       .map((item) => {
         const label = item.flavor || '未命名商品';
@@ -1863,15 +1870,37 @@
     const query = searchAddPendingQuery;
     closeSearchAddConfirm();
     if (!query) return;
-    const existing = groupProductsByBrand(items).find((g) => g.brand === query);
-    const group = existing || {
-      brand: query,
-      products: [],
-      shopRating: 0,
-      maxRating: 0,
-      avgRating: 0,
-      hasStock: false,
-    };
+    let group = groupProductsByBrand(items).find((g) => g.brand === query);
+    if (!group) {
+      const now = new Date().toISOString();
+      items.push({
+        id: generateId(),
+        name: query,
+        isBrandPlaceholder: true,
+        brand: '',
+        flavor: '',
+        category: '',
+        storageLocation: '',
+        quantity: null,
+        shopName: '',
+        shopLocation: '',
+        shopMapAddress: '',
+        shopLng: null,
+        shopLat: null,
+        price: null,
+        weight: null,
+        singleWeight: null,
+        rating: 0,
+        shopRating: 0,
+        notes: '',
+        createdAt: now,
+        updatedAt: now,
+      });
+      saveItems();
+      renderBrowse();
+      group = groupProductsByBrand(items).find((g) => g.brand === query);
+    }
+    if (!group) return;
     showBrandDetail(group);
   }
 
