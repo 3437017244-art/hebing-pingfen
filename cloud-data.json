@@ -560,6 +560,29 @@
       "notes": "",
       "createdAt": "2026-07-20T07:17:06.482Z",
       "updatedAt": "2026-07-20T07:42:54.488Z"
+    },
+    {
+      "id": "mrsx6r8st7i5gr",
+      "name": "魏庄凉皮",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "createdAt": "2026-07-20T07:45:28.684Z",
+      "updatedAt": "2026-07-20T07:45:28.684Z"
     }
   ],
   "shops": [
@@ -594,5 +617,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-20T07:42:56.611Z"
+  "syncedAt": "2026-07-20T07:45:32.711Z"
 }
