@@ -556,10 +556,10 @@
       "weight": null,
       "singleWeight": null,
       "rating": 0,
-      "shopRating": 0,
+      "shopRating": 4,
       "notes": "",
       "createdAt": "2026-07-20T07:17:06.482Z",
-      "updatedAt": "2026-07-20T07:17:50.813Z"
+      "updatedAt": "2026-07-20T07:42:54.488Z"
     }
   ],
   "shops": [
@@ -594,5 +594,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-20T07:42:08.646Z"
+  "syncedAt": "2026-07-20T07:42:56.611Z"
 }
