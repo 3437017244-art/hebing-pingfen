@@ -517,6 +517,26 @@
       "createdAt": "2026-07-19T11:10:07.376Z",
       "updatedAt": "2026-07-19T11:11:03.037Z",
       "shopRating": 0.5
+    },
+    {
+      "id": "mrsvtxsbcm40lm",
+      "name": "茶与甜",
+      "brand": "",
+      "flavor": "杨枝甘露",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 2.5,
+      "createdAt": "2026-07-20T07:07:31.019Z",
+      "updatedAt": "2026-07-20T07:07:31.019Z"
     }
   ],
   "shops": [
@@ -551,5 +571,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-20T07:07:08.718Z"
+  "syncedAt": "2026-07-20T07:07:34.189Z"
 }
