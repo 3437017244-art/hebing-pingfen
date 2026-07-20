@@ -653,9 +653,9 @@
       "isBrandPlaceholder": true,
       "brand": "",
       "flavor": "",
-      "category": "",
-      "storageLocation": "",
-      "quantity": null,
+      "category": "其他",
+      "storageLocation": "小屋衣柜中间左手",
+      "quantity": 1,
       "shopName": "",
       "shopLocation": "",
       "shopMapAddress": "",
@@ -668,7 +668,7 @@
       "shopRating": 0,
       "notes": "",
       "createdAt": "2026-07-20T09:40:00.390Z",
-      "updatedAt": "2026-07-20T09:40:00.390Z"
+      "updatedAt": "2026-07-20T09:40:34.413Z"
     }
   ],
   "shops": [
@@ -703,5 +703,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-20T09:40:03.966Z"
+  "syncedAt": "2026-07-20T09:40:36.764Z"
 }
