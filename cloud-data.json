@@ -646,6 +646,29 @@
       "rating": 3,
       "createdAt": "2026-07-20T09:39:36.417Z",
       "updatedAt": "2026-07-20T09:39:36.417Z"
+    },
+    {
+      "id": "mrt1a1hi07mgck",
+      "name": "手套",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "createdAt": "2026-07-20T09:40:00.390Z",
+      "updatedAt": "2026-07-20T09:40:00.390Z"
     }
   ],
   "shops": [
@@ -680,5 +703,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-20T09:39:47.341Z"
+  "syncedAt": "2026-07-20T09:40:03.966Z"
 }
