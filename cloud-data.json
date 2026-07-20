@@ -549,9 +549,9 @@
       "quantity": null,
       "shopName": "",
       "shopLocation": "",
-      "shopMapAddress": "",
-      "shopLng": null,
-      "shopLat": null,
+      "shopMapAddress": "河北省邢台市沙河市褡裢街道宋璟路529号千里行客栈(沙河建设路店)",
+      "shopLng": 114.508291,
+      "shopLat": 36.861228,
       "price": null,
       "weight": null,
       "singleWeight": null,
@@ -559,7 +559,7 @@
       "shopRating": 0,
       "notes": "",
       "createdAt": "2026-07-20T07:17:06.482Z",
-      "updatedAt": "2026-07-20T07:17:06.482Z"
+      "updatedAt": "2026-07-20T07:17:50.813Z"
     }
   ],
   "shops": [
@@ -594,5 +594,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-20T07:17:10.329Z"
+  "syncedAt": "2026-07-20T07:17:55.040Z"
 }
