@@ -583,6 +583,29 @@
       "notes": "",
       "createdAt": "2026-07-20T07:45:28.684Z",
       "updatedAt": "2026-07-20T07:46:01.136Z"
+    },
+    {
+      "id": "mrsx7sx99zpqm8",
+      "name": "俏王妃",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "createdAt": "2026-07-20T07:46:17.517Z",
+      "updatedAt": "2026-07-20T07:46:17.517Z"
     }
   ],
   "shops": [
@@ -617,5 +640,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-20T07:46:03.070Z"
+  "syncedAt": "2026-07-20T07:46:22.346Z"
 }
