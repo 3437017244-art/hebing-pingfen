@@ -1888,8 +1888,8 @@ body.amap-browse-open #detail-dialog::backdrop {
 
 .dialog-renaming .dialog-body {
   display: block;
-  max-height: none;
-  overflow: visible;
+  max-height: min(70vh, 560px);
+  overflow-y: auto;
   padding-top: 12px;
 }
 
@@ -3098,7 +3098,9 @@ body.amap-browse-open {
   width: 24px;
   height: 34px;
   margin-left: -12px;
-  pointer-events: auto;
+  /* 红钉只是视觉标记，真实交互范围严格限定为上方黑色招牌 */
+  pointer-events: none;
+  cursor: default;
   touch-action: manipulation;
   -webkit-user-select: none;
   user-select: none;

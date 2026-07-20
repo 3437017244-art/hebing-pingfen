@@ -307,6 +307,7 @@
     dialogClose: $('#dialog-close'),
     dialogEditBtn: $('#dialog-edit-btn'),
     dialogDeleteBtn: $('#dialog-delete-btn'),
+    dialogBrandDeleteBtn: $('#dialog-brand-delete-btn'),
   };
 
   let dialogEditMode = false;
@@ -376,6 +377,9 @@
     productEls.detailDialog.classList.remove('dialog-editing', 'dialog-renaming');
     if (productEls.dialogHeaderEditBtn) {
       productEls.dialogHeaderEditBtn.hidden = true;
+    }
+    if (productEls.dialogBrandDeleteBtn) {
+      productEls.dialogBrandDeleteBtn.hidden = true;
     }
     if (productEls.dialogHeaderName) {
       productEls.dialogHeaderName.hidden = true;
@@ -997,8 +1001,15 @@
     if (!brandName) return;
     const group = groupProductsByBrand(items).find((g) => g.brand === brandName);
     const shopRating = getGroupShopRating(group);
+    const primaryProduct = group?.products?.[0] || null;
+    const showStockFields = hasStockQuantity(primaryProduct);
     dialogEditMode = true;
-    selectedDetail = { type: 'brand', brand: brandName, renaming: true };
+    selectedDetail = {
+      type: 'brand',
+      brand: brandName,
+      renaming: true,
+      primaryProductId: primaryProduct?.id ?? null,
+    };
     window.AmapPicker?.destroyAllMiniMaps?.();
     showDialogNameField(brandName);
     if (productEls.dialogBody) {
@@ -1012,6 +1023,20 @@
               hiddenId: 'dialog-rating',
             })}
           </div>
+          <div class="form-row form-row-key form-row-key-quantity">
+            <label for="dialog-quantity">数量</label>
+            <input type="number" id="dialog-quantity" min="1" step="1" value="${primaryProduct?.quantity != null ? primaryProduct.quantity : ''}">
+          </div>
+          <div class="form-row form-row-key form-row-key-category" id="dialog-category-row"${showStockFields ? '' : ' hidden'}>
+            <label for="dialog-category">分类</label>
+            <select id="dialog-category">
+              ${renderCategorySelectOptions(primaryProduct?.category)}
+            </select>
+          </div>
+          <div class="form-row form-row-key form-row-key-location" id="dialog-storage-location-row"${showStockFields ? '' : ' hidden'}>
+            <label for="dialog-storage-location">所在位置</label>
+            <input type="text" id="dialog-storage-location" value="${escapeHtml(primaryProduct?.storageLocation || '')}" placeholder="请输入所在位置">
+          </div>
         </form>
       `;
     }
@@ -1020,18 +1045,24 @@
     const ratingDisplay = $('#dialog-rating-current');
     dialogSetStars = bindStarRating(starContainer, hiddenInput, ratingDisplay, 0);
     dialogSetStars(ratingOrDefault(shopRating, 0));
+    bindStockDependentFields(
+      $('#dialog-quantity'),
+      $('#dialog-category-row'),
+      $('#dialog-storage-location-row'),
+    );
     productEls.dialogEditBtn.textContent = '保存';
     productEls.dialogEditBtn.className = 'btn btn-primary';
     productEls.dialogEditBtn.hidden = false;
-    productEls.dialogDeleteBtn.textContent = '取消';
-    productEls.dialogDeleteBtn.className = 'btn btn-secondary';
-    productEls.dialogDeleteBtn.hidden = false;
+    productEls.dialogDeleteBtn.hidden = true;
+    if (productEls.dialogBrandDeleteBtn) {
+      productEls.dialogBrandDeleteBtn.hidden = false;
+    }
     productEls.detailDialog.classList.add('dialog-editing', 'dialog-renaming');
     productEls.dialogNameInput?.focus();
     productEls.dialogNameInput?.select?.();
   }
 
-  function saveBrandNameFromDialog() {
+  async function saveBrandNameFromDialog() {
     if (!selectedDetail || selectedDetail.type !== 'brand' || !selectedDetail.renaming) return;
     const oldName = (selectedDetail.brand || '').trim();
     const newName = (productEls.dialogNameInput?.value || '').trim();
@@ -1040,6 +1071,16 @@
       return;
     }
     const shopRating = ratingOrDefault($('#dialog-rating')?.value, 0);
+    const quantityRaw = $('#dialog-quantity')?.value;
+    const quantity =
+      quantityRaw != null && quantityRaw !== '' ? parseInt(quantityRaw, 10) : null;
+    const category = ($('#dialog-category')?.value || '').trim();
+    const storageLocation = ($('#dialog-storage-location')?.value || '').trim();
+    const stockData = { quantity, category, storageLocation };
+    if (hasStockQuantity(stockData) && !(await validateMainProductStockFields(stockData))) {
+      return;
+    }
+    const primaryProductId = selectedDetail.primaryProductId;
     const now = new Date().toISOString();
     let changed = false;
     items = items.map((item) => {
@@ -1054,6 +1095,11 @@
       if ((item.shopName || '').trim() === oldName) {
         next.shopName = newName;
       }
+      if (primaryProductId != null && item.id === primaryProductId) {
+        next.quantity = quantity;
+        next.category = category;
+        next.storageLocation = storageLocation;
+      }
       return next;
     });
     if (!changed) {
@@ -1062,9 +1108,9 @@
         name: newName,
         brand: '',
         flavor: '',
-        category: '',
-        storageLocation: '',
-        quantity: null,
+        category,
+        storageLocation,
+        quantity,
         shopName: '',
         shopLocation: '',
         shopMapAddress: '',
@@ -1816,7 +1862,17 @@
   function confirmSearchAdd() {
     const query = searchAddPendingQuery;
     closeSearchAddConfirm();
-    if (query) showAddProductDialog(query);
+    if (!query) return;
+    const existing = groupProductsByBrand(items).find((g) => g.brand === query);
+    const group = existing || {
+      brand: query,
+      products: [],
+      shopRating: 0,
+      maxRating: 0,
+      avgRating: 0,
+      hasStock: false,
+    };
+    showBrandDetail(group);
   }
 
   function updateSearchAddPrompt(query, hasResults) {
@@ -2006,6 +2062,24 @@
     if (!(await showAppConfirm(`确定删除「${label}」吗？此操作不可撤销。`, '删除确认'))) return;
     window.HebingSync?.recordDeletion?.('products', item.id);
     items = items.filter((i) => i.id !== item.id);
+    saveItems();
+    closeDetailDialog();
+    renderBrowse();
+  }
+
+  async function handleBrandDelete(brand) {
+    const brandName = (brand || '').trim();
+    if (!brandName) return;
+    const targets = items.filter((item) => getBrandName(item) === brandName);
+    if (!targets.length) {
+      // 还没保存过的新名称，直接关掉即可
+      closeDetailDialog();
+      renderBrowse();
+      return;
+    }
+    if (!(await showAppConfirm(`确定删除「${brandName}」及其全部商品记录吗？此操作不可撤销。`, '删除确认'))) return;
+    targets.forEach((item) => window.HebingSync?.recordDeletion?.('products', item.id));
+    items = items.filter((item) => getBrandName(item) !== brandName);
     saveItems();
     closeDetailDialog();
     renderBrowse();
@@ -2397,6 +2471,10 @@
       if (isDetailInteractionSuppressed()) return;
       if (!selectedDetail || selectedDetail.type !== 'brand' || dialogEditMode) return;
       startBrandNameEdit(selectedDetail.brand);
+    });
+    productEls.dialogBrandDeleteBtn?.addEventListener('click', async () => {
+      if (!selectedDetail || selectedDetail.type !== 'brand' || !selectedDetail.renaming) return;
+      await handleBrandDelete(selectedDetail.brand);
     });
     productEls.dialogNameInput?.addEventListener('keydown', (event) => {
       if (event.key !== 'Enter') return;

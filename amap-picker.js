@@ -135,6 +135,25 @@
     overlayEl.querySelector('#amap-picker-zoom-in').addEventListener('click', function () {
       if (map) map.zoomIn();
     });
+    // 缩放/定位按钮会拦截滚轮，悬停其上时地图不缩放；这里手动转发给地图
+    var pickerWheelLockUntil = 0;
+    overlayEl.querySelector('.amap-picker-map-wrap').addEventListener(
+      'wheel',
+      function (event) {
+        if (!map) return;
+        var target = event.target;
+        if (!target || !target.closest) return;
+        if (!target.closest('.amap-picker-zoom, .amap-picker-locate-btn')) return;
+        event.preventDefault();
+        event.stopPropagation();
+        var now = Date.now();
+        if (now < pickerWheelLockUntil) return;
+        pickerWheelLockUntil = now + 120;
+        if (event.deltaY < 0) map.zoomIn();
+        else if (event.deltaY > 0) map.zoomOut();
+      },
+      { passive: false, capture: true },
+    );
     const searchInput = overlayEl.querySelector('#amap-picker-search');
     searchInput.addEventListener('input', function () {
       scheduleLiveSearch();
@@ -998,6 +1017,25 @@
     browseOverlayEl.querySelector('#amap-browse-zoom-out').addEventListener('click', function () {
       if (browseMap) browseMap.zoomOut();
     });
+    // 招牌/缩放/定位等自定义元素会拦截滚轮，悬停其上时地图不缩放；这里手动转发给地图
+    var browseWheelLockUntil = 0;
+    browseOverlayEl.querySelector('.amap-picker-map-wrap').addEventListener(
+      'wheel',
+      function (event) {
+        if (!browseMap) return;
+        var target = event.target;
+        if (!target || !target.closest) return;
+        if (!target.closest('.amap-browse-pin-label, .amap-picker-zoom, .amap-browse-locate')) return;
+        event.preventDefault();
+        event.stopPropagation();
+        var now = Date.now();
+        if (now < browseWheelLockUntil) return;
+        browseWheelLockUntil = now + 120;
+        if (event.deltaY < 0) browseMap.zoomIn();
+        else if (event.deltaY > 0) browseMap.zoomOut();
+      },
+      { passive: false, capture: true },
+    );
     browseOverlayEl.addEventListener('cancel', function (event) {
       event.preventDefault();
       closeBrowseMap();
@@ -1400,21 +1438,6 @@
     }, BROWSE_HOVER_CLEAR_MS);
   }
 
-  function findBrowsePinNode(node) {
-    if (!node || !node.nodeType) return null;
-    // 红钉本体，或招牌文字都算命中该标记
-    if (node.classList?.contains('amap-browse-pin')) return node;
-    if (node.classList?.contains('amap-browse-pin-label')) {
-      return node.closest?.('.amap-browse-pin') || null;
-    }
-    if (node.classList?.contains('amap-browse-pin-needle')) {
-      return node.closest?.('.amap-browse-pin') || null;
-    }
-    const fromClosest = node.closest?.('.amap-browse-pin');
-    if (fromClosest) return fromClosest;
-    return null;
-  }
-
   function pointInClientRect(clientX, clientY, el) {
     if (!el || typeof el.getBoundingClientRect !== 'function') return false;
     const rect = el.getBoundingClientRect();
@@ -1438,7 +1461,7 @@
   }
 
   /**
-   * 按真实坐标命中招牌/钉子（忽略放大后的透明占位）。
+   * 按真实坐标命中招牌（仅黑色招牌实体；红钉与透明占位不算命中）。
    * 重叠时优先更靠近点击点、面积更小的那家，避免放大招牌挡住下面的店。
    */
   function resolveBrowsePinAtPoint(clientX, clientY) {
@@ -1449,10 +1472,8 @@
       const pin = root?.querySelector?.('.amap-browse-pin') || root;
       if (!pin) return;
       const label = pin.querySelector?.('.amap-browse-pin-label');
-      const needle = pin.querySelector?.('.amap-browse-pin-needle');
       let hitEl = null;
       if (label && pointInClientRect(clientX, clientY, label)) hitEl = label;
-      else if (needle && pointInClientRect(clientX, clientY, needle)) hitEl = needle;
       if (!hitEl) return;
       const rect = hitEl.getBoundingClientRect();
       const cx = (rect.left + rect.right) / 2;
@@ -1492,51 +1513,26 @@
     return resolveBrowsePinAtPoint(clientX, clientY);
   }
 
-  function bindBrowseMarkerHover() {
-    if (!browseMap) return;
-    browseMarkers.forEach(function (entry) {
-      entry.marker.on('mouseover', function () {
-        requestBrowseMarkerHover(entry.place.id);
-      });
-      entry.marker.on('mouseout', function (event) {
-        const origin = event?.originEvent || event;
-        const related = origin?.relatedTarget;
-        if (related) {
-          const relatedPin = findBrowsePinNode(related);
-          if (relatedPin && String(relatedPin.dataset?.browseId) === String(entry.place.id)) {
-            return;
-          }
-        }
-        const x = origin?.clientX;
-        const y = origin?.clientY;
-        if (x != null && y != null) {
-          const hit = resolveBrowseHoverFromPoint(x, y);
-          // 还在放大后的命中框内 → 保持；真正离开 → 立刻缩小
-          if (hit && String(hit.place.id) === String(entry.place.id)) return;
-          requestBrowseMarkerHover(hit ? hit.place.id : null);
-          return;
-        }
-        if (browseHoverPlaceId != null && String(browseHoverPlaceId) === String(entry.place.id)) {
-          requestBrowseMarkerHover(null);
-        }
-      });
-    });
-    browseMap.on('mousemove', function (event) {
-      const origin = event?.originEvent || event;
-      const x = origin?.clientX;
-      const y = origin?.clientY;
-      if (x == null || y == null) return;
-      const hit = resolveBrowseHoverFromPoint(x, y);
-      if (hit) {
-        requestBrowseMarkerHover(hit.place.id);
-        return;
-      }
-      // 探测不到：可能是真离开，也可能短暂打到画布；短延迟后再缩，避免误抖
-      scheduleBrowseHoverClear();
-    });
-    browseMap.on('mouseout', function () {
-      requestBrowseMarkerHover(null);
-    });
+  function bindBrowseMarkerHover(mapEl) {
+    if (!browseMap || !mapEl) return;
+    // 不采用高德 Marker 的外层命中盒；它固定包含红钉和透明占位。
+    // 每次移动都读取当前黑色招牌的 getBoundingClientRect：
+    // 招牌放大后命中盒同步变大，缩小后同步缩小。
+    mapEl.addEventListener(
+      'mousemove',
+      function (event) {
+        const hit = resolveBrowseHoverFromPoint(event.clientX, event.clientY);
+        requestBrowseMarkerHover(hit ? hit.place.id : null);
+      },
+      true,
+    );
+    mapEl.addEventListener(
+      'mouseleave',
+      function () {
+        requestBrowseMarkerHover(null);
+      },
+      true,
+    );
   }
 
   function focusBrowsePlace(place) {
@@ -1623,7 +1619,8 @@
       marker.on('click', function (event) {
         const pt = clientPointFromBrowseEvent(event);
         const hit = pt ? resolveBrowsePinAtPoint(pt.x, pt.y) : null;
-        handleBrowseMarkerClick(hit || entry);
+        // 只有点中黑色招牌实体才算；红钉和透明占位不响应
+        if (hit) handleBrowseMarkerClick(hit);
       });
       browseMap.add(marker);
       return entry;
@@ -1648,7 +1645,7 @@
     });
 
     bindBrowseMarkerLongPress(mapEl);
-    bindBrowseMarkerHover();
+    bindBrowseMarkerHover(mapEl);
 
     if (emptyEl) emptyEl.hidden = browsePlaces.length > 0;
 
