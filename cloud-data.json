@@ -626,6 +626,26 @@
       "rating": 2.5,
       "createdAt": "2026-07-20T08:43:13.789Z",
       "updatedAt": "2026-07-20T08:43:13.789Z"
+    },
+    {
+      "id": "mrt19izl2moq00",
+      "name": "俏王妃",
+      "brand": "",
+      "flavor": "奥利奥奶酪罐子",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": 15,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 3,
+      "createdAt": "2026-07-20T09:39:36.417Z",
+      "updatedAt": "2026-07-20T09:39:36.417Z"
     }
   ],
   "shops": [
@@ -660,5 +680,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-20T09:39:03.112Z"
+  "syncedAt": "2026-07-20T09:39:40.101Z"
 }
