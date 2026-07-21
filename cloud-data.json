@@ -713,6 +713,26 @@
       "rating": 0,
       "createdAt": "2026-07-21T07:24:35.192Z",
       "updatedAt": "2026-07-21T07:24:39.084Z"
+    },
+    {
+      "id": "mrubvzg62rqcij",
+      "name": "烤肉拌饭",
+      "brand": "",
+      "flavor": "脆皮烤肉拌饭",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "createdAt": "2026-07-21T07:24:46.518Z",
+      "updatedAt": "2026-07-21T07:24:46.518Z"
     }
   ],
   "shops": [
@@ -747,5 +767,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-21T07:24:43.233Z"
+  "syncedAt": "2026-07-21T07:24:50.424Z"
 }
