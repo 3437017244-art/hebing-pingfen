@@ -735,6 +735,29 @@
       "createdAt": "2026-07-21T07:24:46.518Z",
       "updatedAt": "2026-07-21T07:38:42.211Z",
       "shopRating": 4.5
+    },
+    {
+      "id": "mruo7ga2e0syib",
+      "name": "常记好点",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "createdAt": "2026-07-21T13:09:36.938Z",
+      "updatedAt": "2026-07-21T13:09:36.938Z"
     }
   ],
   "shops": [
@@ -769,5 +792,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-21T13:09:07.459Z"
+  "syncedAt": "2026-07-21T13:09:41.119Z"
 }
