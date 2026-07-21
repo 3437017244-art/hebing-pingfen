@@ -779,6 +779,26 @@
       "createdAt": "2026-07-21T13:10:17.941Z",
       "updatedAt": "2026-07-21T13:10:36.816Z",
       "shopRating": 4.5
+    },
+    {
+      "id": "mruod71eby2lxv",
+      "name": "常记好点",
+      "brand": "",
+      "flavor": "川辣牛肉味",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 4.5,
+      "createdAt": "2026-07-21T13:14:04.898Z",
+      "updatedAt": "2026-07-21T13:14:04.898Z"
     }
   ],
   "shops": [
@@ -813,5 +833,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-21T13:10:40.698Z"
+  "syncedAt": "2026-07-21T13:29:50.494Z"
 }
