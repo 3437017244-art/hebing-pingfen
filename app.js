@@ -2564,7 +2564,10 @@
     productEls.detailDialog.addEventListener('cancel', (e) => {
       if (window.AmapPicker?.isOpen?.()) {
         e.preventDefault();
+        return;
       }
+      e.preventDefault();
+      closeDetailDialog();
     });
 
     $('#unified-search').addEventListener('input', renderBrowse);
@@ -2591,6 +2594,10 @@
     $('#search-add-confirm-ok').addEventListener('click', confirmSearchAdd);
     $('#search-add-confirm-cancel').addEventListener('click', closeSearchAddConfirm);
     $('#search-add-confirm-close').addEventListener('click', closeSearchAddConfirm);
+    $('#search-add-confirm-dialog').addEventListener('cancel', (event) => {
+      event.preventDefault();
+      closeSearchAddConfirm();
+    });
     $('#search-add-confirm-dialog').addEventListener('click', (event) => {
       if (event.target === $('#search-add-confirm-dialog')) closeSearchAddConfirm();
     });

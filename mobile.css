@@ -10,6 +10,12 @@ body {
   overscroll-behavior-y: contain;
 }
 
+/* APP 禁止 WebView 顶部下拉触发原生刷新；页面内部仍可正常滚动 */
+html.native-app,
+html.native-app body {
+  overscroll-behavior-y: none;
+}
+
 .app,
 .page-shell {
   padding-top: max(18px, env(safe-area-inset-top));
@@ -48,8 +54,8 @@ body {
 }
 
 .dialog-editing .dialog-body {
-  max-height: min(65dvh, 520px);
-  -webkit-overflow-scrolling: touch;
+  max-height: none;
+  overflow: visible;
 }
 
 .search-suggestions {
@@ -88,33 +94,6 @@ body {
     margin-top: 20px;
     padding-bottom: env(safe-area-inset-bottom);
   }
-}
-
-.app-pull-indicator {
-  position: fixed;
-  top: calc(env(safe-area-inset-top) + 8px);
-  left: 50%;
-  transform: translate(-50%, -120%);
-  z-index: 9999;
-  padding: 8px 16px;
-  border-radius: 999px;
-  background: rgba(212, 165, 116, 0.95);
-  color: #0f1419;
-  font-size: 0.85rem;
-  font-weight: 600;
-  pointer-events: none;
-  opacity: 0;
-  transition: transform 0.18s ease, opacity 0.18s ease;
-  box-shadow: 0 6px 20px rgba(212, 165, 116, 0.35);
-}
-
-.app-pull-indicator.visible {
-  opacity: 1;
-  transform: translate(-50%, 0);
-}
-
-.app-pull-indicator.ready {
-  background: rgba(224, 183, 138, 0.98);
 }
 
 .amap-picker-overlay {

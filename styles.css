@@ -1745,6 +1745,8 @@ button.editing {
   padding: 0;
   max-width: 480px;
   width: calc(100% - 32px);
+  overflow-y: auto;
+  overflow-x: hidden;
   box-shadow: 0 24px 60px rgba(20, 32, 28, 0.22);
   background: var(--surface);
   animation: dialog-in 0.28s var(--ease);
@@ -1882,14 +1884,14 @@ body.amap-browse-open #detail-dialog::backdrop {
 }
 
 .dialog-editing .dialog-body {
-  max-height: min(70vh, 560px);
-  overflow-y: auto;
+  max-height: none;
+  overflow: visible;
 }
 
 .dialog-renaming .dialog-body {
   display: block;
-  max-height: min(70vh, 560px);
-  overflow-y: auto;
+  max-height: none;
+  overflow: visible;
   padding-top: 12px;
 }
 
@@ -2996,6 +2998,11 @@ body.amap-browse-open {
 
 /* 锚点盒含招牌+针尖：底边中点=针尖；空白区域不拦截点击，避免挡住旁边招牌 */
 .amap-browse-pin {
+  --sign-start: #c62828;
+  --sign-end: #ef5350;
+  --sign-text: #fff;
+  --sign-rating: #ffe4e4;
+  --sign-glow: rgba(239, 83, 80, 0.48);
   appearance: none;
   position: relative;
   display: block;
@@ -3024,21 +3031,72 @@ body.amap-browse-open {
   -webkit-touch-callout: none;
 }
 
+.amap-browse-pin.pin-color-0 {
+  --sign-start: #c62828;
+  --sign-end: #ef5350;
+  --sign-rating: #ffe4e4;
+  --sign-glow: rgba(239, 83, 80, 0.5);
+}
+
+.amap-browse-pin.pin-color-1 {
+  --sign-start: #e65100;
+  --sign-end: #fb8c00;
+  --sign-rating: #fff0d6;
+  --sign-glow: rgba(251, 140, 0, 0.5);
+}
+
+.amap-browse-pin.pin-color-2 {
+  --sign-start: #f9a825;
+  --sign-end: #fdd835;
+  --sign-text: #2b2100;
+  --sign-rating: #5d4700;
+  --sign-glow: rgba(253, 216, 53, 0.55);
+}
+
+.amap-browse-pin.pin-color-3 {
+  --sign-start: #2e7d32;
+  --sign-end: #43a047;
+  --sign-rating: #dcffe0;
+  --sign-glow: rgba(67, 160, 71, 0.5);
+}
+
+.amap-browse-pin.pin-color-4 {
+  --sign-start: #00838f;
+  --sign-end: #00acc1;
+  --sign-rating: #d9fbff;
+  --sign-glow: rgba(0, 172, 193, 0.5);
+}
+
+.amap-browse-pin.pin-color-5 {
+  --sign-start: #1565c0;
+  --sign-end: #1e88e5;
+  --sign-rating: #e1f0ff;
+  --sign-glow: rgba(30, 136, 229, 0.5);
+}
+
+.amap-browse-pin.pin-color-6 {
+  --sign-start: #6a1b9a;
+  --sign-end: #9c27b0;
+  --sign-rating: #f8dfff;
+  --sign-glow: rgba(156, 39, 176, 0.5);
+}
+
 .amap-browse-pin-label {
   position: absolute;
   left: 50%;
   top: 0;
   bottom: auto;
   transform: translateX(-50%);
+  transform-origin: center center;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   max-width: 140px;
   padding: 5px 9px;
   border-radius: 999px;
-  border: 1px solid rgba(229, 57, 53, 0.75);
-  background: rgba(20, 28, 36, 0.94);
-  color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  background: linear-gradient(135deg, var(--sign-start), var(--sign-end));
+  color: var(--sign-text);
   font-size: 0.78rem;
   font-weight: 700;
   line-height: 1.2;
@@ -3048,6 +3106,7 @@ body.amap-browse-open {
   pointer-events: auto;
   cursor: pointer;
   z-index: 1;
+  transition: transform 0.16s ease, max-width 0.16s ease, box-shadow 0.16s ease;
   touch-action: manipulation;
   -webkit-user-select: none;
   user-select: none;
@@ -3056,8 +3115,8 @@ body.amap-browse-open {
 
 .amap-browse-pin.is-active {
   z-index: 30;
-  /* 略降放大倍率，减少与下方邻近招牌重叠 */
-  transform: scale(1.28);
+  /* 根锚点和红钉不移动；仅由 label 围绕自身中心放大 */
+  transform: scale(1);
   filter:
     drop-shadow(0 0 0.5px var(--map-pin-outline))
     drop-shadow(0 0 1.6px var(--map-pin-outline-outer))
@@ -3067,12 +3126,13 @@ body.amap-browse-open {
 .amap-browse-pin.is-active .amap-browse-pin-label {
   z-index: 31;
   max-width: 180px;
-  box-shadow: 0 0 0 2px rgba(229, 57, 53, 0.35);
+  transform: translateX(-50%) scale(1.28);
+  box-shadow: 0 0 0 3px var(--sign-glow);
 }
 
 .amap-browse-pin-rating {
   flex: 0 0 auto;
-  color: #ff6b6b;
+  color: var(--sign-rating);
   font-weight: 800;
 }
 
@@ -3088,7 +3148,7 @@ body.amap-browse-open {
 }
 
 .amap-browse-pin.has-cluster .amap-browse-pin-label {
-  border-color: rgba(229, 57, 53, 0.9);
+  border-color: rgba(255, 255, 255, 0.95);
 }
 
 .amap-browse-pin-needle {
@@ -3145,9 +3205,9 @@ body.amap-browse-open {
 }
 
 .amap-browse-pin.is-active .amap-browse-pin-label {
-  border-color: var(--map-pin);
-  box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.35);
-  background: rgba(36, 48, 60, 0.98);
+  border-color: #fff;
+  box-shadow: 0 0 0 3px var(--sign-glow);
+  background: linear-gradient(135deg, var(--sign-start), var(--sign-end));
 }
 
 .amap-browse-pin.is-active .amap-browse-pin-needle::before {

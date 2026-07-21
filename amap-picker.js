@@ -1058,6 +1058,7 @@
   const BROWSE_PIN_NEEDLE_H = 34;
   const BROWSE_PIN_LABEL_SPACE = 44;
   const BROWSE_PIN_ANCHOR_H = BROWSE_PIN_NEEDLE_H + BROWSE_PIN_LABEL_SPACE;
+  const BROWSE_PIN_COLOR_COUNT = 7;
   // 小于该距离视为「挨得近」：只用于提示/点选列表，绝不改动登记坐标
   const BROWSE_NEAR_METERS = 50;
 
@@ -1108,7 +1109,7 @@
         neighborMap[String(place.id)] = group;
       });
     });
-    return places.map(function (place) {
+    const layouts = places.map(function (place) {
       const neighbors = neighborMap[String(place.id)] || [place];
       return {
         place: place,
@@ -1117,9 +1118,53 @@
         neighbors: neighbors.slice(),
       };
     });
+    assignBrowsePinColors(layouts);
+    return layouts;
   }
 
-  function createBrowseMarkerContent(place, active, neighborCount) {
+  function stableBrowseColorSeed(value) {
+    const text = String(value || '');
+    let hash = 2166136261;
+    for (let i = 0; i < text.length; i++) {
+      hash ^= text.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return hash >>> 0;
+  }
+
+  function assignBrowsePinColors(layouts) {
+    const assigned = new Map();
+    const ordered = layouts.slice().sort(function (a, b) {
+      const degreeDiff = (b.neighbors?.length || 0) - (a.neighbors?.length || 0);
+      if (degreeDiff !== 0) return degreeDiff;
+      return stableBrowseColorSeed(a.place.id) - stableBrowseColorSeed(b.place.id);
+    });
+
+    ordered.forEach(function (layout) {
+      const usedNearby = new Set();
+      layouts.forEach(function (other) {
+        if (other === layout) return;
+        const otherColor = assigned.get(String(other.place.id));
+        if (otherColor == null) return;
+        if (
+          haversineMeters(layout.lng, layout.lat, other.lng, other.lat) <=
+          BROWSE_NEAR_METERS
+        ) {
+          usedNearby.add(otherColor);
+        }
+      });
+      const available = [];
+      for (let color = 0; color < BROWSE_PIN_COLOR_COUNT; color++) {
+        if (!usedNearby.has(color)) available.push(color);
+      }
+      const pool = available.length ? available : Array.from({ length: BROWSE_PIN_COLOR_COUNT }, (_, i) => i);
+      const colorIndex = pool[stableBrowseColorSeed(layout.place.id) % pool.length];
+      assigned.set(String(layout.place.id), colorIndex);
+      layout.colorIndex = colorIndex;
+    });
+  }
+
+  function createBrowseMarkerContent(place, active, neighborCount, colorIndex) {
     const title = escapeBrowseText(place.title || '未命名');
     const rating =
       place.rating != null && Number(place.rating) > 0
@@ -1127,10 +1172,12 @@
         : '';
     const activeClass = active ? ' is-active' : '';
     const clusterClass = neighborCount > 1 ? ' has-cluster' : '';
+    const colorClass = ' pin-color-' + (Number(colorIndex) % BROWSE_PIN_COLOR_COUNT);
     return (
       '<button type="button" class="amap-browse-pin' +
       activeClass +
       clusterClass +
+      colorClass +
       '" data-browse-id="' +
       escapeBrowseText(place.id) +
       '">' +
@@ -1438,17 +1485,6 @@
     }, BROWSE_HOVER_CLEAR_MS);
   }
 
-  function pointInClientRect(clientX, clientY, el) {
-    if (!el || typeof el.getBoundingClientRect !== 'function') return false;
-    const rect = el.getBoundingClientRect();
-    return (
-      clientX >= rect.left &&
-      clientX <= rect.right &&
-      clientY >= rect.top &&
-      clientY <= rect.bottom
-    );
-  }
-
   function entryFromBrowsePin(pin) {
     if (!pin) return null;
     const id = pin.dataset?.browseId;
@@ -1461,38 +1497,22 @@
   }
 
   /**
-   * 按真实坐标命中招牌（仅黑色招牌实体；红钉与透明占位不算命中）。
-   * 重叠时优先更靠近点击点、面积更小的那家，避免放大招牌挡住下面的店。
+   * 按屏幕实际绘制层级命中招牌：只认鼠标位置最上层、真正可见的彩色实体。
+   * 红钉、透明占位以及被其它招牌遮住的部分均不算命中。
    */
   function resolveBrowsePinAtPoint(clientX, clientY) {
     if (clientX == null || clientY == null) return null;
-    const candidates = [];
-    browseMarkers.forEach(function (item) {
-      const root = getBrowseMarkerDom(item.marker);
-      const pin = root?.querySelector?.('.amap-browse-pin') || root;
-      if (!pin) return;
-      const label = pin.querySelector?.('.amap-browse-pin-label');
-      let hitEl = null;
-      if (label && pointInClientRect(clientX, clientY, label)) hitEl = label;
-      if (!hitEl) return;
-      const rect = hitEl.getBoundingClientRect();
-      const cx = (rect.left + rect.right) / 2;
-      const cy = (rect.top + rect.bottom) / 2;
-      const dx = clientX - cx;
-      const dy = clientY - cy;
-      candidates.push({
-        entry: item,
-        dist: dx * dx + dy * dy,
-        area: Math.max(1, rect.width * rect.height),
-      });
-    });
-    if (!candidates.length) return null;
-    candidates.sort(function (a, b) {
-      // 距离差明显时取更近；否则取更小（未放大）的招牌
-      if (Math.abs(a.dist - b.dist) > 64) return a.dist - b.dist;
-      return a.area - b.area;
-    });
-    return candidates[0].entry;
+    const elements = document.elementsFromPoint?.(clientX, clientY) || [];
+    for (const element of elements) {
+      // 红钉覆盖处明确无效，不继续穿透选择后面的招牌。
+      if (element.closest?.('.amap-browse-pin-needle')) return null;
+      const label = element.closest?.('.amap-browse-pin-label');
+      if (!label) continue;
+      const pin = label.closest?.('.amap-browse-pin');
+      const entry = entryFromBrowsePin(pin);
+      if (entry) return entry;
+    }
+    return null;
   }
 
   function clientPointFromBrowseEvent(event) {
@@ -1554,7 +1574,7 @@
     browseMarkers.forEach(function (item) {
       const active = String(item.place.id) === placeId;
       const n = (item.neighbors && item.neighbors.length) || 1;
-      item.marker.setContent(createBrowseMarkerContent(item.place, active, n));
+      item.marker.setContent(createBrowseMarkerContent(item.place, active, n, item.colorIndex));
       syncBrowseMarkerAnchor(item.marker);
     });
     applyBrowseMarkerActiveState();
@@ -1605,7 +1625,7 @@
         position: [layout.lng, layout.lat],
         // 仅用 offset：内容盒底边中点=针尖（勿再叠加 anchor，避免双重偏移）
         offset: browseMarkerOffset(AMap),
-        content: createBrowseMarkerContent(layout.place, false, neighborCount),
+        content: createBrowseMarkerContent(layout.place, false, neighborCount, layout.colorIndex),
         title: layout.place.title || '',
         zIndex: 100 + neighborCount,
       });
@@ -1615,6 +1635,7 @@
         lng: layout.lng,
         lat: layout.lat,
         neighbors: layout.neighbors,
+        colorIndex: layout.colorIndex,
       };
       marker.on('click', function (event) {
         const pt = clientPointFromBrowseEvent(event);

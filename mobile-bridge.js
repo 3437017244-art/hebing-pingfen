@@ -4,6 +4,7 @@
   const isNativeApp = Boolean(window.Capacitor?.isNativePlatform?.());
   if (isNativeApp) {
     window.__IS_MOBILE_APP__ = true;
+    document.documentElement.classList.add('native-app');
   }
 
   function isMapGestureTarget(target) {
@@ -99,24 +100,68 @@
     return dialogs[dialogs.length - 1];
   }
 
-  function performAppBack() {
-    if (global.AmapPicker?.cancelIfOpen?.()) {
+  function requestDialogClose(dialog) {
+    if (!dialog?.open) return false;
+    if (typeof dialog.requestClose === 'function') {
+      dialog.requestClose();
       return true;
     }
-    const openDialog = getTopOpenDialog();
-    if (openDialog) {
-      openDialog.close();
-      return true;
-    }
-    if (isHomePage()) {
-      return false;
-    }
-    if (window.history.length > 1) {
-      window.history.back();
-      return true;
-    }
-    window.location.href = 'index.html';
+    const cancelEvent = new Event('cancel', { cancelable: true });
+    const shouldClose = dialog.dispatchEvent(cancelEvent);
+    if (shouldClose && dialog.open) dialog.close();
     return true;
+  }
+
+  function closeCurrentLayer() {
+    if (window.AmapPicker?.cancelIfOpen?.()) {
+      return true;
+    }
+    return requestDialogClose(getTopOpenDialog());
+  }
+
+  function performAppBack() {
+    if (closeCurrentLayer()) {
+      return true;
+    }
+    if (!isHomePage()) {
+      window.location.href = 'index.html';
+      return true;
+    }
+    // 首页已是最上一级：消费返回事件，绝不交给系统退出 APP。
+    return true;
+  }
+
+  function setupNativeBackNavigation() {
+    if (!isNativeApp) return;
+
+    const guardKey = '__hebingAppBackGuard';
+    const pushHistoryGuard = function () {
+      if (window.history.state?.[guardKey]) return;
+      window.history.pushState(
+        { ...(window.history.state || {}), [guardKey]: true },
+        '',
+        window.location.href,
+      );
+    };
+
+    // 即使旧版 APP 尚未安装 @capacitor/app，WebView 返回也会先落到此保护层，
+    // 从而关闭当前弹层或回首页，而不是直接结束 Activity。
+    pushHistoryGuard();
+    window.addEventListener('popstate', function () {
+      if (closeCurrentLayer() || isHomePage()) {
+        pushHistoryGuard();
+        return;
+      }
+      window.location.replace('index.html');
+    });
+
+    // 新版 APP 安装 App 插件后，统一接管 Android 实体/手势返回键。
+    const App = window.Capacitor?.Plugins?.App;
+    if (App?.addListener) {
+      App.addListener('backButton', function () {
+        performAppBack();
+      });
+    }
   }
 
   function setupEdgeSwipeBack() {
@@ -222,105 +267,6 @@
     );
   }
 
-  function setupPullToRefresh() {
-    if (!isNativeApp) return;
-
-    let startY = 0;
-    let pulling = false;
-    let multiTouch = false;
-    let indicator = document.getElementById('app-pull-indicator');
-    if (!indicator) {
-      indicator = document.createElement('div');
-      indicator.id = 'app-pull-indicator';
-      indicator.className = 'app-pull-indicator';
-      indicator.textContent = '下拉刷新';
-      document.body.appendChild(indicator);
-    }
-
-    document.addEventListener(
-      'touchstart',
-      function (event) {
-        if (isMapUiOpen() || isMapGestureTarget(event.target)) {
-          pulling = false;
-          multiTouch = false;
-          return;
-        }
-        if (window.scrollY > 8) return;
-        if (event.touches.length !== 1) {
-          multiTouch = true;
-          pulling = false;
-          return;
-        }
-        multiTouch = false;
-        startY = event.touches[0].clientY;
-        pulling = true;
-      },
-      { passive: true },
-    );
-
-    document.addEventListener(
-      'touchmove',
-      function (event) {
-        if (event.touches.length !== 1) {
-          multiTouch = true;
-          pulling = false;
-          indicator.classList.remove('visible', 'ready');
-          return;
-        }
-        if (!pulling || multiTouch) return;
-        if (isMapUiOpen()) {
-          pulling = false;
-          indicator.classList.remove('visible', 'ready');
-          return;
-        }
-        const delta = event.touches[0].clientY - startY;
-        if (delta <= 0 || window.scrollY > 8) {
-          indicator.classList.remove('visible', 'ready');
-          return;
-        }
-        indicator.classList.add('visible');
-        if (delta > 72) {
-          indicator.classList.add('ready');
-          indicator.textContent = '松开刷新';
-        } else {
-          indicator.classList.remove('ready');
-          indicator.textContent = '下拉刷新';
-        }
-      },
-      { passive: true },
-    );
-
-    document.addEventListener(
-      'touchend',
-      function (event) {
-        if (multiTouch) {
-          multiTouch = false;
-          pulling = false;
-          indicator.classList.remove('visible', 'ready');
-          return;
-        }
-        if (!pulling) return;
-        pulling = false;
-        if (isMapUiOpen()) {
-          indicator.classList.remove('visible', 'ready');
-          return;
-        }
-        const delta = (event.changedTouches[0]?.clientY || 0) - startY;
-        indicator.classList.remove('visible', 'ready');
-        if (delta > 72 && window.scrollY <= 8) {
-          indicator.textContent = '正在刷新…';
-          indicator.classList.add('visible');
-          if (window.AppUpdate?.reloadForUpdate) {
-            window.AppUpdate.reloadForUpdate();
-          } else {
-            window.location.reload();
-          }
-        }
-      },
-      { passive: true },
-    );
-  }
-
   window.MobileAppBridge = {
     saveJsonFile,
     isNativeApp: function () {
@@ -330,8 +276,8 @@
   };
 
   document.addEventListener('DOMContentLoaded', function () {
+    setupNativeBackNavigation();
     setupEdgeSwipeBack();
-    setupPullToRefresh();
 
     const exportBtn = document.getElementById('export-btn');
     if (!exportBtn || exportBtn.dataset.mobileBridgeBound) return;
