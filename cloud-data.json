@@ -393,7 +393,7 @@
       "singleWeight": null,
       "rating": 2.5,
       "createdAt": "2026-07-16T06:32:25.150Z",
-      "updatedAt": "2026-07-19T06:36:08.445Z",
+      "updatedAt": "2026-07-21T13:30:03.893Z",
       "shopRating": 2.5
     },
     {
@@ -536,7 +536,8 @@
       "singleWeight": null,
       "rating": 2.5,
       "createdAt": "2026-07-20T07:07:31.019Z",
-      "updatedAt": "2026-07-20T07:07:31.019Z"
+      "updatedAt": "2026-07-21T13:30:03.893Z",
+      "shopRating": 2.5
     },
     {
       "id": "mrsw69teoz9h39",
@@ -833,5 +834,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-21T13:29:50.494Z"
+  "syncedAt": "2026-07-21T13:30:06.637Z"
 }
