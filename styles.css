@@ -3158,9 +3158,9 @@ body.amap-browse-open {
   width: 24px;
   height: 34px;
   margin-left: -12px;
-  /* 红钉只是视觉标记，真实交互范围严格限定为上方黑色招牌 */
-  pointer-events: none;
-  cursor: default;
+  /* 红钉与上方彩色招牌一样可悬停、可点击 */
+  pointer-events: auto;
+  cursor: pointer;
   touch-action: manipulation;
   -webkit-user-select: none;
   user-select: none;

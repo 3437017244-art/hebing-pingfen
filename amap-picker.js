@@ -1497,15 +1497,19 @@
   }
 
   /**
-   * 按屏幕实际绘制层级命中招牌：只认鼠标位置最上层、真正可见的彩色实体。
-   * 红钉、透明占位以及被其它招牌遮住的部分均不算命中。
+   * 按屏幕实际绘制层级命中标记：只认鼠标位置最上层、真正可见的
+   * 彩色招牌或红色图钉；透明占位以及被其它标记遮住的部分不算命中。
    */
   function resolveBrowsePinAtPoint(clientX, clientY) {
     if (clientX == null || clientY == null) return null;
     const elements = document.elementsFromPoint?.(clientX, clientY) || [];
     for (const element of elements) {
-      // 红钉覆盖处明确无效，不继续穿透选择后面的招牌。
-      if (element.closest?.('.amap-browse-pin-needle')) return null;
+      const needle = element.closest?.('.amap-browse-pin-needle');
+      if (needle) {
+        const pin = needle.closest?.('.amap-browse-pin');
+        const entry = entryFromBrowsePin(pin);
+        if (entry) return entry;
+      }
       const label = element.closest?.('.amap-browse-pin-label');
       if (!label) continue;
       const pin = label.closest?.('.amap-browse-pin');
@@ -1535,9 +1539,8 @@
 
   function bindBrowseMarkerHover(mapEl) {
     if (!browseMap || !mapEl) return;
-    // 不采用高德 Marker 的外层命中盒；它固定包含红钉和透明占位。
-    // 每次移动都读取当前黑色招牌的 getBoundingClientRect：
-    // 招牌放大后命中盒同步变大，缩小后同步缩小。
+    // 不采用高德 Marker 的外层透明命中盒；每次移动都读取屏幕上
+    // 实际可见的彩色招牌或红色图钉。
     mapEl.addEventListener(
       'mousemove',
       function (event) {
@@ -1640,7 +1643,7 @@
       marker.on('click', function (event) {
         const pt = clientPointFromBrowseEvent(event);
         const hit = pt ? resolveBrowsePinAtPoint(pt.x, pt.y) : null;
-        // 只有点中黑色招牌实体才算；红钉和透明占位不响应
+        // 只有点中彩色招牌或红色图钉才算；透明占位不响应
         if (hit) handleBrowseMarkerClick(hit);
       });
       browseMap.add(marker);
