@@ -754,10 +754,10 @@
       "weight": null,
       "singleWeight": null,
       "rating": 0,
-      "shopRating": 0,
+      "shopRating": 4.5,
       "notes": "",
       "createdAt": "2026-07-21T13:09:36.938Z",
-      "updatedAt": "2026-07-21T13:09:36.938Z"
+      "updatedAt": "2026-07-21T13:10:36.816Z"
     },
     {
       "id": "mruo8bx11hk4f8",
@@ -777,7 +777,8 @@
       "singleWeight": null,
       "rating": 4.5,
       "createdAt": "2026-07-21T13:10:17.941Z",
-      "updatedAt": "2026-07-21T13:10:17.941Z"
+      "updatedAt": "2026-07-21T13:10:36.816Z",
+      "shopRating": 4.5
     }
   ],
   "shops": [
@@ -812,5 +813,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-21T13:10:25.902Z"
+  "syncedAt": "2026-07-21T13:10:40.698Z"
 }
