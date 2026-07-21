@@ -16,6 +16,12 @@ html.native-app body {
   overscroll-behavior-y: none;
 }
 
+/* APP 地图关闭按钮靠近右上边缘，同时避开状态栏的主要触控区域 */
+html.native-app .amap-browse-close {
+  top: max(4px, calc(env(safe-area-inset-top, 0px) - 20px));
+  right: max(4px, env(safe-area-inset-right, 0px));
+}
+
 .app,
 .page-shell {
   padding-top: max(18px, env(safe-area-inset-top));
