@@ -26,6 +26,15 @@
     return Boolean(window.AmapPicker?.isOpen?.() || window.AmapPicker?.isBrowseMapOpen?.());
   }
 
+  function hasOverlayAboveBrowseMap() {
+    if (window.AmapPicker?.isPickerOverlayOpen?.() || window.AmapPicker?.isOpen?.()) {
+      return true;
+    }
+    return ['app-message-dialog', 'search-add-confirm-dialog', 'detail-dialog'].some(function (id) {
+      return Boolean(document.getElementById(id)?.open);
+    });
+  }
+
   // 仅在非地图区域禁止双指，避免误触发页面缩放；地图上必须允许双指捏合
   document.addEventListener(
     'touchstart',
@@ -100,14 +109,39 @@
     return file === '' || /^index\.html$/i.test(file);
   }
 
-  function getTopOpenDialog() {
-    const dialogs = document.querySelectorAll('dialog[open]');
+  function isBrowseMapDialog(dialog) {
+    return Boolean(
+      dialog?.classList?.contains('amap-browse-overlay') ||
+        dialog?.id === 'amap-browse-overlay',
+    );
+  }
+
+  function isMapPickerDialog(dialog) {
+    return Boolean(
+      dialog?.classList?.contains('amap-picker-overlay') &&
+        !dialog?.classList?.contains('amap-browse-overlay'),
+    );
+  }
+
+  function getTopOpenDialog(options = {}) {
+    const excludeBrowse = Boolean(options.excludeBrowse);
+    const dialogs = [...document.querySelectorAll('dialog[open]')].filter((dialog) => {
+      if (excludeBrowse && isBrowseMapDialog(dialog)) return false;
+      return true;
+    });
     if (!dialogs.length) return null;
     return dialogs[dialogs.length - 1];
   }
 
   function requestDialogClose(dialog) {
     if (!dialog?.open) return false;
+    // 地图选点拦截了 cancel，必须走专用关闭，否则会“吞返回却不关”
+    if (isMapPickerDialog(dialog)) {
+      return Boolean(window.AmapPicker?.closePickerIfOpen?.() || window.AmapPicker?.cancelIfOpen?.());
+    }
+    if (isBrowseMapDialog(dialog)) {
+      return Boolean(window.AmapPicker?.closeBrowseMap?.());
+    }
     if (typeof dialog.requestClose === 'function') {
       dialog.requestClose();
       return true;
@@ -118,17 +152,47 @@
     return true;
   }
 
+  function closePromptDialogById(id) {
+    const dialog = document.getElementById(id);
+    if (!dialog?.open) return false;
+    return requestDialogClose(dialog);
+  }
+
   function closeCurrentLayer() {
-    if (window.AmapPicker?.cancelIfOpen?.()) {
-      return true;
+    // 严格后开先关（按实际嵌套优先级，不用 DOM 顺序）：
+    // 1) 地图选点（含 SDK 加载中，overlay 已 showModal）
+    // 2) 确认/提示框
+    // 3) 搜索「确认添加」
+    // 4) 登记详情（内部再：编辑 → 商品 → 品牌 → 关闭）
+    // 5) 浏览地图
+    // 6) 其它残留 dialog
+    if (
+      window.AmapPicker?.isPickerOverlayOpen?.() ||
+      window.AmapPicker?.isOpen?.()
+    ) {
+      return Boolean(
+        window.AmapPicker.closePickerIfOpen?.() || window.AmapPicker.cancelIfOpen?.(),
+      );
     }
-    const top = getTopOpenDialog();
-    if (!top) return false;
-    // 详情弹窗按「编辑 → 详情 → 首页」逐级返回，避免从编辑界面直接掉回首页
-    if (top.id === 'detail-dialog' && typeof window.HebingNavigation?.handleBack === 'function') {
-      return Boolean(window.HebingNavigation.handleBack());
+
+    if (closePromptDialogById('app-message-dialog')) return true;
+    if (closePromptDialogById('search-add-confirm-dialog')) return true;
+
+    const detailDialog = document.getElementById('detail-dialog');
+    if (detailDialog?.open) {
+      if (typeof window.HebingNavigation?.handleBack === 'function') {
+        return Boolean(window.HebingNavigation.handleBack());
+      }
+      return requestDialogClose(detailDialog);
     }
-    return requestDialogClose(top);
+
+    if (window.AmapPicker?.isBrowseMapOpen?.()) {
+      return Boolean(window.AmapPicker.closeBrowseMap?.());
+    }
+
+    const leftover = getTopOpenDialog();
+    if (leftover) return requestDialogClose(leftover);
+    return false;
   }
 
   function performAppBack() {
@@ -200,8 +264,12 @@
           return;
         }
         cancelledByMultiTouch = false;
-        // 地图手势中不做边缘返回，避免双指缩放被当成返回
-        if (isMapUiOpen() || isMapGestureTarget(event.target)) {
+        // 地图手势中不做边缘返回，避免双指缩放被当成返回；
+        // 但浏览地图上已打开详情/弹窗时，应允许边缘返回先关弹层
+        if (
+          !hasOverlayAboveBrowseMap() &&
+          (isMapUiOpen() || isMapGestureTarget(event.target))
+        ) {
           tracking = false;
           return;
         }

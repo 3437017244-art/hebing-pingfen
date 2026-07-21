@@ -1285,6 +1285,15 @@
 
   function handleDetailLayerBack() {
     if (!productEls.detailDialog?.open) return false;
+    // 上层还有选点/确认框时，不要越级处理详情返回
+    if (
+      window.AmapPicker?.isPickerOverlayOpen?.() ||
+      window.AmapPicker?.isOpen?.() ||
+      document.getElementById('app-message-dialog')?.open ||
+      document.getElementById('search-add-confirm-dialog')?.open
+    ) {
+      return false;
+    }
     if (dialogEditMode) {
       cancelDialogEdit();
       return true;
@@ -2593,12 +2602,20 @@
       }
     });
     productEls.detailDialog.addEventListener('click', (e) => {
-      // 地图选点打开时，不要因为点击穿透关掉编辑框
-      if (window.AmapPicker?.isOpen?.()) return;
+      // 地图选点打开时（含 SDK 加载中），不要点穿关掉下层详情
+      if (
+        window.AmapPicker?.isPickerOverlayOpen?.() ||
+        window.AmapPicker?.isOpen?.()
+      ) {
+        return;
+      }
       if (e.target === productEls.detailDialog) handleDetailLayerBack();
     });
     productEls.detailDialog.addEventListener('cancel', (e) => {
-      if (window.AmapPicker?.isOpen?.()) {
+      if (
+        window.AmapPicker?.isPickerOverlayOpen?.() ||
+        window.AmapPicker?.isOpen?.()
+      ) {
         e.preventDefault();
         return;
       }

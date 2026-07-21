@@ -751,20 +751,24 @@
       });
   }
 
+  function isPickerOverlayOpen() {
+    return Boolean(overlayEl && overlayEl.open);
+  }
+
   function isOpen() {
-    return Boolean(overlayEl && overlayEl.open && resolvePick);
+    // 会话已就绪：有 resolve 回调。加载 SDK 期间用 isPickerOverlayOpen。
+    return Boolean(isPickerOverlayOpen() && resolvePick);
+  }
+
+  function closePickerIfOpen() {
+    if (!isPickerOverlayOpen()) return false;
+    closePicker(null);
+    return true;
   }
 
   function cancelIfOpen() {
-    if (isOpen()) {
-      closePicker(null);
-      return true;
-    }
-    if (isBrowseMapOpen()) {
-      closeBrowseMap();
-      return true;
-    }
-    return false;
+    // 仅关闭「选点」层；浏览地图交给导航按层级处理，避免越级
+    return closePickerIfOpen();
   }
 
   // ========== 地图浏览已登记 ==========
@@ -832,7 +836,18 @@
     browseMyLocationMarker = null;
   }
 
-  function closeBrowseMap() {
+  function hasUiLayerAboveBrowseMap() {
+    if (isPickerOverlayOpen()) return true;
+    const prompts = ['app-message-dialog', 'search-add-confirm-dialog', 'detail-dialog'];
+    return prompts.some(function (id) {
+      return Boolean(document.getElementById(id)?.open);
+    });
+  }
+
+  function closeBrowseMap(options) {
+    const force = Boolean(options && options.force);
+    // 上层还有弹窗时拒绝直接关地图，避免越级（应由返回栈逐级关）
+    if (!force && hasUiLayerAboveBrowseMap()) return false;
     destroyBrowseMapInstance();
     browsePlaces = [];
     browseOnSelect = null;
@@ -840,6 +855,7 @@
     if (browseOverlayEl?.open) {
       browseOverlayEl.close();
     }
+    return true;
   }
 
   function resizeBrowseMap() {
@@ -1729,7 +1745,7 @@
         });
       })
       .catch(function (error) {
-        closeBrowseMap();
+        closeBrowseMap({ force: true });
         return Promise.reject(error);
       });
   }
@@ -1833,7 +1849,9 @@
     resizeBrowseMap: resizeBrowseMap,
     hasKey: hasKey,
     isOpen: isOpen,
+    isPickerOverlayOpen: isPickerOverlayOpen,
     isBrowseMapOpen: isBrowseMapOpen,
+    closePickerIfOpen: closePickerIfOpen,
     cancelIfOpen: cancelIfOpen,
     loadSdk: loadAmapSdk,
     mountMiniMap: mountMiniMap,
