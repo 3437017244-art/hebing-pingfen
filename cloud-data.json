@@ -758,6 +758,26 @@
       "notes": "",
       "createdAt": "2026-07-21T13:09:36.938Z",
       "updatedAt": "2026-07-21T13:09:36.938Z"
+    },
+    {
+      "id": "mruo8bx11hk4f8",
+      "name": "常记好点",
+      "brand": "",
+      "flavor": "巴西烤肉味方便面",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 4.5,
+      "createdAt": "2026-07-21T13:10:17.941Z",
+      "updatedAt": "2026-07-21T13:10:17.941Z"
     }
   ],
   "shops": [
@@ -792,5 +812,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-21T13:09:41.119Z"
+  "syncedAt": "2026-07-21T13:10:25.902Z"
 }
