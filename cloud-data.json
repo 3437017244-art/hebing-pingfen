@@ -693,6 +693,26 @@
       "notes": "",
       "createdAt": "2026-07-21T07:23:23.290Z",
       "updatedAt": "2026-07-21T07:24:15.625Z"
+    },
+    {
+      "id": "mrubvqpkxs1l8e",
+      "name": "烤肉拌饭",
+      "brand": "",
+      "flavor": "烤肉拌饭",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 3,
+      "createdAt": "2026-07-21T07:24:35.192Z",
+      "updatedAt": "2026-07-21T07:24:35.192Z"
     }
   ],
   "shops": [
@@ -727,5 +747,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-21T07:24:17.310Z"
+  "syncedAt": "2026-07-21T07:24:38.549Z"
 }
