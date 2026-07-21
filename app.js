@@ -961,7 +961,7 @@
 
   function cancelDialogEdit() {
     if (!selectedDetail) return;
-    const { type, id, isNew, brand, renaming } = selectedDetail;
+    const { type, id, brand, renaming } = selectedDetail;
     setDialogViewMode();
     if (type === 'brand' && (renaming || brand)) {
       const group = groupProductsByBrand(items).find((g) => g.brand === brand);
@@ -970,18 +970,20 @@
       return;
     }
     if (type === 'product') {
-      if (isNew && brand) {
-        const group = groupProductsByBrand(items).find((g) => g.brand === brand);
-        if (group) showBrandDetail(group);
-        else closeDetailDialog();
-        return;
-      }
       const item = resolveEditItem({ id });
-      if (item) showProductDetail(item);
+      const productBrand = (brand || (item && getBrandName(item)) || '').trim();
+      const group = groupProductsByBrand(items).find((g) => g.brand === productBrand);
+      if (group) showBrandDetail(group);
       else closeDetailDialog();
-    } else {
-      closeDetailDialog();
+      return;
     }
+    if (type === 'shop') {
+      const shop = shops.find((entry) => entry.id === id);
+      if (shop) showShopDetail(shop);
+      else closeDetailDialog();
+      return;
+    }
+    closeDetailDialog();
   }
 
   function getGroupShopRating(groupOrProducts) {
@@ -1270,6 +1272,35 @@
       });
     }
   }
+
+  function showParentBrandDetailForProduct(item) {
+    const brand = item ? getBrandName(item) : '';
+    const group = groupProductsByBrand(items).find((entry) => entry.brand === brand);
+    if (group) {
+      showBrandDetail(group);
+      return true;
+    }
+    return false;
+  }
+
+  function handleDetailLayerBack() {
+    if (!productEls.detailDialog?.open) return false;
+    if (dialogEditMode) {
+      cancelDialogEdit();
+      return true;
+    }
+    if (selectedDetail?.type === 'product') {
+      const item = resolveEditItem({ id: selectedDetail.id });
+      if (showParentBrandDetailForProduct(item)) return true;
+    }
+    closeDetailDialog();
+    return true;
+  }
+
+  window.HebingNavigation = {
+    ...(window.HebingNavigation || {}),
+    handleBack: handleDetailLayerBack,
+  };
 
   function getProductShopInfo(item) {
     const shopLocation = (item.shopLocation || '').trim();
@@ -2087,12 +2118,15 @@
   async function handleProductDelete(id) {
     const item = resolveEditItem({ id });
     if (!item) return;
-    const label = item.flavor ? `${getBrandName(item)} · ${item.flavor}` : getBrandName(item);
+    const brand = getBrandName(item);
+    const label = item.flavor ? `${brand} · ${item.flavor}` : brand;
     if (!(await showAppConfirm(`确定删除「${label}」吗？此操作不可撤销。`, '删除确认'))) return;
     window.HebingSync?.recordDeletion?.('products', item.id);
     items = items.filter((i) => i.id !== item.id);
     saveItems();
-    closeDetailDialog();
+    const group = groupProductsByBrand(items).find((g) => g.brand === brand);
+    if (group) showBrandDetail(group);
+    else closeDetailDialog();
     renderBrowse();
   }
 
@@ -2495,7 +2529,9 @@
       if (setupBanner) setupBanner.hidden = false;
     }
 
-    productEls.dialogClose.addEventListener('click', closeDetailDialog);
+    productEls.dialogClose.addEventListener('click', () => {
+      handleDetailLayerBack();
+    });
     productEls.dialogHeaderEditBtn?.addEventListener('click', () => {
       if (isDetailInteractionSuppressed()) return;
       if (!selectedDetail || selectedDetail.type !== 'brand' || dialogEditMode) return;
@@ -2559,7 +2595,7 @@
     productEls.detailDialog.addEventListener('click', (e) => {
       // 地图选点打开时，不要因为点击穿透关掉编辑框
       if (window.AmapPicker?.isOpen?.()) return;
-      if (e.target === productEls.detailDialog) closeDetailDialog();
+      if (e.target === productEls.detailDialog) handleDetailLayerBack();
     });
     productEls.detailDialog.addEventListener('cancel', (e) => {
       if (window.AmapPicker?.isOpen?.()) {
@@ -2567,7 +2603,7 @@
         return;
       }
       e.preventDefault();
-      closeDetailDialog();
+      handleDetailLayerBack();
     });
 
     $('#unified-search').addEventListener('input', renderBrowse);

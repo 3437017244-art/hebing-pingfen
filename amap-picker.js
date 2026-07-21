@@ -987,7 +987,6 @@
     browseOverlayEl.setAttribute('aria-label', '地图');
     browseOverlayEl.innerHTML =
       '<div class="amap-picker amap-browse">' +
-      '<button type="button" class="amap-browse-close" id="amap-browse-close" aria-label="关闭">&times;</button>' +
       '<div class="amap-picker-map-wrap">' +
       '<div class="amap-picker-map" id="amap-browse-map"></div>' +
       '<button type="button" class="amap-browse-locate" id="amap-browse-locate" aria-label="我的位置" title="我的位置">' +
@@ -1007,7 +1006,6 @@
 
     document.body.appendChild(browseOverlayEl);
 
-    browseOverlayEl.querySelector('#amap-browse-close').addEventListener('click', closeBrowseMap);
     browseOverlayEl.querySelector('#amap-browse-locate').addEventListener('click', function () {
       locateBrowseMyPosition();
     });

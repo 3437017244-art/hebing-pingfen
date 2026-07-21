@@ -2,9 +2,15 @@
   'use strict';
 
   const isNativeApp = Boolean(window.Capacitor?.isNativePlatform?.());
+  const isAppPreview = new URLSearchParams(window.location.search).get('app-preview') === '1';
+  if (isNativeApp || isAppPreview) {
+    document.documentElement.classList.add('native-app');
+  }
+  if (isAppPreview) {
+    document.documentElement.classList.add('app-preview');
+  }
   if (isNativeApp) {
     window.__IS_MOBILE_APP__ = true;
-    document.documentElement.classList.add('native-app');
   }
 
   function isMapGestureTarget(target) {
@@ -116,7 +122,13 @@
     if (window.AmapPicker?.cancelIfOpen?.()) {
       return true;
     }
-    return requestDialogClose(getTopOpenDialog());
+    const top = getTopOpenDialog();
+    if (!top) return false;
+    // 详情弹窗按「编辑 → 详情 → 首页」逐级返回，避免从编辑界面直接掉回首页
+    if (top.id === 'detail-dialog' && typeof window.HebingNavigation?.handleBack === 'function') {
+      return Boolean(window.HebingNavigation.handleBack());
+    }
+    return requestDialogClose(top);
   }
 
   function performAppBack() {

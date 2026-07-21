@@ -2893,34 +2893,6 @@ body.amap-browse-open {
   min-height: 0;
 }
 
-.amap-browse-close {
-  appearance: none;
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 8;
-  width: 40px;
-  height: 40px;
-  margin: 0;
-  padding: 0;
-  border: 1px solid rgba(232, 238, 244, 0.18);
-  border-radius: 50%;
-  background: rgba(20, 28, 36, 0.88);
-  color: var(--text);
-  font-size: 1.45rem;
-  line-height: 1;
-  cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  transition: background 0.2s var(--ease), transform 0.15s var(--ease);
-}
-
-.amap-browse-close:hover {
-  background: rgba(36, 48, 60, 0.95);
-  transform: scale(1.04);
-}
-
 .amap-browse-locate {
   appearance: none;
   position: absolute;
@@ -3224,11 +3196,6 @@ body.amap-browse-open {
   /* 浏览地图全幅可点，安全区交给关闭按钮自己避让 */
   padding-top: 0;
   padding-bottom: 0;
-}
-
-.amap-browse-close {
-  top: max(12px, env(safe-area-inset-top, 0px));
-  right: max(12px, env(safe-area-inset-right, 0px));
 }
 
 /* 高德标记容器勿裁切招牌，否则靠上的标签点不中 */
