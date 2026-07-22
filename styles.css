@@ -1616,6 +1616,18 @@ button.editing {
   overflow: hidden;
 }
 
+.brand-notes {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  background: rgba(139, 107, 176, 0.16);
+  border: 1px solid rgba(139, 107, 176, 0.45);
+  color: var(--text);
+  font-size: 0.92rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
 .empty-hint {
   text-align: center;
   color: var(--text-muted);
@@ -2022,6 +2034,33 @@ body.amap-browse-open #detail-dialog::backdrop {
 .dialog-edit-form .form-row-key-location {
   --field-accent: #3d9b8f;
   --field-bg: rgba(61, 155, 143, 0.18);
+}
+
+.dialog-edit-form .form-row-key-notes {
+  --field-accent: #8b6bb0;
+  --field-bg: rgba(139, 107, 176, 0.18);
+}
+
+.dialog-edit-form .form-row-key textarea {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 4.5em;
+  resize: vertical;
+  background: var(--bg);
+  font-weight: 600;
+  border: 2px solid var(--field-accent);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.2);
+  color: var(--text);
+  text-align: left;
+  line-height: 1.45;
+  padding: 10px 12px;
+}
+
+.dialog-edit-form .form-row-key textarea:focus {
+  outline: none;
+  border-color: var(--field-accent);
+  background: var(--bg);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--field-accent) 30%, transparent);
 }
 
 .dialog-edit-form .form-row:last-child {

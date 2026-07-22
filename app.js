@@ -610,6 +610,10 @@
           <label for="dialog-storage-location">所在位置</label>
           <input type="text" id="dialog-storage-location" value="${escapeHtml(item.storageLocation || '')}" placeholder="请输入所在位置">
         </div>
+        <div class="form-row form-row-key form-row-key-notes">
+          <label for="dialog-notes">备注</label>
+          <textarea id="dialog-notes" rows="3" placeholder="可选，仅本商品备注">${escapeHtml(item.notes || '')}</textarea>
+        </div>
         <div class="form-row">
           <label for="dialog-price">价格（元）</label>
           <input type="number" id="dialog-price" min="0" step="0.01" value="${item.price != null ? item.price : ''}">
@@ -669,6 +673,10 @@
         <div class="form-row form-row-key form-row-key-location extra-storage-location-row"${showStockFields ? '' : ' hidden'}>
           <label>所在位置</label>
           <input type="text" class="extra-storage-location" value="${escapeHtml(item.storageLocation || '')}" placeholder="请输入所在位置">
+        </div>
+        <div class="form-row form-row-key form-row-key-notes">
+          <label>备注</label>
+          <textarea class="extra-notes" rows="2" placeholder="可选，仅本商品备注">${escapeHtml(item.notes || '')}</textarea>
         </div>
         <div class="form-row">
           <label>价格（元）</label>
@@ -737,6 +745,7 @@
               ? parseFloat(row.querySelector('.extra-price').value)
               : null,
           rating: ratingOrDefault(row.querySelector('.extra-rating')?.value, 3),
+          notes: (row.querySelector('.extra-notes')?.value || '').trim(),
         }),
       )
       .filter((item) => item.flavor);
@@ -760,7 +769,7 @@
       weight: null,
       singleWeight: null,
       rating: extra.rating,
-      notes: '',
+      notes: (extra.notes || '').trim(),
       createdAt: now,
       updatedAt: now,
     };
@@ -831,6 +840,7 @@
       weight: $('#dialog-weight')?.value !== '' ? parseFloat($('#dialog-weight').value) : null,
       singleWeight: $('#dialog-single-weight')?.value !== '' ? parseFloat($('#dialog-single-weight').value) : null,
       rating: ratingOrDefault($('#dialog-rating')?.value, 3),
+      notes: ($('#dialog-notes')?.value || '').trim(),
     });
   }
 
@@ -1039,6 +1049,10 @@
             <label for="dialog-storage-location">所在位置</label>
             <input type="text" id="dialog-storage-location" value="${escapeHtml(primaryProduct?.storageLocation || '')}" placeholder="请输入所在位置">
           </div>
+          <div class="form-row form-row-key form-row-key-notes">
+            <label for="dialog-brand-notes">备注</label>
+            <textarea id="dialog-brand-notes" rows="3" placeholder="可选，仅本品牌备注">${escapeHtml(getBrandNotes(group) || '')}</textarea>
+          </div>
         </form>
       `;
     }
@@ -1078,6 +1092,7 @@
       quantityRaw != null && quantityRaw !== '' ? parseInt(quantityRaw, 10) : null;
     const category = ($('#dialog-category')?.value || '').trim();
     const storageLocation = ($('#dialog-storage-location')?.value || '').trim();
+    const brandNotes = ($('#dialog-brand-notes')?.value || '').trim();
     const stockData = { quantity, category, storageLocation };
     if (hasStockQuantity(stockData) && !(await validateMainProductStockFields(stockData))) {
       return;
@@ -1092,6 +1107,7 @@
         ...item,
         name: newName,
         shopRating,
+        brandNotes,
         updatedAt: now,
       };
       if ((item.shopName || '').trim() === oldName) {
@@ -1125,6 +1141,7 @@
         rating: 0,
         shopRating,
         notes: '',
+        brandNotes,
         createdAt: now,
         updatedAt: now,
       });
@@ -1326,6 +1343,17 @@
 
   function getBrandName(item) {
     return (item.name || '').trim() || '未命名';
+  }
+
+  function getBrandNotes(groupOrProducts) {
+    const products = Array.isArray(groupOrProducts)
+      ? groupOrProducts
+      : groupOrProducts?.products || [];
+    for (const item of products) {
+      const notes = (item?.brandNotes || '').trim();
+      if (notes) return notes;
+    }
+    return '';
   }
 
   function isBrandPlaceholder(item) {
@@ -1572,6 +1600,7 @@
       shopName,
       shopLocation,
       item.notes,
+      item.brandNotes,
       item.price != null ? String(item.price) : '',
       item.weight != null ? String(item.weight) : '',
       item.singleWeight != null ? String(item.singleWeight) : '',
@@ -1773,6 +1802,7 @@
 
   function renderBrandDetailBody(group) {
     const products = group.products.filter((item) => !isBrandPlaceholder(item));
+    const brandNotes = getBrandNotes(group);
     const rows = products
       .map((item) => {
         const label = item.flavor || '未命名商品';
@@ -1801,6 +1831,7 @@
 
     return `
       ${renderBrandLocationBar(group)}
+      ${brandNotes ? `<p class="brand-notes">${escapeHtml(brandNotes)}</p>` : ''}
       <div class="brand-products-list">${rows}</div>
     `;
   }
