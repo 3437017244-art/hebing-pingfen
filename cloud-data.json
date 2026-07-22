@@ -947,11 +947,11 @@
       "weight": null,
       "singleWeight": null,
       "rating": 0,
-      "shopRating": 0,
+      "shopRating": 3.5,
       "notes": "",
       "brandNotes": "",
       "createdAt": "2026-07-22T14:02:58.119Z",
-      "updatedAt": "2026-07-22T14:02:58.119Z"
+      "updatedAt": "2026-07-22T14:03:44.859Z"
     }
   ],
   "shops": [
@@ -988,5 +988,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-22T14:03:05.238Z"
+  "syncedAt": "2026-07-22T14:03:48.982Z"
 }
