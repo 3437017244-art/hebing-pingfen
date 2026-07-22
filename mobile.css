@@ -106,6 +106,7 @@ html.native-app body {
     width: 100%;
     min-width: 0;
     max-width: 100%;
+    flex-wrap: wrap;
   }
 
   .item-card.brand-card.no-stock .item-header {
@@ -115,9 +116,15 @@ html.native-app body {
 
   .item-card.brand-card .brand-stock-chip {
     max-width: 100%;
+    width: fit-content;
     box-sizing: border-box;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    flex-wrap: wrap;
+    align-items: baseline;
+    row-gap: 2px;
+    overflow: visible;
+    border-radius: 16px;
+    line-height: 1.35;
   }
 
   .item-card.brand-card .brand-stock-name,
@@ -125,6 +132,8 @@ html.native-app body {
   .item-card.brand-card .brand-stock-location,
   .item-card.brand-card .brand-stock-sep {
     font-size: 0.98rem;
+    white-space: normal;
+    word-break: break-word;
   }
 
   .dialog-actions {
@@ -181,6 +190,7 @@ html.native-app .item-card.brand-card .brand-stock-preview {
   max-width: 100%;
   margin-top: 0;
   justify-content: flex-start;
+  flex-wrap: wrap;
 }
 
 html.native-app .item-card.brand-card.no-stock .item-header {
@@ -190,9 +200,15 @@ html.native-app .item-card.brand-card.no-stock .item-header {
 
 html.native-app .item-card.brand-card .brand-stock-chip {
   max-width: 100%;
+  width: fit-content;
   box-sizing: border-box;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  flex-wrap: wrap;
+  align-items: baseline;
+  row-gap: 2px;
+  overflow: visible;
+  border-radius: 16px;
+  line-height: 1.35;
 }
 
 html.native-app .item-card.brand-card .brand-stock-name,
@@ -200,6 +216,8 @@ html.native-app .item-card.brand-card .brand-stock-qty,
 html.native-app .item-card.brand-card .brand-stock-location,
 html.native-app .item-card.brand-card .brand-stock-sep {
   font-size: 0.98rem;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .amap-picker-overlay {
