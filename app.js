@@ -1360,6 +1360,50 @@
     return item?.isBrandPlaceholder === true;
   }
 
+  function buildBrandPlaceholder(brandName, seed = {}) {
+    const now = new Date().toISOString();
+    const name = (brandName || '').trim() || '未命名';
+    const shopInfo = seed && seed.id != null ? getProductShopInfo(seed) : {
+      shopLocation: (seed.shopLocation || '').trim(),
+      shopMapAddress: (seed.shopMapAddress || '').trim(),
+      shopLng: parseCoord(seed.shopLng),
+      shopLat: parseCoord(seed.shopLat),
+    };
+    return {
+      id: generateId(),
+      name,
+      isBrandPlaceholder: true,
+      brand: '',
+      flavor: '',
+      category: '',
+      storageLocation: '',
+      quantity: null,
+      shopName: '',
+      shopLocation: shopInfo.shopLocation || '',
+      shopMapAddress: shopInfo.shopMapAddress || '',
+      shopLng: shopInfo.shopLng ?? null,
+      shopLat: shopInfo.shopLat ?? null,
+      price: null,
+      weight: null,
+      singleWeight: null,
+      rating: 0,
+      shopRating: ratingOrDefault(seed.shopRating, 0),
+      notes: '',
+      brandNotes: (seed.brandNotes || '').trim(),
+      createdAt: seed.createdAt || now,
+      updatedAt: now,
+    };
+  }
+
+  function ensureBrandRecordAfterProductRemoval(brandName, seedItem) {
+    const brand = (brandName || '').trim();
+    if (!brand) return;
+    const remaining = items.filter((item) => getBrandName(item) === brand);
+    if (remaining.some((item) => !isBrandPlaceholder(item))) return;
+    if (remaining.some(isBrandPlaceholder)) return;
+    items.push(buildBrandPlaceholder(brand, seedItem || {}));
+  }
+
   const PRODUCT_CATEGORIES = ['食品', '速食', '其他'];
 
   const STOCK_COLOR_CLASSES = [
@@ -1943,30 +1987,7 @@
     if (!query) return;
     let group = groupProductsByBrand(items).find((g) => g.brand === query);
     if (!group) {
-      const now = new Date().toISOString();
-      items.push({
-        id: generateId(),
-        name: query,
-        isBrandPlaceholder: true,
-        brand: '',
-        flavor: '',
-        category: '',
-        storageLocation: '',
-        quantity: null,
-        shopName: '',
-        shopLocation: '',
-        shopMapAddress: '',
-        shopLng: null,
-        shopLat: null,
-        price: null,
-        weight: null,
-        singleWeight: null,
-        rating: 0,
-        shopRating: 0,
-        notes: '',
-        createdAt: now,
-        updatedAt: now,
-      });
+      items.push(buildBrandPlaceholder(query));
       saveItems();
       renderBrowse();
       group = groupProductsByBrand(items).find((g) => g.brand === query);
@@ -2161,8 +2182,11 @@
     const brand = getBrandName(item);
     const label = item.flavor ? `${brand} · ${item.flavor}` : brand;
     if (!(await showAppConfirm(`确定删除「${label}」吗？此操作不可撤销。`, '删除确认'))) return;
+    const seed = { ...item };
     window.HebingSync?.recordDeletion?.('products', item.id);
     items = items.filter((i) => i.id !== item.id);
+    // 删光商品后仍保留品牌登记（名称、地图位置等），方便继续添加商品
+    ensureBrandRecordAfterProductRemoval(brand, seed);
     saveItems();
     const group = groupProductsByBrand(items).find((g) => g.brand === brand);
     if (group) showBrandDetail(group);
