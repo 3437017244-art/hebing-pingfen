@@ -800,6 +800,29 @@
       "rating": 4.5,
       "createdAt": "2026-07-21T13:14:04.898Z",
       "updatedAt": "2026-07-21T13:14:04.898Z"
+    },
+    {
+      "id": "mrvdpt530asj0y",
+      "name": "乌江",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "createdAt": "2026-07-22T01:03:43.815Z",
+      "updatedAt": "2026-07-22T01:03:43.815Z"
     }
   ],
   "shops": [
@@ -834,5 +857,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-22T01:03:34.205Z"
+  "syncedAt": "2026-07-22T01:03:47.375Z"
 }
