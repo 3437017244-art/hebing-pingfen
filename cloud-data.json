@@ -898,8 +898,9 @@
       "singleWeight": null,
       "rating": 3.5,
       "createdAt": "2026-07-22T09:00:15.129Z",
-      "updatedAt": "2026-07-22T09:19:42.568Z",
-      "shopRating": 3.5
+      "updatedAt": "2026-07-22T10:09:40.741Z",
+      "shopRating": 3.5,
+      "notes": "鼠标用的还行，但是滚轮呢，经常出问题。"
     }
   ],
   "shops": [
@@ -934,5 +935,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-22T10:09:01.427Z"
+  "syncedAt": "2026-07-22T10:09:43.890Z"
 }
