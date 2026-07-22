@@ -883,6 +883,29 @@
       "createdAt": "2026-07-22T10:12:24.674Z",
       "updatedAt": "2026-07-22T10:14:04.234Z",
       "brandNotes": "去好几次都不开门。"
+    },
+    {
+      "id": "mrvxeduertq6v5",
+      "name": "五小水果摊",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "createdAt": "2026-07-22T10:14:43.094Z",
+      "updatedAt": "2026-07-22T10:14:43.094Z"
     }
   ],
   "shops": [
@@ -919,5 +942,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-22T10:14:27.609Z"
+  "syncedAt": "2026-07-22T10:14:46.070Z"
 }
