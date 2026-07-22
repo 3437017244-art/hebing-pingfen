@@ -823,6 +823,26 @@
       "notes": "",
       "createdAt": "2026-07-22T01:03:43.815Z",
       "updatedAt": "2026-07-22T01:04:00.437Z"
+    },
+    {
+      "id": "mrvdr1sv6i6k8a",
+      "name": "乌江",
+      "brand": "",
+      "flavor": "碎粒榨菜",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 4,
+      "createdAt": "2026-07-22T01:04:41.695Z",
+      "updatedAt": "2026-07-22T01:04:41.695Z"
     }
   ],
   "shops": [
@@ -857,5 +877,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-22T01:04:01.678Z"
+  "syncedAt": "2026-07-22T01:04:46.220Z"
 }
