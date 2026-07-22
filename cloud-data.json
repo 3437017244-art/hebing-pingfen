@@ -900,10 +900,11 @@
       "weight": null,
       "singleWeight": null,
       "rating": 0,
-      "shopRating": 0,
+      "shopRating": 0.5,
       "notes": "",
       "createdAt": "2026-07-22T10:12:24.674Z",
-      "updatedAt": "2026-07-22T10:13:48.600Z"
+      "updatedAt": "2026-07-22T10:14:04.234Z",
+      "brandNotes": "去好几次都不开门。"
     }
   ],
   "shops": [
@@ -939,5 +940,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-22T10:13:51.781Z"
+  "syncedAt": "2026-07-22T10:14:05.571Z"
 }
