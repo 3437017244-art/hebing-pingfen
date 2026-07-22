@@ -928,6 +928,30 @@
       "notes": "不如巴西烤肉和川辣牛肉好吃",
       "createdAt": "2026-07-22T11:58:01.839Z",
       "updatedAt": "2026-07-22T11:58:01.839Z"
+    },
+    {
+      "id": "mrw5jwzriemk6g",
+      "name": "桃李",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "brandNotes": "",
+      "createdAt": "2026-07-22T14:02:58.119Z",
+      "updatedAt": "2026-07-22T14:02:58.119Z"
     }
   ],
   "shops": [
@@ -964,5 +988,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-22T14:02:46.107Z"
+  "syncedAt": "2026-07-22T14:03:05.238Z"
 }
