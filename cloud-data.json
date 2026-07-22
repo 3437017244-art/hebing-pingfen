@@ -843,6 +843,29 @@
       "rating": 4,
       "createdAt": "2026-07-22T01:04:41.695Z",
       "updatedAt": "2026-07-22T01:04:41.695Z"
+    },
+    {
+      "id": "mrvuoz3b59vjlb",
+      "name": "雷蛇",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "createdAt": "2026-07-22T08:58:58.343Z",
+      "updatedAt": "2026-07-22T08:58:58.343Z"
     }
   ],
   "shops": [
@@ -877,5 +900,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-22T08:58:47.002Z"
+  "syncedAt": "2026-07-22T08:59:01.344Z"
 }
