@@ -63,14 +63,33 @@ html.native-app body {
   -webkit-overflow-scrolling: touch;
 }
 
-@media (max-width: 520px) {
+@media (max-width: 720px) {
   .item-header {
     flex-wrap: wrap;
   }
 
+  /* 窄屏/APP：评分固定右上，库存条独占第二行，避免互相覆盖 */
   .item-card.brand-card .item-header {
-    grid-template-columns: 5.75rem minmax(0, 1fr) auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'title rating'
+      'stock stock';
     column-gap: 8px;
+    row-gap: 8px;
+    align-items: center;
+  }
+
+  .item-card.brand-card .item-title-wrap {
+    grid-area: title;
+    min-width: 0;
+  }
+
+  .item-card.brand-card .item-header-rating {
+    grid-area: rating;
+    grid-column: auto;
+    justify-self: end;
+    z-index: 1;
   }
 
   .brand-stock-preview {
@@ -80,8 +99,32 @@ html.native-app body {
   }
 
   .item-card.brand-card .brand-stock-preview {
+    grid-area: stock;
+    grid-column: auto;
     flex-basis: auto;
     margin-top: 0;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .item-card.brand-card.no-stock .item-header {
+    grid-template-areas: 'title rating';
+    row-gap: 0;
+  }
+
+  .item-card.brand-card .brand-stock-chip {
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .item-card.brand-card .brand-stock-name,
+  .item-card.brand-card .brand-stock-qty,
+  .item-card.brand-card .brand-stock-location,
+  .item-card.brand-card .brand-stock-sep {
+    font-size: 0.98rem;
   }
 
   .dialog-actions {
@@ -104,6 +147,59 @@ html.native-app body {
     margin-top: 20px;
     padding-bottom: env(safe-area-inset-bottom);
   }
+}
+
+/* APP WebView 一律用分行布局，避免宽度判定不准仍挤在一行 */
+html.native-app .item-card.brand-card .item-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'title rating'
+    'stock stock';
+  column-gap: 8px;
+  row-gap: 8px;
+  align-items: center;
+}
+
+html.native-app .item-card.brand-card .item-title-wrap {
+  grid-area: title;
+  min-width: 0;
+}
+
+html.native-app .item-card.brand-card .item-header-rating {
+  grid-area: rating;
+  grid-column: auto;
+  justify-self: end;
+  z-index: 1;
+}
+
+html.native-app .item-card.brand-card .brand-stock-preview {
+  grid-area: stock;
+  grid-column: auto;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  margin-top: 0;
+  justify-content: flex-start;
+}
+
+html.native-app .item-card.brand-card.no-stock .item-header {
+  grid-template-areas: 'title rating';
+  row-gap: 0;
+}
+
+html.native-app .item-card.brand-card .brand-stock-chip {
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+html.native-app .item-card.brand-card .brand-stock-name,
+html.native-app .item-card.brand-card .brand-stock-qty,
+html.native-app .item-card.brand-card .brand-stock-location,
+html.native-app .item-card.brand-card .brand-stock-sep {
+  font-size: 0.98rem;
 }
 
 .amap-picker-overlay {
