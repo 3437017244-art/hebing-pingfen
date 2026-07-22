@@ -895,9 +895,9 @@
       "quantity": null,
       "shopName": "",
       "shopLocation": "",
-      "shopMapAddress": "",
-      "shopLng": null,
-      "shopLat": null,
+      "shopMapAddress": "河北省邢台市沙河市褡裢街道广阳街美家美户墙布窗帘软装工作室",
+      "shopLng": 114.508849,
+      "shopLat": 36.861116,
       "price": null,
       "weight": null,
       "singleWeight": null,
@@ -905,7 +905,7 @@
       "shopRating": 0.5,
       "notes": "",
       "createdAt": "2026-07-22T10:14:43.094Z",
-      "updatedAt": "2026-07-22T10:14:57.630Z",
+      "updatedAt": "2026-07-22T10:15:29.120Z",
       "brandNotes": "买了两次，全是烂瓜，再不买。"
     }
   ],
@@ -943,5 +943,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-22T10:14:59.821Z"
+  "syncedAt": "2026-07-22T10:15:32.286Z"
 }
