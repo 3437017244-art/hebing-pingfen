@@ -973,6 +973,30 @@
       "notes": "其实还可以但是我不爱吃甜的",
       "createdAt": "2026-07-22T14:04:17.401Z",
       "updatedAt": "2026-07-22T14:04:17.401Z"
+    },
+    {
+      "id": "mrw5qwnw5s1p1k",
+      "name": "亮客",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 5,
+      "notes": "",
+      "brandNotes": "",
+      "createdAt": "2026-07-22T14:08:24.283Z",
+      "updatedAt": "2026-07-22T14:08:28.525Z"
     }
   ],
   "shops": [
@@ -1009,5 +1033,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-22T14:08:06.416Z"
+  "syncedAt": "2026-07-22T14:08:33.478Z"
 }
