@@ -902,10 +902,11 @@
       "weight": null,
       "singleWeight": null,
       "rating": 0,
-      "shopRating": 0,
+      "shopRating": 0.5,
       "notes": "",
       "createdAt": "2026-07-22T10:14:43.094Z",
-      "updatedAt": "2026-07-22T10:14:43.094Z"
+      "updatedAt": "2026-07-22T10:14:57.630Z",
+      "brandNotes": "买了两次，全是烂瓜，再不买。"
     }
   ],
   "shops": [
@@ -942,5 +943,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-22T10:14:46.070Z"
+  "syncedAt": "2026-07-22T10:14:59.821Z"
 }
