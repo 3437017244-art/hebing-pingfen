@@ -997,6 +997,27 @@
       "brandNotes": "",
       "createdAt": "2026-07-22T14:08:24.283Z",
       "updatedAt": "2026-07-22T14:08:28.525Z"
+    },
+    {
+      "id": "mrw5ros9l93kqj",
+      "name": "亮客",
+      "brand": "",
+      "flavor": "蚊香片",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 5,
+      "notes": "用了好几年还有效。效果很好",
+      "createdAt": "2026-07-22T14:09:00.729Z",
+      "updatedAt": "2026-07-22T14:09:00.729Z"
     }
   ],
   "shops": [
@@ -1033,5 +1054,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-22T14:08:33.478Z"
+  "syncedAt": "2026-07-22T14:09:07.005Z"
 }
