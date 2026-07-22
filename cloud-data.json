@@ -881,6 +881,29 @@
       "updatedAt": "2026-07-22T10:09:40.741Z",
       "shopRating": 3.5,
       "notes": "鼠标用的还行，但是滚轮呢，经常出问题。"
+    },
+    {
+      "id": "mrvxbf1enx9tlz",
+      "name": "比奇堡",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "createdAt": "2026-07-22T10:12:24.674Z",
+      "updatedAt": "2026-07-22T10:12:24.674Z"
     }
   ],
   "shops": [
@@ -916,5 +939,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-22T10:11:10.786Z"
+  "syncedAt": "2026-07-22T10:12:27.790Z"
 }
