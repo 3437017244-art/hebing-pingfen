@@ -865,7 +865,7 @@
       "shopRating": 3.5,
       "notes": "",
       "createdAt": "2026-07-22T08:58:58.343Z",
-      "updatedAt": "2026-07-22T08:59:12.880Z"
+      "updatedAt": "2026-07-22T09:19:42.568Z"
     },
     {
       "id": "mrvuqmc9ijm2rn",
@@ -885,7 +885,8 @@
       "singleWeight": null,
       "rating": 3.5,
       "createdAt": "2026-07-22T09:00:15.129Z",
-      "updatedAt": "2026-07-22T09:00:15.129Z"
+      "updatedAt": "2026-07-22T09:19:42.568Z",
+      "shopRating": 3.5
     }
   ],
   "shops": [
@@ -920,5 +921,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-22T09:18:04.923Z"
+  "syncedAt": "2026-07-22T09:19:48.591Z"
 }
