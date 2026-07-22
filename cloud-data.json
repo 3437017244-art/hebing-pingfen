@@ -393,9 +393,9 @@
       "singleWeight": null,
       "rating": 2.5,
       "createdAt": "2026-07-16T06:32:25.150Z",
-      "updatedAt": "2026-07-22T10:06:10.475Z",
+      "updatedAt": "2026-07-22T10:06:45.080Z",
       "shopRating": 2.5,
-      "brandNotes": ""
+      "brandNotes": "味道太淡。"
     },
     {
       "id": "mrobchlcha7ze4",
@@ -537,9 +537,9 @@
       "singleWeight": null,
       "rating": 2.5,
       "createdAt": "2026-07-20T07:07:31.019Z",
-      "updatedAt": "2026-07-22T10:06:10.475Z",
+      "updatedAt": "2026-07-22T10:06:45.080Z",
       "shopRating": 2.5,
-      "brandNotes": ""
+      "brandNotes": "味道太淡。"
     },
     {
       "id": "mrsw69teoz9h39",
@@ -923,5 +923,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-22T10:06:14.844Z"
+  "syncedAt": "2026-07-22T10:06:54.446Z"
 }
