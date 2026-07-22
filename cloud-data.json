@@ -760,7 +760,8 @@
       "shopRating": 4.5,
       "notes": "",
       "createdAt": "2026-07-21T13:09:36.938Z",
-      "updatedAt": "2026-07-21T13:10:36.816Z"
+      "updatedAt": "2026-07-22T10:07:29.636Z",
+      "brandNotes": "好吃不贵。"
     },
     {
       "id": "mruo8bx11hk4f8",
@@ -780,8 +781,9 @@
       "singleWeight": null,
       "rating": 4.5,
       "createdAt": "2026-07-21T13:10:17.941Z",
-      "updatedAt": "2026-07-21T13:10:36.816Z",
-      "shopRating": 4.5
+      "updatedAt": "2026-07-22T10:07:29.636Z",
+      "shopRating": 4.5,
+      "brandNotes": "好吃不贵。"
     },
     {
       "id": "mruod71eby2lxv",
@@ -801,7 +803,9 @@
       "singleWeight": null,
       "rating": 4.5,
       "createdAt": "2026-07-21T13:14:04.898Z",
-      "updatedAt": "2026-07-21T13:14:04.898Z"
+      "updatedAt": "2026-07-22T10:07:29.636Z",
+      "shopRating": 4.5,
+      "brandNotes": "好吃不贵。"
     },
     {
       "id": "mrvdpt530asj0y",
@@ -923,5 +927,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-22T10:06:54.446Z"
+  "syncedAt": "2026-07-22T10:07:35.103Z"
 }
