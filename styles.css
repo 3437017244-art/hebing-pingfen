@@ -1336,8 +1336,31 @@ button.editing {
   margin-bottom: 6px;
 }
 
+.item-card.brand-card .item-header {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 12px;
+  justify-content: stretch;
+}
+
+.item-card.brand-card .item-title-wrap {
+  min-width: 0;
+}
+
+.item-card.brand-card .item-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .item-header-rating {
   flex-shrink: 0;
+}
+
+.item-card.brand-card .item-header-rating {
+  grid-column: 3;
+  justify-self: end;
 }
 
 .brand-stock-preview {
@@ -1349,6 +1372,13 @@ button.editing {
   align-items: center;
   min-width: 0;
   padding: 0 4px;
+}
+
+.item-card.brand-card .brand-stock-preview {
+  grid-column: 2;
+  flex: unset;
+  justify-content: flex-start;
+  padding: 0;
 }
 
 .item-card.no-stock .brand-stock-preview {

@@ -68,10 +68,20 @@ html.native-app body {
     flex-wrap: wrap;
   }
 
+  .item-card.brand-card .item-header {
+    grid-template-columns: 5.75rem minmax(0, 1fr) auto;
+    column-gap: 8px;
+  }
+
   .brand-stock-preview {
     flex-basis: 100%;
     justify-content: flex-start;
     margin-top: 6px;
+  }
+
+  .item-card.brand-card .brand-stock-preview {
+    flex-basis: auto;
+    margin-top: 0;
   }
 
   .dialog-actions {
