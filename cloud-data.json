@@ -832,7 +832,8 @@
       "shopRating": 4,
       "notes": "",
       "createdAt": "2026-07-22T01:03:43.815Z",
-      "updatedAt": "2026-07-22T01:04:00.437Z"
+      "updatedAt": "2026-07-22T10:08:59.842Z",
+      "brandNotes": "挺不错的，但以后咸菜少买。有点儿吃不完。"
     },
     {
       "id": "mrvdr1sv6i6k8a",
@@ -852,7 +853,9 @@
       "singleWeight": null,
       "rating": 4,
       "createdAt": "2026-07-22T01:04:41.695Z",
-      "updatedAt": "2026-07-22T01:04:41.695Z"
+      "updatedAt": "2026-07-22T10:08:59.842Z",
+      "shopRating": 4,
+      "brandNotes": "挺不错的，但以后咸菜少买。有点儿吃不完。"
     },
     {
       "id": "mrvuoz3b59vjlb",
@@ -931,5 +934,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-22T10:08:21.090Z"
+  "syncedAt": "2026-07-22T10:09:01.427Z"
 }
