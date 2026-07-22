@@ -520,8 +520,9 @@
       "singleWeight": null,
       "rating": 0.5,
       "createdAt": "2026-07-19T11:10:07.376Z",
-      "updatedAt": "2026-07-19T11:11:03.037Z",
-      "shopRating": 0.5
+      "updatedAt": "2026-07-22T10:10:06.111Z",
+      "shopRating": 0.5,
+      "brandNotes": "天天不开门，去好几遍门就没开过。"
     },
     {
       "id": "mrsvtxsbcm40lm",
@@ -935,5 +936,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-22T10:09:43.890Z"
+  "syncedAt": "2026-07-22T10:10:07.433Z"
 }
