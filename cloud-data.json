@@ -907,6 +907,27 @@
       "createdAt": "2026-07-22T10:14:43.094Z",
       "updatedAt": "2026-07-22T10:15:29.120Z",
       "brandNotes": "买了两次，全是烂瓜，再不买。"
+    },
+    {
+      "id": "mrw138tr8d2uxl",
+      "name": "常记好点",
+      "brand": "",
+      "flavor": "香葱鸡汁味",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 3.5,
+      "notes": "不如巴西烤肉和川辣牛肉好吃",
+      "createdAt": "2026-07-22T11:58:01.839Z",
+      "updatedAt": "2026-07-22T11:58:01.839Z"
     }
   ],
   "shops": [
@@ -943,5 +964,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-22T11:56:05.310Z"
+  "syncedAt": "2026-07-22T11:58:06.439Z"
 }
