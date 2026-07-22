@@ -866,6 +866,26 @@
       "notes": "",
       "createdAt": "2026-07-22T08:58:58.343Z",
       "updatedAt": "2026-07-22T08:59:12.880Z"
+    },
+    {
+      "id": "mrvuqmc9ijm2rn",
+      "name": "雷蛇",
+      "brand": "",
+      "flavor": "炼狱蝰蛇标准版",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 3.5,
+      "createdAt": "2026-07-22T09:00:15.129Z",
+      "updatedAt": "2026-07-22T09:00:15.129Z"
     }
   ],
   "shops": [
@@ -900,5 +920,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-22T08:59:14.253Z"
+  "syncedAt": "2026-07-22T09:00:18.798Z"
 }
