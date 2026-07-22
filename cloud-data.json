@@ -453,8 +453,12 @@
       "singleWeight": null,
       "rating": 4.5,
       "createdAt": "2026-07-18T21:53:07.975Z",
-      "updatedAt": "2026-07-19T06:41:07.742Z",
-      "shopRating": 4.5
+      "updatedAt": "2026-07-22T10:08:17.918Z",
+      "shopRating": 4.5,
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "notes": "性价比很高，屏幕稍微有点不灵敏。"
     },
     {
       "id": "mrrkxc1mdenz2v",
@@ -927,5 +931,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-22T10:07:35.103Z"
+  "syncedAt": "2026-07-22T10:08:21.090Z"
 }
