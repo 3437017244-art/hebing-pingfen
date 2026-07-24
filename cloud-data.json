@@ -1142,9 +1142,9 @@
       "isBrandPlaceholder": true,
       "brand": "",
       "flavor": "",
-      "category": "",
-      "storageLocation": "",
-      "quantity": null,
+      "category": "其他",
+      "storageLocation": "大屋衣柜中间抽屉小米盒子中",
+      "quantity": 1,
       "shopName": "",
       "shopLocation": "",
       "shopMapAddress": "",
@@ -1158,7 +1158,7 @@
       "notes": "",
       "brandNotes": "",
       "createdAt": "2026-07-24T12:07:23.032Z",
-      "updatedAt": "2026-07-24T12:07:23.032Z"
+      "updatedAt": "2026-07-24T12:08:11.283Z"
     }
   ],
   "shops": [
@@ -1195,5 +1195,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-24T12:07:28.319Z"
+  "syncedAt": "2026-07-24T12:08:20.527Z"
 }
