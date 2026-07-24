@@ -1134,6 +1134,31 @@
       "notes": "使用的挺好。就是切换各种模式比较麻烦。不太方便。中等偏上",
       "createdAt": "2026-07-24T12:06:32.877Z",
       "updatedAt": "2026-07-24T12:06:32.877Z"
+    },
+    {
+      "id": "mrywaz6gbo5upq",
+      "name": "手机针",
+      "shopInstanceId": "mrywaz6gg0wo7o",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "brandNotes": "",
+      "createdAt": "2026-07-24T12:07:23.032Z",
+      "updatedAt": "2026-07-24T12:07:23.032Z"
     }
   ],
   "shops": [
@@ -1170,5 +1195,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-24T12:06:38.621Z"
+  "syncedAt": "2026-07-24T12:07:28.319Z"
 }
