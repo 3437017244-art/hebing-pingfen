@@ -1065,6 +1065,28 @@
       "notes": "味道淡一般。",
       "createdAt": "2026-07-24T05:50:56.309Z",
       "updatedAt": "2026-07-24T05:50:56.309Z"
+    },
+    {
+      "id": "mryivpest6pb2g",
+      "name": "板面",
+      "shopInstanceId": "mryisog8q0hr4p",
+      "brand": "",
+      "flavor": "小笼包",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 2,
+      "notes": "吃的还行，价格贵   总体一般。",
+      "createdAt": "2026-07-24T05:51:35.524Z",
+      "updatedAt": "2026-07-24T05:51:35.524Z"
     }
   ],
   "shops": [
@@ -1101,5 +1123,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-24T05:51:00.020Z"
+  "syncedAt": "2026-07-24T05:51:39.124Z"
 }
