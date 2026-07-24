@@ -755,6 +755,7 @@
     return {
       id: generateId(),
       name: baseData.name,
+      shopInstanceId: baseData.shopInstanceId || generateId(),
       brand: '',
       flavor: extra.flavor,
       category: hasStockQuantity(extra) ? (extra.category || '').trim() : '',
@@ -787,9 +788,9 @@
     );
   }
 
-  function finishProductSave(brand) {
+  function finishProductSave(brand, shopInstanceId) {
     setDialogViewMode();
-    const group = groupProductsByBrand(items).find((g) => g.brand === brand);
+    const group = findBrandGroup(brand, shopInstanceId);
     if (group) showBrandDetail(group);
     else closeDetailDialog();
     renderBrowse();
@@ -824,8 +825,13 @@
       (selectedDetail?.brand || '').trim() ||
       (existing ? getBrandName(existing) : '') ||
       (productEls.dialogNameInput?.value || $('#dialog-name')?.value || '').trim();
+    const shopInstanceId =
+      (selectedDetail?.shopInstanceId || '').trim() ||
+      (existing ? getShopInstanceId(existing) : '') ||
+      generateId();
     return sanitizeProductStockFields({
       name,
+      shopInstanceId,
       brand: '',
       flavor: ($('#dialog-flavor')?.value || '').trim(),
       category: ($('#dialog-category')?.value || '').trim(),
@@ -847,7 +853,12 @@
   function showProductEditDialog(item) {
     const editItem = resolveEditItem(item);
     dialogEditMode = true;
-    selectedDetail = { type: 'product', id: editItem.id, brand: getBrandName(editItem) };
+    selectedDetail = {
+      type: 'product',
+      id: editItem.id,
+      brand: getBrandName(editItem),
+      shopInstanceId: getShopInstanceId(editItem),
+    };
     showDialogTitle(getBrandName(editItem));
     window.AmapPicker?.destroyAllMiniMaps?.();
     productEls.dialogBody.innerHTML = renderProductEditForm(editItem);
@@ -899,33 +910,34 @@
     }
     const now = new Date().toISOString();
     const brand = selectedDetail.brand || data.name;
+    const shopInstanceId = selectedDetail.shopInstanceId || data.shopInstanceId;
 
     if (selectedDetail.isNew) {
       if (hasMainProductContent(data)) {
-        items.push({ id: generateId(), ...data, createdAt: now, updatedAt: now });
+        items.push({ id: generateId(), ...data, shopInstanceId, createdAt: now, updatedAt: now });
       }
       extras.forEach((extra) => {
-        items.push(buildAdditionalProductData(data, extra, now));
+        items.push(buildAdditionalProductData({ ...data, shopInstanceId }, extra, now));
       });
       saveItems();
       searchAddPendingQuery = null;
-      finishProductSave(brand);
+      finishProductSave(brand, shopInstanceId);
       return;
     }
 
     let idx = items.findIndex((i) => i.id === selectedDetail.id);
     if (idx === -1) {
       if (hasMainProductContent(data)) {
-        items.push({ id: generateId(), ...data, createdAt: now, updatedAt: now });
+        items.push({ id: generateId(), ...data, shopInstanceId, createdAt: now, updatedAt: now });
       }
     } else {
-      items[idx] = { ...items[idx], ...data, updatedAt: now };
+      items[idx] = { ...items[idx], ...data, shopInstanceId, updatedAt: now };
     }
     extras.forEach((extra) => {
-      items.push(buildAdditionalProductData(data, extra, now));
+      items.push(buildAdditionalProductData({ ...data, shopInstanceId }, extra, now));
     });
     saveItems();
-    finishProductSave(brand);
+    finishProductSave(brand, shopInstanceId);
   }
 
   function renderShopEditForm(shop) {
@@ -971,10 +983,10 @@
 
   function cancelDialogEdit() {
     if (!selectedDetail) return;
-    const { type, id, brand, renaming } = selectedDetail;
+    const { type, id, brand, renaming, shopInstanceId } = selectedDetail;
     setDialogViewMode();
     if (type === 'brand' && (renaming || brand)) {
-      const group = groupProductsByBrand(items).find((g) => g.brand === brand);
+      const group = findBrandGroup(brand, shopInstanceId);
       if (group) showBrandDetail(group);
       else closeDetailDialog();
       return;
@@ -982,7 +994,8 @@
     if (type === 'product') {
       const item = resolveEditItem({ id });
       const productBrand = (brand || (item && getBrandName(item)) || '').trim();
-      const group = groupProductsByBrand(items).find((g) => g.brand === productBrand);
+      const sid = shopInstanceId || (item && getShopInstanceId(item)) || '';
+      const group = findBrandGroup(productBrand, sid);
       if (group) showBrandDetail(group);
       else closeDetailDialog();
       return;
@@ -1008,10 +1021,10 @@
     return 0;
   }
 
-  function startBrandNameEdit(brand) {
+  function startBrandNameEdit(brand, shopInstanceId) {
     const brandName = (brand || '').trim();
     if (!brandName) return;
-    const group = groupProductsByBrand(items).find((g) => g.brand === brandName);
+    const group = findBrandGroup(brandName, shopInstanceId);
     const shopRating = getGroupShopRating(group);
     const primaryProduct = group?.products?.[0] || null;
     const showStockFields = hasStockQuantity(primaryProduct);
@@ -1019,6 +1032,7 @@
     selectedDetail = {
       type: 'brand',
       brand: brandName,
+      shopInstanceId: group?.shopInstanceId || shopInstanceId || '',
       renaming: true,
       primaryProductId: primaryProduct?.id ?? null,
     };
@@ -1098,14 +1112,16 @@
       return;
     }
     const primaryProductId = selectedDetail.primaryProductId;
+    const shopInstanceId = (selectedDetail.shopInstanceId || '').trim();
     const now = new Date().toISOString();
     let changed = false;
     items = items.map((item) => {
-      if (getBrandName(item) !== oldName) return item;
+      if (!itemBelongsToShop(item, oldName, shopInstanceId)) return item;
       changed = true;
       const next = {
         ...item,
         name: newName,
+        shopInstanceId: shopInstanceId || getShopInstanceId(item),
         shopRating,
         brandNotes,
         updatedAt: now,
@@ -1124,6 +1140,7 @@
       items.push({
         id: generateId(),
         name: newName,
+        shopInstanceId: shopInstanceId || generateId(),
         isBrandPlaceholder: true,
         brand: '',
         flavor: '',
@@ -1213,10 +1230,11 @@
       const raw = localStorage.getItem(PRODUCT_STORAGE_KEY);
       const parsed = raw ? JSON.parse(raw) : [];
       const { items: sanitized, changed } = sanitizeItemsStockFields(parsed);
-      if (changed) {
-        localStorage.setItem(PRODUCT_STORAGE_KEY, JSON.stringify(sanitized));
+      const ensured = ensureShopInstanceIds(sanitized);
+      if (changed || ensured.changed) {
+        localStorage.setItem(PRODUCT_STORAGE_KEY, JSON.stringify(ensured.items));
       }
-      return sanitized;
+      return ensured.items;
     } catch {
       return [];
     }
@@ -1292,7 +1310,7 @@
 
   function showParentBrandDetailForProduct(item) {
     const brand = item ? getBrandName(item) : '';
-    const group = groupProductsByBrand(items).find((entry) => entry.brand === brand);
+    const group = findBrandGroup(brand, item ? getShopInstanceId(item) : '');
     if (group) {
       showBrandDetail(group);
       return true;
@@ -1345,6 +1363,46 @@
     return (item.name || '').trim() || '未命名';
   }
 
+  /** 旧数据按店名兼容；新建同名店用独立 UUID，互不合并 */
+  function legacyShopInstanceId(brandName) {
+    return 'legacy:' + encodeURIComponent((brandName || '').trim() || '未命名');
+  }
+
+  function getShopInstanceId(item) {
+    const explicit = (item?.shopInstanceId || '').trim();
+    if (explicit) return explicit;
+    return legacyShopInstanceId(getBrandName(item));
+  }
+
+  function ensureShopInstanceIds(list) {
+    const arr = Array.isArray(list) ? list : [];
+    let changed = false;
+    for (const item of arr) {
+      if ((item.shopInstanceId || '').trim()) continue;
+      item.shopInstanceId = legacyShopInstanceId(getBrandName(item));
+      changed = true;
+    }
+    return { items: arr, changed };
+  }
+
+  function findBrandGroup(brand, shopInstanceId) {
+    const groups = groupProductsByBrand(items);
+    const sid = (shopInstanceId || '').trim();
+    if (sid) {
+      const byId = groups.find((g) => g.shopInstanceId === sid);
+      if (byId) return byId;
+    }
+    const name = (brand || '').trim();
+    if (!name) return null;
+    return groups.find((g) => g.brand === name) || null;
+  }
+
+  function itemBelongsToShop(item, brand, shopInstanceId) {
+    const sid = (shopInstanceId || '').trim();
+    if (sid) return getShopInstanceId(item) === sid;
+    return getBrandName(item) === (brand || '').trim();
+  }
+
   function getBrandNotes(groupOrProducts) {
     const products = Array.isArray(groupOrProducts)
       ? groupOrProducts
@@ -1369,9 +1427,13 @@
       shopLng: parseCoord(seed.shopLng),
       shopLat: parseCoord(seed.shopLat),
     };
+    const shopInstanceId =
+      (seed.shopInstanceId || '').trim() ||
+      (seed && seed.id != null ? getShopInstanceId(seed) : generateId());
     return {
       id: generateId(),
       name,
+      shopInstanceId,
       isBrandPlaceholder: true,
       brand: '',
       flavor: '',
@@ -1395,13 +1457,19 @@
     };
   }
 
-  function ensureBrandRecordAfterProductRemoval(brandName, seedItem) {
+  function ensureBrandRecordAfterProductRemoval(brandName, seedItem, shopInstanceId) {
     const brand = (brandName || '').trim();
     if (!brand) return;
-    const remaining = items.filter((item) => getBrandName(item) === brand);
+    const sid = (shopInstanceId || (seedItem && getShopInstanceId(seedItem)) || '').trim();
+    const remaining = items.filter((item) => itemBelongsToShop(item, brand, sid));
     if (remaining.some((item) => !isBrandPlaceholder(item))) return;
     if (remaining.some(isBrandPlaceholder)) return;
-    items.push(buildBrandPlaceholder(brand, seedItem || {}));
+    items.push(
+      buildBrandPlaceholder(brand, {
+        ...(seedItem || {}),
+        shopInstanceId: sid || generateId(),
+      }),
+    );
   }
 
   const PRODUCT_CATEGORIES = ['食品', '速食', '其他'];
@@ -1600,17 +1668,19 @@
   function groupProductsByBrand(productList) {
     const groups = new Map();
     for (const item of productList) {
-      const brand = getBrandName(item);
-      if (!groups.has(brand)) groups.set(brand, []);
-      groups.get(brand).push(item);
+      const shopInstanceId = getShopInstanceId(item);
+      if (!groups.has(shopInstanceId)) groups.set(shopInstanceId, []);
+      groups.get(shopInstanceId).push(item);
     }
     return [...groups.entries()]
-      .map(([brand, products]) => {
+      .map(([shopInstanceId, products]) => {
         const sorted = [...products].sort(compareStockPriority);
+        const brand = getBrandName(sorted[0]);
         const ratings = sorted.map((p) => Number(p.rating || 0)).filter((r) => r > 0);
         const shopRating = getGroupShopRating(sorted);
         return {
           brand,
+          shopInstanceId,
           products: sorted,
           shopRating,
           maxRating: ratings.length ? Math.max(...ratings) : 0,
@@ -1625,6 +1695,8 @@
         if (shopDiff !== 0) return shopDiff;
         const diff = b.maxRating - a.maxRating;
         if (diff !== 0) return diff;
+        const nameDiff = a.brand.localeCompare(b.brand, 'zh');
+        if (nameDiff !== 0) return nameDiff;
         const aLatest = a.products[0]?.updatedAt || a.products[0]?.createdAt || '';
         const bLatest = b.products[0]?.updatedAt || b.products[0]?.createdAt || '';
         return bLatest.localeCompare(aLatest);
@@ -1731,15 +1803,20 @@
   }
 
   function renderBrandCard(group) {
-    const { brand, products, shopRating } = group;
+    const { brand, products, shopRating, shopInstanceId } = group;
     const displayRating = ratingOrDefault(shopRating, 0);
     const isLow = isLowRating(displayRating);
     const stockClass = getBrandStockClass(products);
     const stockPreview = renderBrandStockPreview(products);
-    const bodyHtml = `<p class="brand-count-hint">${renderBrandCountHint(products)}</p>`;
+    const locInfo = getBrandShopLocationInfo(group);
+    const locText = (locInfo.shopLocation || locInfo.shopMapAddress || '').trim();
+    const bodyHtml = `
+      ${locText ? `<p class="brand-location-hint">${escapeHtml(locText)}</p>` : ''}
+      <p class="brand-count-hint">${renderBrandCountHint(products)}</p>
+    `;
 
     return `
-      <li class="item-card brand-card ${stockClass}" data-type="brand" data-brand="${escapeHtml(brand)}">
+      <li class="item-card brand-card ${stockClass}" data-type="brand" data-brand="${escapeHtml(brand)}" data-shop-instance-id="${escapeHtml(shopInstanceId || '')}">
         <div class="item-header">
           <div class="item-title-wrap">
             <h3 class="item-name">${escapeHtml(brand)}</h3>
@@ -1789,15 +1866,16 @@
     `;
   }
 
-  async function openBrandMapEditor(brand) {
+  async function openBrandMapEditor(brand, shopInstanceId) {
     const brandName = (brand || '').trim();
     if (!brandName) return;
     if (!window.AmapPicker?.open) {
       alert('地图选点模块未加载');
       return;
     }
-    const group = groupProductsByBrand(items).find((g) => g.brand === brandName);
+    const group = findBrandGroup(brandName, shopInstanceId);
     if (!group) return;
+    const sid = group.shopInstanceId;
     const info = getBrandShopLocationInfo(group);
     window.AmapPicker.destroyAllMiniMaps?.();
     const result = await AmapPicker.open({
@@ -1812,10 +1890,11 @@
     const now = new Date().toISOString();
     let changed = false;
     items = items.map((item) => {
-      if (getBrandName(item) !== brandName) return item;
+      if (!itemBelongsToShop(item, brandName, sid)) return item;
       changed = true;
       return {
         ...item,
+        shopInstanceId: sid || getShopInstanceId(item),
         shopMapAddress: result.address || '',
         shopLng: result.lng,
         shopLat: result.lat,
@@ -1824,7 +1903,7 @@
     });
     if (!changed) return;
     saveItems();
-    const updated = groupProductsByBrand(items).find((g) => g.brand === brandName);
+    const updated = findBrandGroup(brandName, sid);
     if (updated) showBrandDetail(updated);
     else renderBrowse();
   }
@@ -1833,13 +1912,14 @@
     const thumb = $('#brand-amap-thumb');
     if (!thumb) return;
     const brand = group?.brand || '';
+    const shopInstanceId = group?.shopInstanceId || '';
     thumb.addEventListener('click', (event) => {
       if (Date.now() < suppressBrandMapThumbUntil) {
         event.preventDefault();
         event.stopPropagation();
         return;
       }
-      openBrandMapEditor(brand);
+      openBrandMapEditor(brand, shopInstanceId);
     });
     mountShopMapThumb(thumb);
   }
@@ -1886,11 +1966,13 @@
     const shopMapAddress = (shop.mapAddress || '').trim();
     const shopLng = parseCoord(shop.lng);
     const shopLat = parseCoord(shop.lat);
+    const shopInstanceId = (shop.id && String(shop.id)) || generateId();
     const shopProducts = getShopProducts(shop);
     const products = shopProducts.length
       ? shopProducts.map((product, index) => ({
           id: product.id || `${shop.id || brand}-${index}`,
           name: brand,
+          shopInstanceId,
           flavor: (product.name || '').trim(),
           shopName: brand,
           shopLocation,
@@ -1910,6 +1992,7 @@
           {
             id: shop.id || brand,
             name: brand,
+            shopInstanceId,
             flavor: '',
             shopName: brand,
             shopLocation,
@@ -1922,6 +2005,7 @@
     const ratings = products.map((p) => Number(p.rating || 0)).filter((r) => r > 0);
     return {
       brand,
+      shopInstanceId,
       products,
       shopLocation,
       shopMapAddress,
@@ -1933,13 +2017,21 @@
     };
   }
 
-  function showAddProductDialog(brand) {
+  function showAddProductDialog(brand, shopInstanceId) {
+    const sid = (shopInstanceId || '').trim();
+    const group = findBrandGroup(brand, sid);
+    const locInfo = group ? getBrandShopLocationInfo(group) : null;
     const emptyItem = {
       name: brand,
+      shopInstanceId: sid || group?.shopInstanceId || generateId(),
       flavor: '',
       category: '',
       storageLocation: '',
       quantity: null,
+      shopLocation: locInfo?.shopLocation || '',
+      shopMapAddress: locInfo?.shopMapAddress || '',
+      shopLng: locInfo?.shopLng ?? null,
+      shopLat: locInfo?.shopLat ?? null,
       price: null,
       weight: null,
       singleWeight: null,
@@ -1947,7 +2039,12 @@
       notes: '',
     };
     dialogEditMode = true;
-    selectedDetail = { type: 'product', isNew: true, brand };
+    selectedDetail = {
+      type: 'product',
+      isNew: true,
+      brand,
+      shopInstanceId: emptyItem.shopInstanceId,
+    };
     showDialogTitle(brand || '添加商品');
     window.AmapPicker?.destroyAllMiniMaps?.();
     productEls.dialogBody.innerHTML = renderProductEditForm(emptyItem);
@@ -1961,18 +2058,26 @@
     $('#dialog-flavor')?.focus();
   }
 
-  function startAddProductForBrand(brand) {
-    showAddProductDialog(brand);
+  function startAddProductForBrand(brand, shopInstanceId) {
+    showAddProductDialog(brand, shopInstanceId);
   }
 
   function showSearchAddConfirm(query) {
     const trimmed = (query || '').trim();
     if (!trimmed) return;
-    if (getDisplayGroups(trimmed).length > 0) return;
     const dialog = $('#search-add-confirm-dialog');
     if (!dialog) return;
+    const relatedCount = getDisplayGroups(trimmed).length;
+    const exactCount = groupProductsByBrand(items).filter((g) => g.brand === trimmed).length;
     searchAddPendingQuery = trimmed;
-    $('#search-add-confirm-text').textContent = `没有找到「${trimmed}」相关记录，是否添加为新信息？`;
+    if (relatedCount > 0) {
+      $('#search-add-confirm-text').textContent =
+        exactCount > 0
+          ? `已有 ${exactCount} 家「${trimmed}」。仍要再建一家同名店吗？（可用地图位置区分）`
+          : `已找到 ${relatedCount} 条相关记录。仍要用「${trimmed}」新建一家店吗？`;
+    } else {
+      $('#search-add-confirm-text').textContent = `没有找到「${trimmed}」相关记录，是否添加为新信息？`;
+    }
     dialog.showModal();
   }
 
@@ -1985,13 +2090,11 @@
     const query = searchAddPendingQuery;
     closeSearchAddConfirm();
     if (!query) return;
-    let group = groupProductsByBrand(items).find((g) => g.brand === query);
-    if (!group) {
-      items.push(buildBrandPlaceholder(query));
-      saveItems();
-      renderBrowse();
-      group = groupProductsByBrand(items).find((g) => g.brand === query);
-    }
+    const shopInstanceId = generateId();
+    items.push(buildBrandPlaceholder(query, { shopInstanceId }));
+    saveItems();
+    renderBrowse();
+    const group = findBrandGroup(query, shopInstanceId);
     if (!group) return;
     showBrandDetail(group);
   }
@@ -2002,21 +2105,28 @@
     const triggerBtn = $('#search-add-trigger-btn');
     if (!hintEl || !triggerBtn) return;
 
-    if (trimmed && !hasResults) {
-      hintEl.hidden = false;
-      hintEl.textContent = `没有找到「${trimmed}」相关记录。`;
-      triggerBtn.hidden = false;
+    if (!trimmed) {
+      hintEl.hidden = true;
+      triggerBtn.hidden = true;
       return;
     }
 
-    hintEl.hidden = true;
-    triggerBtn.hidden = true;
+    hintEl.hidden = false;
+    triggerBtn.hidden = false;
+    if (hasResults) {
+      hintEl.textContent = `已有相关记录。仍可用「${trimmed}」新建一家店（同名也可以）。`;
+      triggerBtn.textContent = '新建店铺';
+    } else {
+      hintEl.textContent = `没有找到「${trimmed}」相关记录。`;
+      triggerBtn.textContent = '确认添加';
+    }
   }
 
   function showBrandDetail(group, options = {}) {
     selectedDetail = {
       type: 'brand',
       brand: group.brand,
+      shopInstanceId: group.shopInstanceId,
     };
     setDialogViewMode();
     window.AmapPicker?.destroyAllMiniMaps?.();
@@ -2044,7 +2154,7 @@
       const lat = parseCoord(info.shopLat);
       if (lng == null || lat == null) continue;
       places.push({
-        id: group.brand,
+        id: group.shopInstanceId || group.brand,
         title: group.brand,
         subtitle: info.shopLocation || info.shopMapAddress || '',
         address: info.shopMapAddress || info.shopLocation || '',
@@ -2052,6 +2162,7 @@
         lat,
         rating: group.shopRating > 0 ? formatRating(group.shopRating) : '',
         brand: group.brand,
+        shopInstanceId: group.shopInstanceId,
       });
     }
     return places;
@@ -2071,9 +2182,9 @@
       await AmapPicker.openBrowseMap({
         places,
         onSelect(place) {
-          const brand = (place?.brand || place?.id || '').trim();
-          if (!brand) return;
-          const group = groupProductsByBrand(items).find((g) => g.brand === brand);
+          const brand = (place?.brand || '').trim();
+          const shopInstanceId = (place?.shopInstanceId || place?.id || '').trim();
+          const group = findBrandGroup(brand, shopInstanceId);
           if (group) showBrandDetail(group, { fromBrowseMap: true });
         },
       });
@@ -2180,24 +2291,26 @@
     const item = resolveEditItem({ id });
     if (!item) return;
     const brand = getBrandName(item);
+    const shopInstanceId = getShopInstanceId(item);
     const label = item.flavor ? `${brand} · ${item.flavor}` : brand;
     if (!(await showAppConfirm(`确定删除「${label}」吗？此操作不可撤销。`, '删除确认'))) return;
     const seed = { ...item };
     window.HebingSync?.recordDeletion?.('products', item.id);
     items = items.filter((i) => i.id !== item.id);
     // 删光商品后仍保留品牌登记（名称、地图位置等），方便继续添加商品
-    ensureBrandRecordAfterProductRemoval(brand, seed);
+    ensureBrandRecordAfterProductRemoval(brand, seed, shopInstanceId);
     saveItems();
-    const group = groupProductsByBrand(items).find((g) => g.brand === brand);
+    const group = findBrandGroup(brand, shopInstanceId);
     if (group) showBrandDetail(group);
     else closeDetailDialog();
     renderBrowse();
   }
 
-  async function handleBrandDelete(brand) {
+  async function handleBrandDelete(brand, shopInstanceId) {
     const brandName = (brand || '').trim();
     if (!brandName) return;
-    const targets = items.filter((item) => getBrandName(item) === brandName);
+    const sid = (shopInstanceId || '').trim();
+    const targets = items.filter((item) => itemBelongsToShop(item, brandName, sid));
     if (!targets.length) {
       // 还没保存过的新名称，直接关掉即可
       closeDetailDialog();
@@ -2206,15 +2319,17 @@
     }
     if (!(await showAppConfirm(`确定删除「${brandName}」及其全部商品记录吗？此操作不可撤销。`, '删除确认'))) return;
     targets.forEach((item) => window.HebingSync?.recordDeletion?.('products', item.id));
-    items = items.filter((item) => getBrandName(item) !== brandName);
+    items = items.filter((item) => !itemBelongsToShop(item, brandName, sid));
     saveItems();
     closeDetailDialog();
     renderBrowse();
   }
 
-  function itemAlreadyExists(brand, flavor) {
+  function itemAlreadyExists(brand, flavor, shopInstanceId) {
     return items.some(
-      (item) => getBrandName(item) === brand && (item.flavor || '') === (flavor || ''),
+      (item) =>
+        itemBelongsToShop(item, brand, shopInstanceId) &&
+        (item.flavor || '') === (flavor || ''),
     );
   }
 
@@ -2226,19 +2341,23 @@
     for (const shop of shops) {
       const brand = (shop.name || '').trim() || '未命名';
       const shopLocation = (shop.location || '').trim();
+      const shopInstanceId = (shop.id && String(shop.id)) || generateId();
       const shopProducts = getShopProducts(shop);
       const sourceProducts = shopProducts.length ? shopProducts : [{ name: '', rating: shop.rating }];
       const now = new Date().toISOString();
 
       for (const product of sourceProducts) {
         const flavor = (product.name || '').trim();
-        if (itemAlreadyExists(brand, flavor)) {
+        if (itemAlreadyExists(brand, flavor, shopInstanceId)) {
           if (shopLocation) {
             const existing = items.find(
-              (item) => getBrandName(item) === brand && (item.flavor || '') === flavor,
+              (item) =>
+                itemBelongsToShop(item, brand, shopInstanceId) &&
+                (item.flavor || '') === flavor,
             );
             if (existing && !existing.shopLocation) {
               existing.shopLocation = shopLocation;
+              existing.shopInstanceId = shopInstanceId;
               existing.updatedAt = now;
               changed = true;
             }
@@ -2248,6 +2367,7 @@
         items.push({
           id: generateId(),
           name: brand,
+          shopInstanceId,
           flavor,
           shopName: brand,
           shopLocation,
@@ -2275,6 +2395,7 @@
     for (const shop of normalizeShops(records)) {
       const brand = (shop.name || '').trim() || '未命名';
       const shopLocation = (shop.location || '').trim();
+      const shopInstanceId = (shop.id && String(shop.id)) || generateId();
       const shopProducts = shop.products || (shop.product ? [shop.product] : []);
       const sourceProducts = shopProducts.length ? shopProducts : [{ name: '', rating: shop.rating }];
       for (const product of sourceProducts) {
@@ -2282,6 +2403,7 @@
         migrated.push({
           id: generateId(),
           name: brand,
+          shopInstanceId,
           flavor,
           shopName: brand,
           shopLocation,
@@ -2419,11 +2541,19 @@
     $$('.item-card.highlight').forEach((card) => card.classList.remove('highlight'));
   }
 
-  function highlightItemCard(type, id, brand) {
+  function highlightItemCard(type, id, brand, shopInstanceId) {
     clearItemHighlight();
     let card;
-    if (type === 'brand' && brand) {
-      card = document.querySelector(`.item-card[data-type="brand"][data-brand="${CSS.escape(brand)}"]`);
+    if (type === 'brand') {
+      const sid = (shopInstanceId || '').trim();
+      if (sid) {
+        card = document.querySelector(
+          `.item-card[data-type="brand"][data-shop-instance-id="${CSS.escape(sid)}"]`,
+        );
+      }
+      if (!card && brand) {
+        card = document.querySelector(`.item-card[data-type="brand"][data-brand="${CSS.escape(brand)}"]`);
+      }
     } else {
       card = document.querySelector(`.item-card[data-type="${type}"][data-id="${id}"]`);
     }
@@ -2469,11 +2599,7 @@
       const banner = $('#no-data-banner');
       if (banner) banner.hidden = true;
       $('#browse-results').hidden = false;
-      if (!hasResults && query.trim()) {
-        updateSearchAddPrompt(query, hasResults);
-      } else {
-        updateSearchAddPrompt('', true);
-      }
+      updateSearchAddPrompt(query, hasResults);
     }
 
     updateUnifiedSuggestions();
@@ -2490,12 +2616,18 @@
 
     const matches = groupProductsByBrand(getFilteredProducts(query))
       .slice(0, 8)
-      .map((group) => ({
-        type: 'brand',
-        brand: group.brand,
-        stockClass: getSearchSuggestionClass(group),
-        stockedCount: group.products.filter(hasStockQuantity).length,
-      }));
+      .map((group) => {
+        const locInfo = getBrandShopLocationInfo(group);
+        const locText = (locInfo.shopLocation || locInfo.shopMapAddress || '').trim();
+        return {
+          type: 'brand',
+          brand: group.brand,
+          shopInstanceId: group.shopInstanceId,
+          locText,
+          stockClass: getSearchSuggestionClass(group),
+          stockedCount: group.products.filter(hasStockQuantity).length,
+        };
+      });
 
     if (!matches.length) {
       container.innerHTML = '';
@@ -2506,8 +2638,9 @@
     container.innerHTML = matches
       .map(
         (m) => `
-          <div class="search-suggestion-item ${m.stockClass}" data-type="${m.type}" data-brand="${escapeHtml(m.brand)}">
+          <div class="search-suggestion-item ${m.stockClass}" data-type="${m.type}" data-brand="${escapeHtml(m.brand)}" data-shop-instance-id="${escapeHtml(m.shopInstanceId || '')}">
             <span class="search-suggestion-brand">${escapeHtml(m.brand)}</span>
+            ${m.locText ? `<span class="search-suggestion-loc">${escapeHtml(m.locText)}</span>` : ''}
             ${m.stockedCount > 0 ? `<span class="stock-badge">${m.stockedCount} 种有库存</span>` : ''}
           </div>`,
       )
@@ -2521,11 +2654,16 @@
     const { type, id } = item.dataset;
     if (type === 'brand') {
       const brand = item.dataset.brand;
+      const shopInstanceId = item.dataset.shopInstanceId || '';
       if (brand) {
         $('#unified-search').value = brand;
         renderBrowse();
-        highlightItemCard('brand', null, brand);
-        const card = document.querySelector(`.item-card[data-type="brand"][data-brand="${CSS.escape(brand)}"]`);
+        highlightItemCard('brand', null, brand, shopInstanceId);
+        const card = shopInstanceId
+          ? document.querySelector(
+              `.item-card[data-type="brand"][data-shop-instance-id="${CSS.escape(shopInstanceId)}"]`,
+            )
+          : document.querySelector(`.item-card[data-type="brand"][data-brand="${CSS.escape(brand)}"]`);
         if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     } else if (type === 'product') {
@@ -2533,9 +2671,9 @@
       if (product) {
         $('#unified-search').value = getBrandName(product);
         renderBrowse();
-        highlightItemCard('brand', null, getBrandName(product));
+        highlightItemCard('brand', null, getBrandName(product), getShopInstanceId(product));
         const card = document.querySelector(
-          `.item-card[data-type="brand"][data-brand="${CSS.escape(getBrandName(product))}"]`,
+          `.item-card[data-type="brand"][data-shop-instance-id="${CSS.escape(getShopInstanceId(product))}"]`,
         );
         if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
@@ -2599,11 +2737,11 @@
     productEls.dialogHeaderEditBtn?.addEventListener('click', () => {
       if (isDetailInteractionSuppressed()) return;
       if (!selectedDetail || selectedDetail.type !== 'brand' || dialogEditMode) return;
-      startBrandNameEdit(selectedDetail.brand);
+      startBrandNameEdit(selectedDetail.brand, selectedDetail.shopInstanceId);
     });
     productEls.dialogBrandDeleteBtn?.addEventListener('click', async () => {
       if (!selectedDetail || selectedDetail.type !== 'brand' || !selectedDetail.renaming) return;
-      await handleBrandDelete(selectedDetail.brand);
+      await handleBrandDelete(selectedDetail.brand, selectedDetail.shopInstanceId);
     });
     productEls.dialogNameInput?.addEventListener('keydown', (event) => {
       if (event.key !== 'Enter') return;
@@ -2629,7 +2767,7 @@
       }
       const { type, id } = selectedDetail;
       if (type === 'brand') {
-        startAddProductForBrand(selectedDetail.brand);
+        startAddProductForBrand(selectedDetail.brand, selectedDetail.shopInstanceId);
       } else if (type === 'product') {
         const item = resolveEditItem({ id });
         if (item) showProductEditDialog(item);
@@ -2692,7 +2830,9 @@
       if (event.key !== 'Enter') return;
       event.preventDefault();
       const query = $('#unified-search').value;
-      if (!getDisplayGroups(query).length && query.trim()) {
+      if (!query.trim()) return;
+      // 没结果：回车直接确认添加；有结果：用「新建店铺」按钮，避免误触
+      if (!getDisplayGroups(query).length) {
         showSearchAddConfirm(query);
       }
     });
@@ -2735,10 +2875,14 @@
       const card = event.target.closest('.item-card');
       if (!card) return;
       if (!listClickGuard.shouldHandleClick(event)) return;
-      const { brand } = card.dataset;
+      const { brand, shopInstanceId } = card.dataset;
       if (!brand) return;
       const query = $('#unified-search').value;
-      const group = getDisplayGroups(query).find((g) => g.brand === brand);
+      const group =
+        findBrandGroup(brand, shopInstanceId) ||
+        getDisplayGroups(query).find(
+          (g) => g.brand === brand && (!shopInstanceId || g.shopInstanceId === shopInstanceId),
+        );
       if (group) showBrandDetail(group);
     }
 

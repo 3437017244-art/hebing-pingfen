@@ -1435,6 +1435,13 @@ button.editing {
   color: var(--text-muted);
 }
 
+.brand-location-hint {
+  margin: 6px 0 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
 .brand-detail-intro {
   margin: 0 0 12px;
   font-size: 0.9rem;
@@ -1714,6 +1721,13 @@ button.editing {
   font-weight: 700;
   font-size: 1.15rem;
   letter-spacing: 0.02em;
+}
+
+.search-suggestion-loc {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.82rem;
+  opacity: 0.75;
 }
 
 .search-suggestion-item:hover {
