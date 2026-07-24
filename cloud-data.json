@@ -1184,6 +1184,28 @@
       "brandNotes": "",
       "createdAt": "2026-07-24T12:14:46.720Z",
       "updatedAt": "2026-07-24T12:14:46.720Z"
+    },
+    {
+      "id": "mrywmsoqmzf5v5",
+      "name": "晨星",
+      "shopInstanceId": "mrywkhj4izxbms",
+      "brand": "",
+      "flavor": "A16pro HITBOX",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 4,
+      "notes": "性价比可以。但是有些按键用起来还是不太舒服。以后再买可以自定义一下",
+      "createdAt": "2026-07-24T12:16:34.490Z",
+      "updatedAt": "2026-07-24T12:16:34.490Z"
     }
   ],
   "shops": [
@@ -1220,5 +1242,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-24T12:14:50.655Z"
+  "syncedAt": "2026-07-24T12:16:39.002Z"
 }
