@@ -1112,6 +1112,28 @@
       "brandNotes": "",
       "createdAt": "2026-07-24T12:04:42.297Z",
       "updatedAt": "2026-07-24T12:04:42.297Z"
+    },
+    {
+      "id": "mryw9wh9vws1ek",
+      "name": "北通",
+      "shopInstanceId": "mryw7j5luude74",
+      "brand": "",
+      "flavor": "鲲鹏20",
+      "category": "其他",
+      "storageLocation": "大屋衣柜中间抽屉",
+      "quantity": 1,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 4,
+      "notes": "使用的挺好。就是切换各种模式比较麻烦。不太方便。中等偏上",
+      "createdAt": "2026-07-24T12:06:32.877Z",
+      "updatedAt": "2026-07-24T12:06:32.877Z"
     }
   ],
   "shops": [
@@ -1148,5 +1170,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-24T12:04:48.210Z"
+  "syncedAt": "2026-07-24T12:06:38.621Z"
 }
