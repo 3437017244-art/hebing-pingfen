@@ -1231,6 +1231,28 @@
       "brandNotes": "",
       "createdAt": "2026-07-24T12:22:59.061Z",
       "updatedAt": "2026-07-24T12:22:59.061Z"
+    },
+    {
+      "id": "mrywvvup7xe6a7",
+      "name": "打火启动器",
+      "shopInstanceId": "mrywv1f9vxmula",
+      "brand": "",
+      "flavor": "打火启动器",
+      "category": "其他",
+      "storageLocation": "大屋衣柜中间抽屉",
+      "quantity": 1,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 3,
+      "notes": "记得偶尔充电",
+      "createdAt": "2026-07-24T12:23:38.497Z",
+      "updatedAt": "2026-07-24T12:23:38.497Z"
     }
   ],
   "shops": [
@@ -1267,5 +1289,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-24T12:23:06.665Z"
+  "syncedAt": "2026-07-24T12:23:43.493Z"
 }
