@@ -1808,12 +1808,6 @@
     const isLow = isLowRating(displayRating);
     const stockClass = getBrandStockClass(products);
     const stockPreview = renderBrandStockPreview(products);
-    const locInfo = getBrandShopLocationInfo(group);
-    const locText = (locInfo.shopLocation || locInfo.shopMapAddress || '').trim();
-    const bodyHtml = `
-      ${locText ? `<p class="brand-location-hint">${escapeHtml(locText)}</p>` : ''}
-      <p class="brand-count-hint">${renderBrandCountHint(products)}</p>
-    `;
 
     return `
       <li class="item-card brand-card ${stockClass}" data-type="brand" data-brand="${escapeHtml(brand)}" data-shop-instance-id="${escapeHtml(shopInstanceId || '')}">
@@ -1824,7 +1818,6 @@
           ${stockPreview}
           <div class="item-header-rating">${renderStarsDisplay(displayRating, isLow)}</div>
         </div>
-        ${bodyHtml}
       </li>`;
   }
 
