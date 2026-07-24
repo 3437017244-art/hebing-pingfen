@@ -1249,10 +1249,10 @@
       "price": null,
       "weight": null,
       "singleWeight": null,
-      "rating": 3,
+      "rating": 0,
       "notes": "记得偶尔充电",
       "createdAt": "2026-07-24T12:23:38.497Z",
-      "updatedAt": "2026-07-24T12:23:38.497Z"
+      "updatedAt": "2026-07-24T12:23:45.797Z"
     }
   ],
   "shops": [
@@ -1289,5 +1289,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-24T12:23:43.493Z"
+  "syncedAt": "2026-07-24T12:23:50.695Z"
 }
