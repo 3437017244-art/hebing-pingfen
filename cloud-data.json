@@ -1191,9 +1191,9 @@
       "shopInstanceId": "mrywkhj4izxbms",
       "brand": "",
       "flavor": "A16pro HITBOX",
-      "category": "",
-      "storageLocation": "",
-      "quantity": null,
+      "category": "其他",
+      "storageLocation": "大屋衣柜中间抽屉里",
+      "quantity": 1,
       "shopName": "",
       "shopLocation": "",
       "shopMapAddress": "",
@@ -1205,7 +1205,7 @@
       "rating": 4,
       "notes": "性价比可以。但是有些按键用起来还是不太舒服。以后再买可以自定义一下",
       "createdAt": "2026-07-24T12:16:34.490Z",
-      "updatedAt": "2026-07-24T12:16:34.490Z"
+      "updatedAt": "2026-07-24T12:17:34.083Z"
     }
   ],
   "shops": [
@@ -1242,5 +1242,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-24T12:16:39.002Z"
+  "syncedAt": "2026-07-24T12:17:37.955Z"
 }
