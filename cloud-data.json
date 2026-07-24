@@ -1018,6 +1018,31 @@
       "notes": "用了好几年还有效。效果很好",
       "createdAt": "2026-07-22T14:09:00.729Z",
       "updatedAt": "2026-07-22T14:09:00.729Z"
+    },
+    {
+      "id": "mryisog8gyetn3",
+      "name": "板面",
+      "shopInstanceId": "mryisog8q0hr4p",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "brandNotes": "",
+      "createdAt": "2026-07-24T05:49:14.312Z",
+      "updatedAt": "2026-07-24T05:49:14.312Z"
     }
   ],
   "shops": [
@@ -1054,5 +1079,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-24T05:48:12.852Z"
+  "syncedAt": "2026-07-24T05:49:18.271Z"
 }
