@@ -1193,7 +1193,23 @@ button.editing {
   background: var(--stock-accent);
 }
 
-.item-card.in-stock .item-name,
+.item-card.in-stock .item-name {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  margin: 0;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 1.12rem;
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+  color: #fff;
+  background: var(--stock-accent);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.22);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
+}
+
 .brand-product-row.in-stock .brand-product-name {
   font-weight: 800;
   color: var(--stock-accent);
