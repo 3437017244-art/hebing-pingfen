@@ -1087,6 +1087,31 @@
       "notes": "吃的还行，价格贵   总体一般。",
       "createdAt": "2026-07-24T05:51:35.524Z",
       "updatedAt": "2026-07-24T05:51:35.524Z"
+    },
+    {
+      "id": "mryw7j5l8asjdi",
+      "name": "北通",
+      "shopInstanceId": "mryw7j5luude74",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "brandNotes": "",
+      "createdAt": "2026-07-24T12:04:42.297Z",
+      "updatedAt": "2026-07-24T12:04:42.297Z"
     }
   ],
   "shops": [
@@ -1123,5 +1148,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-24T12:04:29.001Z"
+  "syncedAt": "2026-07-24T12:04:48.210Z"
 }
