@@ -1206,6 +1206,31 @@
       "notes": "性价比可以。但是有些按键用起来还是不太舒服。以后再买可以自定义一下",
       "createdAt": "2026-07-24T12:16:34.490Z",
       "updatedAt": "2026-07-24T12:17:34.083Z"
+    },
+    {
+      "id": "mrywv1f9a7c6wr",
+      "name": "打火启动器",
+      "shopInstanceId": "mrywv1f9vxmula",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "brandNotes": "",
+      "createdAt": "2026-07-24T12:22:59.061Z",
+      "updatedAt": "2026-07-24T12:22:59.061Z"
     }
   ],
   "shops": [
@@ -1242,5 +1267,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-24T12:22:27.276Z"
+  "syncedAt": "2026-07-24T12:23:06.665Z"
 }
