@@ -1703,12 +1703,82 @@
       });
   }
 
-  function getProductSearchText(item) {
+  function getProductSearchFields(item) {
     // 搜索只匹配店名 / 商品名，不含备注、位置、分类等
     return [getBrandName(item), item.name, item.brand, item.flavor]
-      .filter(Boolean)
-      .join(' ')
-      .toLowerCase();
+      .map((part) => String(part || '').trim().toLowerCase())
+      .filter(Boolean);
+  }
+
+  function getProductSearchText(item) {
+    return getProductSearchFields(item).join(' ');
+  }
+
+  function longestCommonSubstringLength(a, b) {
+    if (!a || !b) return 0;
+    let max = 0;
+    const row = new Array(b.length + 1).fill(0);
+    for (let i = 1; i <= a.length; i++) {
+      let prev = 0;
+      for (let j = 1; j <= b.length; j++) {
+        const temp = row[j];
+        if (a[i - 1] === b[j - 1]) {
+          row[j] = prev + 1;
+          if (row[j] > max) max = row[j];
+        } else {
+          row[j] = 0;
+        }
+        prev = temp;
+      }
+    }
+    return max;
+  }
+
+  function levenshteinDistance(a, b) {
+    if (a === b) return 0;
+    if (!a) return b.length;
+    if (!b) return a.length;
+    const prev = new Array(b.length + 1);
+    const curr = new Array(b.length + 1);
+    for (let j = 0; j <= b.length; j++) prev[j] = j;
+    for (let i = 1; i <= a.length; i++) {
+      curr[0] = i;
+      for (let j = 1; j <= b.length; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        curr[j] = Math.min(curr[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost);
+      }
+      for (let j = 0; j <= b.length; j++) prev[j] = curr[j];
+    }
+    return prev[b.length];
+  }
+
+  /** 支持少量错字：完全包含，或编辑距离很小，或连续相同片段足够长 */
+  function textMatchesSearchQuery(text, query) {
+    const t = String(text || '').toLowerCase();
+    const q = String(query || '').trim().toLowerCase();
+    if (!q) return true;
+    if (!t) return false;
+    if (t.includes(q)) return true;
+    if (q.length < 2) return false;
+
+    const maxDist = q.length <= 4 ? 1 : 2;
+    const minLen = Math.max(1, q.length - maxDist);
+    const maxLen = q.length + maxDist;
+    for (let len = minLen; len <= maxLen; len++) {
+      if (len > t.length) continue;
+      for (let i = 0; i + len <= t.length; i++) {
+        if (levenshteinDistance(q, t.slice(i, i + len)) <= maxDist) return true;
+      }
+    }
+
+    const need = Math.max(2, q.length - maxDist);
+    return longestCommonSubstringLength(q, t) >= need;
+  }
+
+  function productMatchesSearchQuery(item, query) {
+    const q = String(query || '').trim().toLowerCase();
+    if (!q) return true;
+    return getProductSearchFields(item).some((field) => textMatchesSearchQuery(field, q));
   }
 
   function buildProductMetaHtml(item) {
@@ -2202,7 +2272,7 @@
     let result = items.filter((item) => matchesBrowseCategoryFilter(item));
     const q = (query || '').trim().toLowerCase();
     if (q) {
-      result = result.filter((item) => getProductSearchText(item).includes(q));
+      result = result.filter((item) => productMatchesSearchQuery(item, q));
     }
     result.sort((a, b) => {
       const diff = Number(b.rating || 0) - Number(a.rating || 0);
