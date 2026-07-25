@@ -1278,6 +1278,28 @@
       "brandNotes": "",
       "createdAt": "2026-07-25T04:50:02.783Z",
       "updatedAt": "2026-07-25T04:50:02.783Z"
+    },
+    {
+      "id": "mrzw5rcapfgi72",
+      "name": "卡斐乐",
+      "shopInstanceId": "mrzw4eqn49bs6f",
+      "brand": "",
+      "flavor": "充气泵",
+      "category": "其他",
+      "storageLocation": "大屋衣柜中间抽屉黑色盒子",
+      "quantity": 1,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 3,
+      "notes": "",
+      "createdAt": "2026-07-25T04:51:05.770Z",
+      "updatedAt": "2026-07-25T04:51:05.770Z"
     }
   ],
   "shops": [
@@ -1314,5 +1336,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-25T04:50:06.891Z"
+  "syncedAt": "2026-07-25T04:51:12.356Z"
 }
