@@ -1209,7 +1209,7 @@
     },
     {
       "id": "mrywv1f9a7c6wr",
-      "name": "E路弛",
+      "name": "E路驰",
       "shopInstanceId": "mrywv1f9vxmula",
       "isBrandPlaceholder": true,
       "brand": "",
@@ -1230,11 +1230,11 @@
       "notes": "",
       "brandNotes": "",
       "createdAt": "2026-07-24T12:22:59.061Z",
-      "updatedAt": "2026-07-25T04:55:13.038Z"
+      "updatedAt": "2026-07-25T04:55:56.913Z"
     },
     {
       "id": "mrywvvup7xe6a7",
-      "name": "E路弛",
+      "name": "E路驰",
       "shopInstanceId": "mrywv1f9vxmula",
       "brand": "",
       "flavor": "打火启动器",
@@ -1252,7 +1252,7 @@
       "rating": 0,
       "notes": "记得偶尔充电",
       "createdAt": "2026-07-24T12:23:38.497Z",
-      "updatedAt": "2026-07-25T04:55:13.038Z",
+      "updatedAt": "2026-07-25T04:55:56.913Z",
       "shopRating": 0,
       "brandNotes": ""
     },
@@ -1338,5 +1338,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-25T04:55:17.046Z"
+  "syncedAt": "2026-07-25T04:56:00.131Z"
 }
