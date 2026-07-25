@@ -2594,18 +2594,13 @@
 
     const matches = groupProductsByBrand(getFilteredProducts(query))
       .slice(0, 8)
-      .map((group) => {
-        const locInfo = getBrandShopLocationInfo(group);
-        const locText = (locInfo.shopLocation || locInfo.shopMapAddress || '').trim();
-        return {
-          type: 'brand',
-          brand: group.brand,
-          shopInstanceId: group.shopInstanceId,
-          locText,
-          stockClass: getSearchSuggestionClass(group),
-          stockedCount: group.products.filter(hasStockQuantity).length,
-        };
-      });
+      .map((group) => ({
+        type: 'brand',
+        brand: group.brand,
+        shopInstanceId: group.shopInstanceId,
+        stockClass: getSearchSuggestionClass(group),
+        stockedCount: group.products.filter(hasStockQuantity).length,
+      }));
 
     if (!matches.length) {
       container.innerHTML = '';
@@ -2618,7 +2613,6 @@
         (m) => `
           <div class="search-suggestion-item ${m.stockClass}" data-type="${m.type}" data-brand="${escapeHtml(m.brand)}" data-shop-instance-id="${escapeHtml(m.shopInstanceId || '')}">
             <span class="search-suggestion-brand">${escapeHtml(m.brand)}</span>
-            ${m.locText ? `<span class="search-suggestion-loc">${escapeHtml(m.locText)}</span>` : ''}
             ${m.stockedCount > 0 ? `<span class="stock-badge">${m.stockedCount} 种有库存</span>` : ''}
           </div>`,
       )
