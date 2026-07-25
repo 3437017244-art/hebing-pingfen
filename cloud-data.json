@@ -1351,6 +1351,28 @@
       "updatedAt": "2026-07-25T05:09:14.185Z",
       "shopRating": 0.5,
       "brandNotes": ""
+    },
+    {
+      "id": "mrzz7mz4l0d7kp",
+      "name": "常记好点",
+      "shopInstanceId": "legacy:%E5%B8%B8%E8%AE%B0%E5%A5%BD%E7%82%B9",
+      "brand": "",
+      "flavor": "韩式辣面",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 4.5,
+      "notes": "",
+      "createdAt": "2026-07-25T06:16:32.272Z",
+      "updatedAt": "2026-07-25T06:16:32.272Z"
     }
   ],
   "shops": [
@@ -1387,5 +1409,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-25T06:13:53.351Z"
+  "syncedAt": "2026-07-25T06:16:36.768Z"
 }
