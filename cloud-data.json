@@ -1467,6 +1467,28 @@
       "notes": "用一段时间开胶.不过便宜质量也没什么太大问题。后续可以尝试一下其他品牌",
       "createdAt": "2026-07-25T13:37:43.841Z",
       "updatedAt": "2026-07-25T13:37:43.841Z"
+    },
+    {
+      "id": "ms0f3jswy8dqhb",
+      "name": "半球",
+      "shopInstanceId": "ms0eqv2db1m7xs",
+      "brand": "",
+      "flavor": "ZYC-2200电磁炉",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0.5,
+      "notes": "买过两个屏幕全开裂.质量有问题。后续不建议再买",
+      "createdAt": "2026-07-25T13:41:15.392Z",
+      "updatedAt": "2026-07-25T13:41:15.392Z"
     }
   ],
   "shops": [
@@ -1504,5 +1526,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-25T13:37:49.779Z"
+  "syncedAt": "2026-07-25T13:41:22.663Z"
 }
