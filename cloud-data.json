@@ -1445,6 +1445,28 @@
       "brandNotes": "",
       "createdAt": "2026-07-25T13:31:23.461Z",
       "updatedAt": "2026-07-25T13:31:23.461Z"
+    },
+    {
+      "id": "ms0ez0kh7dlyml",
+      "name": "半球",
+      "shopInstanceId": "ms0eqv2db1m7xs",
+      "brand": "",
+      "flavor": "CFXB10-10小电饭煲",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 3.5,
+      "notes": "用一段时间开胶.不过便宜质量也没什么太大问题。后续可以尝试一下其他品牌",
+      "createdAt": "2026-07-25T13:37:43.841Z",
+      "updatedAt": "2026-07-25T13:37:43.841Z"
     }
   ],
   "shops": [
@@ -1482,5 +1504,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-25T13:31:29.270Z"
+  "syncedAt": "2026-07-25T13:37:49.779Z"
 }
