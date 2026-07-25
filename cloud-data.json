@@ -1398,6 +1398,28 @@
       "brandNotes": "",
       "createdAt": "2026-07-25T11:50:44.954Z",
       "updatedAt": "2026-07-25T11:50:44.954Z"
+    },
+    {
+      "id": "ms0b8vlo28a2m8",
+      "name": "东古",
+      "shopInstanceId": "ms0b5fq14ogpmc",
+      "brand": "",
+      "flavor": "蒜蓉辣椒酱",
+      "category": "速食",
+      "storageLocation": "客厅电视桌子上",
+      "quantity": 1,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 3.5,
+      "notes": "吃了还可以。但是吃的比较慢。咸菜类还是少买",
+      "createdAt": "2026-07-25T11:53:25.500Z",
+      "updatedAt": "2026-07-25T11:53:25.500Z"
     }
   ],
   "shops": [
@@ -1434,5 +1456,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-25T11:50:49.259Z"
+  "syncedAt": "2026-07-25T11:53:36.065Z"
 }
