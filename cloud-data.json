@@ -1373,6 +1373,31 @@
       "notes": "",
       "createdAt": "2026-07-25T06:16:32.272Z",
       "updatedAt": "2026-07-25T06:16:32.272Z"
+    },
+    {
+      "id": "ms0b5fq2gfej8j",
+      "name": "东古",
+      "shopInstanceId": "ms0b5fq14ogpmc",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "brandNotes": "",
+      "createdAt": "2026-07-25T11:50:44.954Z",
+      "updatedAt": "2026-07-25T11:50:44.954Z"
     }
   ],
   "shops": [
@@ -1409,5 +1434,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-25T11:49:23.889Z"
+  "syncedAt": "2026-07-25T11:50:49.259Z"
 }
