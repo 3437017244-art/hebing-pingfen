@@ -28,12 +28,12 @@
 
   function normalizeRating(value) {
     const n = Math.round(Number(value) * 2) / 2;
-    if (isNaN(n)) return 3;
+    if (isNaN(n)) return 0;
     if (n <= 0) return 0;
     return Math.min(5, Math.max(0.5, n));
   }
 
-  function ratingOrDefault(value, fallback = 3) {
+  function ratingOrDefault(value, fallback = 0) {
     if (value === '' || value == null) return fallback;
     const n = Number(value);
     if (isNaN(n)) return fallback;
@@ -197,7 +197,7 @@
     const starClass = options.starClass || '';
     const currentClass = options.currentClass || '';
     const hiddenClass = options.hiddenClass || '';
-    const value = ratingOrDefault(score, 3);
+    const value = ratingOrDefault(score, 0);
     let starButtons = '';
     for (let i = 1; i <= 5; i++) {
       let cls = 'star';
@@ -638,7 +638,7 @@
 
   function renderExtraProductRowHtml(index, item = {}) {
     const flavor = item.flavor || '';
-    const score = ratingOrDefault(item.rating, 3);
+    const score = ratingOrDefault(item.rating, 0);
     const quantity = item.quantity != null ? item.quantity : '';
     const showStockFields = hasStockQuantity(item);
     const price = item.price != null ? item.price : '';
@@ -686,11 +686,11 @@
     `;
   }
 
-  function bindExtraProductRow(row, rating = 3) {
+  function bindExtraProductRow(row, rating = 0) {
     const starContainer = row.querySelector('.extra-star-rating');
     const hiddenInput = row.querySelector('.extra-rating');
     const ratingDisplay = row.querySelector('.extra-rating-current');
-    bindStarRating(starContainer, hiddenInput, ratingDisplay, 3)(ratingOrDefault(rating, 3));
+    bindStarRating(starContainer, hiddenInput, ratingDisplay, 0)(ratingOrDefault(rating, 0));
     bindStockDependentFields(
       row.querySelector('.extra-quantity'),
       row.querySelector('.extra-category-row'),
@@ -725,7 +725,7 @@
     wrapper.innerHTML = renderExtraProductRowHtml(index, item);
     const row = wrapper.firstElementChild;
     list.appendChild(row);
-    bindExtraProductRow(row, ratingOrDefault(item.rating, 3));
+    bindExtraProductRow(row, ratingOrDefault(item.rating, 0));
     row.querySelector('.extra-flavor')?.focus();
   }
 
@@ -744,7 +744,7 @@
             row.querySelector('.extra-price')?.value !== ''
               ? parseFloat(row.querySelector('.extra-price').value)
               : null,
-          rating: ratingOrDefault(row.querySelector('.extra-rating')?.value, 3),
+          rating: ratingOrDefault(row.querySelector('.extra-rating')?.value, 0),
           notes: (row.querySelector('.extra-notes')?.value || '').trim(),
         }),
       )
@@ -800,8 +800,8 @@
     const starContainer = $('#dialog-star-rating');
     const hiddenInput = $('#dialog-rating');
     const ratingDisplay = $('#dialog-rating-current');
-    dialogSetStars = bindStarRating(starContainer, hiddenInput, ratingDisplay, 3);
-    dialogSetStars(ratingOrDefault(item.rating, 3));
+    dialogSetStars = bindStarRating(starContainer, hiddenInput, ratingDisplay, 0);
+    dialogSetStars(ratingOrDefault(item.rating, 0));
     const priceEl = $('#dialog-price');
     const weightEl = $('#dialog-weight');
     if (priceEl) priceEl.addEventListener('input', updateDialogUnitPriceDisplay);
@@ -845,7 +845,7 @@
       price: $('#dialog-price')?.value !== '' ? parseFloat($('#dialog-price').value) : null,
       weight: $('#dialog-weight')?.value !== '' ? parseFloat($('#dialog-weight').value) : null,
       singleWeight: $('#dialog-single-weight')?.value !== '' ? parseFloat($('#dialog-single-weight').value) : null,
-      rating: ratingOrDefault($('#dialog-rating')?.value, 3),
+      rating: ratingOrDefault($('#dialog-rating')?.value, 0),
       notes: ($('#dialog-notes')?.value || '').trim(),
     });
   }
@@ -961,7 +961,7 @@
     showDialogTitle(shop.name || '编辑');
     window.AmapPicker?.destroyAllMiniMaps?.();
     productEls.dialogBody.innerHTML = renderShopEditForm(shop);
-    bindDialogProductEdit({ rating: ratingOrDefault(shop.rating, 3) });
+    bindDialogProductEdit({ rating: ratingOrDefault(shop.rating, 0) });
     productEls.dialogEditBtn.textContent = '保存';
     productEls.dialogDeleteBtn.textContent = '取消';
     productEls.dialogDeleteBtn.className = 'btn btn-secondary';
@@ -974,7 +974,7 @@
     const shop = shops.find((s) => s.id === selectedDetail.id);
     if (!shop) return;
     // 编辑页已去掉店铺位置，定位字段保持原值
-    shop.rating = ratingOrDefault($('#dialog-rating')?.value, 3);
+    shop.rating = ratingOrDefault($('#dialog-rating')?.value, 0);
     saveShops();
     setDialogViewMode();
     showShopDetail(shop);
@@ -1957,7 +1957,7 @@
           shopMapAddress,
           shopLng,
           shopLat,
-          rating: product.rating ?? shop.rating ?? 3,
+          rating: product.rating ?? shop.rating ?? 0,
           storageLocation: '',
           category: '',
           quantity: null,
@@ -1977,7 +1977,7 @@
             shopMapAddress,
             shopLng,
             shopLat,
-            rating: shop.rating ?? 3,
+            rating: shop.rating ?? 0,
           },
         ];
     const ratings = products.map((p) => Number(p.rating || 0)).filter((r) => r > 0);
@@ -2013,7 +2013,7 @@
       price: null,
       weight: null,
       singleWeight: null,
-      rating: 3,
+      rating: 0,
       notes: '',
     };
     dialogEditMode = true;
@@ -2349,7 +2349,7 @@
           flavor,
           shopName: brand,
           shopLocation,
-          rating: product.rating ?? shop.rating ?? 3,
+          rating: product.rating ?? shop.rating ?? 0,
           storageLocation: '',
           category: '',
           quantity: null,
@@ -2385,7 +2385,7 @@
           flavor,
           shopName: brand,
           shopLocation,
-          rating: product.rating ?? shop.rating ?? 3,
+          rating: product.rating ?? shop.rating ?? 0,
           storageLocation: '',
           category: '',
           quantity: null,
