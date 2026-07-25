@@ -1704,23 +1704,8 @@
   }
 
   function getProductSearchText(item) {
-    const { shopName, shopLocation } = getProductShopInfo(item);
-    return [
-      getBrandName(item),
-      item.name,
-      item.brand,
-      item.flavor,
-      item.category,
-      item.storageLocation,
-      item.quantity != null ? String(item.quantity) : '',
-      shopName,
-      shopLocation,
-      item.notes,
-      item.brandNotes,
-      item.price != null ? String(item.price) : '',
-      item.weight != null ? String(item.weight) : '',
-      item.singleWeight != null ? String(item.singleWeight) : '',
-    ]
+    // 搜索只匹配店名 / 商品名，不含备注、位置、分类等
+    return [getBrandName(item), item.name, item.brand, item.flavor]
       .filter(Boolean)
       .join(' ')
       .toLowerCase();
