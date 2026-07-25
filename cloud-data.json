@@ -1322,11 +1322,11 @@
       "weight": null,
       "singleWeight": null,
       "rating": 0,
-      "shopRating": 0,
+      "shopRating": 0.5,
       "notes": "",
       "brandNotes": "",
       "createdAt": "2026-07-25T05:07:40.373Z",
-      "updatedAt": "2026-07-25T05:07:40.373Z"
+      "updatedAt": "2026-07-25T05:09:14.185Z"
     },
     {
       "id": "mrzwsmowifxwrt",
@@ -1348,7 +1348,9 @@
       "rating": 0.5,
       "notes": "不好吃吃不下去",
       "createdAt": "2026-07-25T05:08:52.832Z",
-      "updatedAt": "2026-07-25T05:08:52.832Z"
+      "updatedAt": "2026-07-25T05:09:14.185Z",
+      "shopRating": 0.5,
+      "brandNotes": ""
     }
   ],
   "shops": [
@@ -1385,5 +1387,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-25T05:08:56.823Z"
+  "syncedAt": "2026-07-25T05:09:16.987Z"
 }
