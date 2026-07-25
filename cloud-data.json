@@ -1420,6 +1420,28 @@
       "notes": "吃了还可以。但是吃的比较慢。咸菜类还是少买",
       "createdAt": "2026-07-25T11:53:25.500Z",
       "updatedAt": "2026-07-25T11:53:25.500Z"
+    },
+    {
+      "id": "ms0dtkv4ee5lvx",
+      "name": "茶与甜",
+      "shopInstanceId": "legacy:%E8%8C%B6%E4%B8%8E%E7%94%9C",
+      "brand": "",
+      "flavor": "好像",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 3,
+      "notes": "",
+      "createdAt": "2026-07-25T13:05:30.591Z",
+      "updatedAt": "2026-07-25T13:05:30.591Z"
     }
   ],
   "shops": [
@@ -1456,5 +1478,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-25T13:04:31.132Z"
+  "syncedAt": "2026-07-25T13:05:35.347Z"
 }
