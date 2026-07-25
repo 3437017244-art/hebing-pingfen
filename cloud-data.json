@@ -1334,9 +1334,9 @@
       "shopInstanceId": "mrzwr2s59ve9cu",
       "brand": "",
       "flavor": "榨菜",
-      "category": "速食",
-      "storageLocation": "客厅电视桌子上",
-      "quantity": 50,
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
       "shopName": "",
       "shopLocation": "",
       "shopMapAddress": "",
@@ -1348,7 +1348,7 @@
       "rating": 0.5,
       "notes": "不好吃吃不下去",
       "createdAt": "2026-07-25T05:08:52.832Z",
-      "updatedAt": "2026-07-25T05:09:14.185Z",
+      "updatedAt": "2026-07-25T11:49:19.542Z",
       "shopRating": 0.5,
       "brandNotes": ""
     },
@@ -1409,5 +1409,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-25T11:48:44.448Z"
+  "syncedAt": "2026-07-25T11:49:23.889Z"
 }
