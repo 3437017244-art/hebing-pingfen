@@ -1302,6 +1302,31 @@
       "notes": "",
       "createdAt": "2026-07-25T04:51:05.770Z",
       "updatedAt": "2026-07-25T04:51:05.770Z"
+    },
+    {
+      "id": "mrzwr2s5mddjof",
+      "name": "桂怡",
+      "shopInstanceId": "mrzwr2s59ve9cu",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "brandNotes": "",
+      "createdAt": "2026-07-25T05:07:40.373Z",
+      "updatedAt": "2026-07-25T05:07:40.373Z"
     }
   ],
   "shops": [
@@ -1338,5 +1363,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-25T05:07:25.491Z"
+  "syncedAt": "2026-07-25T05:07:47.913Z"
 }
