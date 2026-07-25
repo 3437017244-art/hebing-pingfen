@@ -1253,6 +1253,31 @@
       "notes": "记得偶尔充电",
       "createdAt": "2026-07-24T12:23:38.497Z",
       "updatedAt": "2026-07-24T12:23:45.797Z"
+    },
+    {
+      "id": "mrzw4eqnks5d2r",
+      "name": "卡斐乐",
+      "shopInstanceId": "mrzw4eqn49bs6f",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "brandNotes": "",
+      "createdAt": "2026-07-25T04:50:02.783Z",
+      "updatedAt": "2026-07-25T04:50:02.783Z"
     }
   ],
   "shops": [
@@ -1289,5 +1314,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-25T04:49:55.302Z"
+  "syncedAt": "2026-07-25T04:50:06.891Z"
 }
