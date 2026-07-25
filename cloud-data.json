@@ -1440,11 +1440,11 @@
       "weight": null,
       "singleWeight": null,
       "rating": 0,
-      "shopRating": 0,
+      "shopRating": 2,
       "notes": "",
-      "brandNotes": "",
+      "brandNotes": "现在这个品牌质量不太好。不建议购买",
       "createdAt": "2026-07-25T13:31:23.461Z",
-      "updatedAt": "2026-07-25T13:31:23.461Z"
+      "updatedAt": "2026-07-25T13:41:51.998Z"
     },
     {
       "id": "ms0ez0kh7dlyml",
@@ -1466,7 +1466,9 @@
       "rating": 3.5,
       "notes": "用一段时间开胶.不过便宜质量也没什么太大问题。后续可以尝试一下其他品牌",
       "createdAt": "2026-07-25T13:37:43.841Z",
-      "updatedAt": "2026-07-25T13:37:43.841Z"
+      "updatedAt": "2026-07-25T13:41:51.998Z",
+      "shopRating": 2,
+      "brandNotes": "现在这个品牌质量不太好。不建议购买"
     },
     {
       "id": "ms0f3jswy8dqhb",
@@ -1488,7 +1490,9 @@
       "rating": 0.5,
       "notes": "买过两个屏幕全开裂.质量有问题。后续不建议再买",
       "createdAt": "2026-07-25T13:41:15.392Z",
-      "updatedAt": "2026-07-25T13:41:15.392Z"
+      "updatedAt": "2026-07-25T13:41:51.998Z",
+      "shopRating": 2,
+      "brandNotes": "现在这个品牌质量不太好。不建议购买"
     }
   ],
   "shops": [
@@ -1526,5 +1530,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-25T13:41:22.663Z"
+  "syncedAt": "2026-07-25T13:41:56.323Z"
 }
