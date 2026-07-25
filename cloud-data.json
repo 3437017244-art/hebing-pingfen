@@ -1420,6 +1420,31 @@
       "notes": "吃了还可以。但是吃的比较慢。咸菜类还是少买",
       "createdAt": "2026-07-25T11:53:25.500Z",
       "updatedAt": "2026-07-25T11:53:25.500Z"
+    },
+    {
+      "id": "ms0eqv2dlloazw",
+      "name": "半球",
+      "shopInstanceId": "ms0eqv2db1m7xs",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "brandNotes": "",
+      "createdAt": "2026-07-25T13:31:23.461Z",
+      "updatedAt": "2026-07-25T13:31:23.461Z"
     }
   ],
   "shops": [
@@ -1457,5 +1482,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-25T13:31:18.483Z"
+  "syncedAt": "2026-07-25T13:31:29.270Z"
 }
