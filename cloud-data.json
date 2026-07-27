@@ -1573,6 +1573,31 @@
       "notes": "",
       "createdAt": "2026-07-27T01:48:20.423Z",
       "updatedAt": "2026-07-27T01:57:54.358Z"
+    },
+    {
+      "id": "ms3dpydvp9g2j5",
+      "name": "人",
+      "shopInstanceId": "ms3dpydvtmj5pc",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "brandNotes": "",
+      "createdAt": "2026-07-27T15:26:00.019Z",
+      "updatedAt": "2026-07-27T15:26:00.019Z"
     }
   ],
   "shops": [
@@ -1610,5 +1635,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-27T15:23:46.011Z"
+  "syncedAt": "2026-07-27T15:26:03.837Z"
 }
