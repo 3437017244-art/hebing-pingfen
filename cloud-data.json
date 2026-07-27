@@ -249,12 +249,14 @@
       "singleWeight": null,
       "rating": 4,
       "createdAt": "2026-07-11T08:04:34.710Z",
-      "updatedAt": "2026-07-19T06:40:34.844Z",
+      "updatedAt": "2026-07-27T13:52:59.380Z",
       "category": "",
       "shopMapAddress": "河北省邢台市沙河市褡裢街道广阳街美家美户墙布窗帘软装工作室",
       "shopLng": 114.510682,
       "shopLat": 36.861324,
-      "shopRating": 4
+      "shopRating": 3.5,
+      "shopInstanceId": "legacy:%E7%B6%A6%E5%AE%B6%E9%A6%84%E9%A5%A8",
+      "brandNotes": ""
     },
     {
       "id": "mrg2wnivvd4jgp",
@@ -271,12 +273,14 @@
       "rating": 1,
       "notes": "",
       "createdAt": "2026-07-11T08:04:34.710Z",
-      "updatedAt": "2026-07-19T06:40:34.844Z",
+      "updatedAt": "2026-07-27T13:52:59.380Z",
       "category": "",
       "shopMapAddress": "河北省邢台市沙河市褡裢街道广阳街美家美户墙布窗帘软装工作室",
       "shopLng": 114.510682,
       "shopLat": 36.861324,
-      "shopRating": 4
+      "shopRating": 3.5,
+      "shopInstanceId": "legacy:%E7%B6%A6%E5%AE%B6%E9%A6%84%E9%A5%A8",
+      "brandNotes": ""
     },
     {
       "id": "mrg2wnivmzivom",
@@ -293,12 +297,14 @@
       "rating": 2,
       "notes": "",
       "createdAt": "2026-07-11T08:04:34.710Z",
-      "updatedAt": "2026-07-19T06:40:34.844Z",
+      "updatedAt": "2026-07-27T13:52:59.380Z",
       "category": "",
       "shopMapAddress": "河北省邢台市沙河市褡裢街道广阳街美家美户墙布窗帘软装工作室",
       "shopLng": 114.510682,
       "shopLat": 36.861324,
-      "shopRating": 4
+      "shopRating": 3.5,
+      "shopInstanceId": "legacy:%E7%B6%A6%E5%AE%B6%E9%A6%84%E9%A5%A8",
+      "brandNotes": ""
     },
     {
       "id": "mrk0gz8dpconp9",
@@ -1604,5 +1610,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-27T13:51:41.502Z"
+  "syncedAt": "2026-07-27T13:53:03.475Z"
 }
