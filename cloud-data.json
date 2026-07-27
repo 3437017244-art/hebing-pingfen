@@ -1529,7 +1529,7 @@
       "name": "民间水煎包",
       "shopInstanceId": "ms2kgsypcxcfuw",
       "brand": "",
-      "flavor": "水煎包",
+      "flavor": "肉水煎包",
       "category": "",
       "storageLocation": "",
       "quantity": null,
@@ -1544,7 +1544,7 @@
       "rating": 5,
       "notes": "",
       "createdAt": "2026-07-27T01:48:10.078Z",
-      "updatedAt": "2026-07-27T01:48:10.078Z"
+      "updatedAt": "2026-07-27T01:58:12.948Z"
     },
     {
       "id": "ms2kifrbnygkx4",
@@ -1604,5 +1604,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-27T01:57:58.467Z"
+  "syncedAt": "2026-07-27T01:58:18.117Z"
 }
