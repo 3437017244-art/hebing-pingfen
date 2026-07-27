@@ -1022,7 +1022,7 @@
     },
     {
       "id": "mryisog8gyetn3",
-      "name": "板面",
+      "name": "千里香馄饨板面",
       "shopInstanceId": "mryisog8q0hr4p",
       "isBrandPlaceholder": true,
       "brand": "",
@@ -1043,11 +1043,11 @@
       "notes": "",
       "brandNotes": "一般。",
       "createdAt": "2026-07-24T05:49:14.312Z",
-      "updatedAt": "2026-07-24T05:50:20.628Z"
+      "updatedAt": "2026-07-27T01:46:51.050Z"
     },
     {
       "id": "mryiuv5h4enma2",
-      "name": "板面",
+      "name": "千里香馄饨板面",
       "shopInstanceId": "mryisog8q0hr4p",
       "brand": "",
       "flavor": "板面",
@@ -1065,11 +1065,13 @@
       "rating": 2,
       "notes": "味道淡一般。",
       "createdAt": "2026-07-24T05:50:56.309Z",
-      "updatedAt": "2026-07-24T05:50:56.309Z"
+      "updatedAt": "2026-07-27T01:46:51.050Z",
+      "shopRating": 2,
+      "brandNotes": "一般。"
     },
     {
       "id": "mryivpest6pb2g",
-      "name": "板面",
+      "name": "千里香馄饨板面",
       "shopInstanceId": "mryisog8q0hr4p",
       "brand": "",
       "flavor": "小笼包",
@@ -1087,7 +1089,9 @@
       "rating": 2,
       "notes": "吃的还行，价格贵   总体一般。",
       "createdAt": "2026-07-24T05:51:35.524Z",
-      "updatedAt": "2026-07-24T05:51:35.524Z"
+      "updatedAt": "2026-07-27T01:46:51.050Z",
+      "shopRating": 2,
+      "brandNotes": "一般。"
     },
     {
       "id": "mryw7j5l8asjdi",
@@ -1531,5 +1535,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-27T01:46:19.866Z"
+  "syncedAt": "2026-07-27T01:46:52.513Z"
 }
