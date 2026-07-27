@@ -1498,6 +1498,31 @@
       "updatedAt": "2026-07-25T13:41:51.998Z",
       "shopRating": 2,
       "brandNotes": "现在这个品牌质量不太好。不建议购买"
+    },
+    {
+      "id": "ms2kgsypqtwm6h",
+      "name": "民间水煎包",
+      "shopInstanceId": "ms2kgsypcxcfuw",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "brandNotes": "",
+      "createdAt": "2026-07-27T01:47:04.225Z",
+      "updatedAt": "2026-07-27T01:47:04.225Z"
     }
   ],
   "shops": [
@@ -1535,5 +1560,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-27T01:46:52.513Z"
+  "syncedAt": "2026-07-27T01:47:08.421Z"
 }
