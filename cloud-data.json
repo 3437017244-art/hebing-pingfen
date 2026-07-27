@@ -1523,6 +1523,28 @@
       "brandNotes": "",
       "createdAt": "2026-07-27T01:47:04.225Z",
       "updatedAt": "2026-07-27T01:47:39.778Z"
+    },
+    {
+      "id": "ms2ki7rya3vxq5",
+      "name": "民间水煎包",
+      "shopInstanceId": "ms2kgsypcxcfuw",
+      "brand": "",
+      "flavor": "水煎包",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 5,
+      "notes": "",
+      "createdAt": "2026-07-27T01:48:10.078Z",
+      "updatedAt": "2026-07-27T01:48:10.078Z"
     }
   ],
   "shops": [
@@ -1560,5 +1582,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-27T01:47:42.901Z"
+  "syncedAt": "2026-07-27T01:48:14.185Z"
 }
