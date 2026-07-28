@@ -1646,6 +1646,31 @@
       "notes": "",
       "createdAt": "2026-07-28T06:37:50.035Z",
       "updatedAt": "2026-07-28T06:37:50.035Z"
+    },
+    {
+      "id": "ms4kbca25g2pjv",
+      "name": "华莱士金家佳店",
+      "shopInstanceId": "ms4kbca2i1any0",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "brandNotes": "",
+      "createdAt": "2026-07-28T11:18:21.674Z",
+      "updatedAt": "2026-07-28T11:18:21.674Z"
     }
   ],
   "shops": [
@@ -1683,5 +1708,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-28T11:17:46.848Z"
+  "syncedAt": "2026-07-28T11:18:25.956Z"
 }
