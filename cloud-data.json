@@ -1693,6 +1693,28 @@
       "notes": "个头现在太小。性价比一般",
       "createdAt": "2026-07-28T11:19:33.531Z",
       "updatedAt": "2026-07-28T11:19:33.531Z"
+    },
+    {
+      "id": "ms4kjkluia52p7",
+      "name": "华莱士金家佳店",
+      "shopInstanceId": "ms4kbca2i1any0",
+      "brand": "",
+      "flavor": "肉霸堡",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": 9,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 4,
+      "notes": "一个八块左右。对比塔斯丁的话.这个是全肉。这个更胜一筹。",
+      "createdAt": "2026-07-28T11:24:45.714Z",
+      "updatedAt": "2026-07-28T11:24:45.714Z"
     }
   ],
   "shops": [
@@ -1730,5 +1752,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-28T11:19:37.638Z"
+  "syncedAt": "2026-07-28T11:24:52.413Z"
 }
