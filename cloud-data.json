@@ -1671,6 +1671,28 @@
       "brandNotes": "",
       "createdAt": "2026-07-28T11:18:21.674Z",
       "updatedAt": "2026-07-28T11:18:46.996Z"
+    },
+    {
+      "id": "ms4kcvq3m6mv0c",
+      "name": "华莱士金家佳店",
+      "shopInstanceId": "ms4kbca2i1any0",
+      "brand": "",
+      "flavor": "元气鸡排",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": 4,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 3,
+      "notes": "个头现在太小。性价比一般",
+      "createdAt": "2026-07-28T11:19:33.531Z",
+      "updatedAt": "2026-07-28T11:19:33.531Z"
     }
   ],
   "shops": [
@@ -1708,5 +1730,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-28T11:18:50.852Z"
+  "syncedAt": "2026-07-28T11:19:37.638Z"
 }
