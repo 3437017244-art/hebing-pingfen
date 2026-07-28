@@ -692,7 +692,7 @@
       "id": "mrubvzg62rqcij",
       "name": "烤肉拌饭",
       "brand": "",
-      "flavor": "脆皮烤肉拌饭",
+      "flavor": "麻辣脆皮烤肉拌饭",
       "category": "",
       "storageLocation": "",
       "quantity": null,
@@ -704,9 +704,9 @@
       "price": null,
       "weight": null,
       "singleWeight": null,
-      "rating": 3.5,
+      "rating": 2,
       "createdAt": "2026-07-21T07:24:46.518Z",
-      "updatedAt": "2026-07-28T06:37:27.032Z",
+      "updatedAt": "2026-07-28T06:42:33.700Z",
       "shopRating": 4.5,
       "shopInstanceId": "legacy:%E7%83%A4%E8%82%89%E6%8B%8C%E9%A5%AD",
       "notes": ""
@@ -1683,5 +1683,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-28T06:41:59.584Z"
+  "syncedAt": "2026-07-28T06:42:37.677Z"
 }
