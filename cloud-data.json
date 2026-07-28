@@ -1598,6 +1598,28 @@
       "brandNotes": "",
       "createdAt": "2026-07-27T15:26:00.019Z",
       "updatedAt": "2026-07-27T15:26:00.019Z"
+    },
+    {
+      "id": "ms3wjhjbkx9mv8",
+      "name": "民间水煎包",
+      "shopInstanceId": "ms2kgsypcxcfuw",
+      "brand": "",
+      "flavor": "素水煎包",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 4,
+      "notes": "还可以但是还肉的好吃",
+      "createdAt": "2026-07-28T00:12:50.951Z",
+      "updatedAt": "2026-07-28T00:12:50.951Z"
     }
   ],
   "shops": [
@@ -1635,5 +1657,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-28T00:11:49.631Z"
+  "syncedAt": "2026-07-28T00:12:54.746Z"
 }
