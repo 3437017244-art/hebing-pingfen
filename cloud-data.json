@@ -669,7 +669,7 @@
       "id": "mrubvqpkxs1l8e",
       "name": "烤肉拌饭",
       "brand": "",
-      "flavor": "烤肉拌饭",
+      "flavor": "黑胡椒烤肉拌饭",
       "category": "",
       "storageLocation": "",
       "quantity": null,
@@ -683,8 +683,10 @@
       "singleWeight": null,
       "rating": 4.5,
       "createdAt": "2026-07-21T07:24:35.192Z",
-      "updatedAt": "2026-07-21T07:36:12.052Z",
-      "shopRating": 4.5
+      "updatedAt": "2026-07-28T06:37:11.205Z",
+      "shopRating": 4.5,
+      "shopInstanceId": "legacy:%E7%83%A4%E8%82%89%E6%8B%8C%E9%A5%AD",
+      "notes": ""
     },
     {
       "id": "mrubvzg62rqcij",
@@ -1657,5 +1659,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-28T06:36:32.903Z"
+  "syncedAt": "2026-07-28T06:37:18.350Z"
 }
