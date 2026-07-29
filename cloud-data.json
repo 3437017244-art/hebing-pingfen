@@ -1765,11 +1765,11 @@
       "weight": null,
       "singleWeight": null,
       "rating": 0,
-      "shopRating": 4.5,
+      "shopRating": 3.5,
       "notes": "",
-      "brandNotes": "",
+      "brandNotes": "价格来说还可以，但是老板做的味道稍微差点。大蒜和葱花太生。味道太刺鼻。味道不太融合。",
       "createdAt": "2026-07-29T11:33:37.410Z",
-      "updatedAt": "2026-07-29T11:34:50.731Z"
+      "updatedAt": "2026-07-29T11:47:17.812Z"
     }
   ],
   "shops": [
@@ -1807,5 +1807,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-29T11:46:10.120Z"
+  "syncedAt": "2026-07-29T11:47:23.901Z"
 }
