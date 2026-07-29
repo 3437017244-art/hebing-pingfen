@@ -1773,7 +1773,7 @@
     },
     {
       "id": "ms6o28q8sxenxb",
-      "name": "煎饼果子",
+      "name": "煎饼果子摊",
       "shopInstanceId": "ms6o28q7o3hn92",
       "isBrandPlaceholder": true,
       "brand": "",
@@ -1794,11 +1794,11 @@
       "notes": "",
       "brandNotes": "",
       "createdAt": "2026-07-29T22:38:47.984Z",
-      "updatedAt": "2026-07-29T22:39:51.889Z"
+      "updatedAt": "2026-07-29T23:13:02.361Z"
     },
     {
       "id": "ms6o69wibl8jwr",
-      "name": "煎饼果子",
+      "name": "煎饼果子摊",
       "shopInstanceId": "ms6o28q7o3hn92",
       "brand": "",
       "flavor": "硬煎饼",
@@ -1816,7 +1816,9 @@
       "rating": 0,
       "notes": "",
       "createdAt": "2026-07-29T22:41:56.130Z",
-      "updatedAt": "2026-07-29T22:42:04.486Z"
+      "updatedAt": "2026-07-29T23:13:02.361Z",
+      "shopRating": 0,
+      "brandNotes": ""
     }
   ],
   "shops": [
@@ -1854,5 +1856,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-29T23:12:26.671Z"
+  "syncedAt": "2026-07-29T23:13:04.440Z"
 }
