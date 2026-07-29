@@ -1290,11 +1290,11 @@
       "weight": null,
       "singleWeight": null,
       "rating": 0,
-      "shopRating": 0,
+      "shopRating": 1,
       "notes": "",
-      "brandNotes": "",
+      "brandNotes": "防滑手链的做工极差。以后不买这个品牌了。",
       "createdAt": "2026-07-25T04:50:02.783Z",
-      "updatedAt": "2026-07-25T04:50:02.783Z"
+      "updatedAt": "2026-07-29T03:33:45.324Z"
     },
     {
       "id": "mrzw5rcapfgi72",
@@ -1316,7 +1316,9 @@
       "rating": 3,
       "notes": "",
       "createdAt": "2026-07-25T04:51:05.770Z",
-      "updatedAt": "2026-07-25T04:51:05.770Z"
+      "updatedAt": "2026-07-29T03:33:45.324Z",
+      "shopRating": 1,
+      "brandNotes": "防滑手链的做工极差。以后不买这个品牌了。"
     },
     {
       "id": "mrzwr2s5mddjof",
@@ -1740,7 +1742,9 @@
       "rating": 0.5,
       "notes": "买回来几天就坏了，质量极差。做工也是极其的粗糙。",
       "createdAt": "2026-07-29T03:32:51.512Z",
-      "updatedAt": "2026-07-29T03:32:51.512Z"
+      "updatedAt": "2026-07-29T03:33:45.324Z",
+      "shopRating": 1,
+      "brandNotes": "防滑手链的做工极差。以后不买这个品牌了。"
     }
   ],
   "shops": [
@@ -1778,5 +1782,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-29T03:32:55.488Z"
+  "syncedAt": "2026-07-29T03:33:48.849Z"
 }
