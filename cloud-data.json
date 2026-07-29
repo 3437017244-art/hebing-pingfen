@@ -1770,6 +1770,31 @@
       "brandNotes": "价格来说还可以，但是老板做的味道稍微差点。大蒜和葱花太生。味道太刺鼻。味道不太融合。",
       "createdAt": "2026-07-29T11:33:37.410Z",
       "updatedAt": "2026-07-29T11:47:17.812Z"
+    },
+    {
+      "id": "ms6o28q8sxenxb",
+      "name": "煎饼果子",
+      "shopInstanceId": "ms6o28q7o3hn92",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "brandNotes": "",
+      "createdAt": "2026-07-29T22:38:47.984Z",
+      "updatedAt": "2026-07-29T22:38:47.984Z"
     }
   ],
   "shops": [
@@ -1807,5 +1832,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-29T22:38:32.411Z"
+  "syncedAt": "2026-07-29T22:38:51.379Z"
 }
