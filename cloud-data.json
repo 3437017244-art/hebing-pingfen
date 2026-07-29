@@ -1745,6 +1745,31 @@
       "updatedAt": "2026-07-29T03:33:45.324Z",
       "shopRating": 1,
       "brandNotes": "防滑手链的做工极差。以后不买这个品牌了。"
+    },
+    {
+      "id": "ms60atj60w4pxf",
+      "name": "一元一串麻辣烫",
+      "shopInstanceId": "ms60atj6id8ntc",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "brandNotes": "",
+      "createdAt": "2026-07-29T11:33:37.410Z",
+      "updatedAt": "2026-07-29T11:33:37.410Z"
     }
   ],
   "shops": [
@@ -1782,5 +1807,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-29T11:33:06.701Z"
+  "syncedAt": "2026-07-29T11:33:47.251Z"
 }
