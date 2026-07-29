@@ -1790,11 +1790,11 @@
       "weight": null,
       "singleWeight": null,
       "rating": 0,
-      "shopRating": 0,
+      "shopRating": 4,
       "notes": "",
       "brandNotes": "",
       "createdAt": "2026-07-29T22:38:47.984Z",
-      "updatedAt": "2026-07-29T23:13:02.361Z"
+      "updatedAt": "2026-07-29T23:13:42.932Z"
     },
     {
       "id": "ms6o69wibl8jwr",
@@ -1816,8 +1816,8 @@
       "rating": 4,
       "notes": "",
       "createdAt": "2026-07-29T22:41:56.130Z",
-      "updatedAt": "2026-07-29T23:13:30.741Z",
-      "shopRating": 0,
+      "updatedAt": "2026-07-29T23:13:42.932Z",
+      "shopRating": 4,
       "brandNotes": ""
     }
   ],
@@ -1856,5 +1856,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-29T23:13:33.987Z"
+  "syncedAt": "2026-07-29T23:13:44.654Z"
 }
