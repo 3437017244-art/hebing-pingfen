@@ -968,9 +968,9 @@
       "name": "桃李",
       "brand": "",
       "flavor": "豆沙起酥面包",
-      "category": "速食",
-      "storageLocation": "客厅电视桌子上",
-      "quantity": 10,
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
       "shopName": "",
       "shopLocation": "",
       "shopMapAddress": "",
@@ -982,7 +982,7 @@
       "rating": 3.5,
       "notes": "其实还可以但是我不爱吃甜的",
       "createdAt": "2026-07-22T14:04:17.401Z",
-      "updatedAt": "2026-07-26T10:38:54.955Z",
+      "updatedAt": "2026-07-29T23:12:23.730Z",
       "shopInstanceId": "legacy:%E6%A1%83%E6%9D%8E"
     },
     {
@@ -1854,5 +1854,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-29T23:12:05.896Z"
+  "syncedAt": "2026-07-29T23:12:26.671Z"
 }
