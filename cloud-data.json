@@ -1795,6 +1795,28 @@
       "brandNotes": "",
       "createdAt": "2026-07-29T22:38:47.984Z",
       "updatedAt": "2026-07-29T22:39:51.889Z"
+    },
+    {
+      "id": "ms6o69wibl8jwr",
+      "name": "煎饼果子",
+      "shopInstanceId": "ms6o28q7o3hn92",
+      "brand": "",
+      "flavor": "硬煎饼",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "notes": "",
+      "createdAt": "2026-07-29T22:41:56.130Z",
+      "updatedAt": "2026-07-29T22:41:56.130Z"
     }
   ],
   "shops": [
@@ -1832,5 +1854,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-29T22:39:55.708Z"
+  "syncedAt": "2026-07-29T22:41:59.942Z"
 }
