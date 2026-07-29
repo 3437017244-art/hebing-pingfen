@@ -1719,6 +1719,28 @@
       "updatedAt": "2026-07-28T11:25:06.290Z",
       "shopRating": 4,
       "brandNotes": ""
+    },
+    {
+      "id": "ms5j4jw8khjloj",
+      "name": "卡斐乐",
+      "shopInstanceId": "mrzw4eqn49bs6f",
+      "brand": "",
+      "flavor": "手机防滑手链",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0.5,
+      "notes": "买回来几天就坏了，质量极差。做工也是极其的粗糙。",
+      "createdAt": "2026-07-29T03:32:51.512Z",
+      "updatedAt": "2026-07-29T03:32:51.512Z"
     }
   ],
   "shops": [
@@ -1756,5 +1778,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-29T03:30:53.250Z"
+  "syncedAt": "2026-07-29T03:32:55.488Z"
 }
