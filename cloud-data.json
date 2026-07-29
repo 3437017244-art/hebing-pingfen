@@ -1748,7 +1748,7 @@
     },
     {
       "id": "ms60atj60w4pxf",
-      "name": "一元一串麻辣烫",
+      "name": "一元一串麻辣烫摊",
       "shopInstanceId": "ms60atj6id8ntc",
       "isBrandPlaceholder": true,
       "brand": "",
@@ -1769,7 +1769,7 @@
       "notes": "",
       "brandNotes": "",
       "createdAt": "2026-07-29T11:33:37.410Z",
-      "updatedAt": "2026-07-29T11:33:53.342Z"
+      "updatedAt": "2026-07-29T11:34:09.991Z"
     }
   ],
   "shops": [
@@ -1807,5 +1807,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-29T11:34:01.117Z"
+  "syncedAt": "2026-07-29T11:34:17.520Z"
 }
