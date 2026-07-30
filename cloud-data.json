@@ -1819,6 +1819,31 @@
       "updatedAt": "2026-07-29T23:13:42.932Z",
       "shopRating": 4,
       "brandNotes": ""
+    },
+    {
+      "id": "ms76rul88uw79x",
+      "name": "重庆小面",
+      "shopInstanceId": "ms76rul76y54nk",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "brandNotes": "",
+      "createdAt": "2026-07-30T07:22:35.804Z",
+      "updatedAt": "2026-07-30T07:22:35.804Z"
     }
   ],
   "shops": [
@@ -1856,5 +1881,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-30T07:22:12.044Z"
+  "syncedAt": "2026-07-30T07:22:41.246Z"
 }
