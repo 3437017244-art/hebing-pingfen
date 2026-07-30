@@ -1839,11 +1839,11 @@
       "weight": null,
       "singleWeight": null,
       "rating": 0,
-      "shopRating": 0,
+      "shopRating": 4.5,
       "notes": "",
-      "brandNotes": "",
+      "brandNotes": "挺好吃。量也大。但我不太爱吃面条。",
       "createdAt": "2026-07-30T07:22:35.804Z",
-      "updatedAt": "2026-07-30T07:22:51.267Z"
+      "updatedAt": "2026-07-30T09:12:51.334Z"
     }
   ],
   "shops": [
@@ -1881,5 +1881,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-30T09:11:46.327Z"
+  "syncedAt": "2026-07-30T09:13:02.415Z"
 }
