@@ -1844,6 +1844,28 @@
       "brandNotes": "挺好吃。量也大。但我不太爱吃面条。",
       "createdAt": "2026-07-30T07:22:35.804Z",
       "updatedAt": "2026-07-30T09:12:51.334Z"
+    },
+    {
+      "id": "ms7aqib4feg1a0",
+      "name": "重庆小面",
+      "shopInstanceId": "ms76rul76y54nk",
+      "brand": "",
+      "flavor": "重庆小面大份",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": 9,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 4.5,
+      "notes": "",
+      "createdAt": "2026-07-30T09:13:31.696Z",
+      "updatedAt": "2026-07-30T09:13:31.696Z"
     }
   ],
   "shops": [
@@ -1881,5 +1903,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-30T09:13:02.415Z"
+  "syncedAt": "2026-07-31T00:48:48.927Z"
 }
