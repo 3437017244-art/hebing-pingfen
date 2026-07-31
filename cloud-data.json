@@ -1866,6 +1866,28 @@
       "brandNotes": "",
       "createdAt": "2026-07-31T07:03:33.097Z",
       "updatedAt": "2026-07-31T07:04:01.550Z"
+    },
+    {
+      "id": "ms8lm7nrpwxw9e",
+      "name": "川味傻瓜小吃",
+      "shopInstanceId": "ms8lj7jdzj44dc",
+      "brand": "",
+      "flavor": "鸡丝米线",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "notes": "",
+      "createdAt": "2026-07-31T07:05:53.223Z",
+      "updatedAt": "2026-07-31T07:05:53.223Z"
     }
   ],
   "shops": [
@@ -1904,5 +1926,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-31T07:04:08.809Z"
+  "syncedAt": "2026-07-31T07:10:57.607Z"
 }
