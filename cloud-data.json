@@ -1841,6 +1841,31 @@
       "notes": "",
       "createdAt": "2026-07-30T09:13:31.696Z",
       "updatedAt": "2026-07-30T09:13:31.696Z"
+    },
+    {
+      "id": "ms8lj7jdvf1y5w",
+      "name": "川味傻瓜小吃",
+      "shopInstanceId": "ms8lj7jdzj44dc",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "brandNotes": "",
+      "createdAt": "2026-07-31T07:03:33.097Z",
+      "updatedAt": "2026-07-31T07:03:33.097Z"
     }
   ],
   "shops": [
@@ -1879,5 +1904,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-31T07:03:07.369Z"
+  "syncedAt": "2026-07-31T07:03:40.617Z"
 }
