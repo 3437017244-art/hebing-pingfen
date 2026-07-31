@@ -1581,31 +1581,6 @@
       "updatedAt": "2026-07-27T01:57:54.358Z"
     },
     {
-      "id": "ms3dpydvp9g2j5",
-      "name": "人",
-      "shopInstanceId": "ms3dpydvtmj5pc",
-      "isBrandPlaceholder": true,
-      "brand": "",
-      "flavor": "",
-      "category": "",
-      "storageLocation": "",
-      "quantity": null,
-      "shopName": "",
-      "shopLocation": "",
-      "shopMapAddress": "",
-      "shopLng": null,
-      "shopLat": null,
-      "price": null,
-      "weight": null,
-      "singleWeight": null,
-      "rating": 0,
-      "shopRating": 0,
-      "notes": "",
-      "brandNotes": "",
-      "createdAt": "2026-07-27T15:26:00.019Z",
-      "updatedAt": "2026-07-27T15:26:00.019Z"
-    },
-    {
       "id": "ms3wjhjbkx9mv8",
       "name": "民间水煎包",
       "shopInstanceId": "ms2kgsypcxcfuw",
@@ -1899,9 +1874,10 @@
       "mrrlt4lo5n0vbs": "2026-07-19T11:09:02.236Z",
       "mrrp22vkhjhcoj": "2026-07-22T10:10:25.961Z",
       "mrn2ijz6c4yiib": "2026-07-22T10:14:23.437Z",
-      "ms0dtkv4ee5lvx": "2026-07-25T13:05:50.743Z"
+      "ms0dtkv4ee5lvx": "2026-07-25T13:05:50.743Z",
+      "ms3dpydvp9g2j5": "2026-07-31T02:43:11.258Z"
     },
     "shops": {}
   },
-  "syncedAt": "2026-07-31T02:42:48.560Z"
+  "syncedAt": "2026-07-31T02:43:14.506Z"
 }
