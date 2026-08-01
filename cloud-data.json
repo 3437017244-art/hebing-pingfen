@@ -344,7 +344,7 @@
     },
     {
       "id": "mrn2g6pv7jiqjv",
-      "name": "李记板面",
+      "name": "孙记板面",
       "brand": "",
       "flavor": "板面",
       "category": "",
@@ -357,11 +357,13 @@
       "singleWeight": null,
       "rating": 5,
       "createdAt": "2026-07-16T05:26:09.667Z",
-      "updatedAt": "2026-07-19T06:37:55.219Z",
+      "updatedAt": "2026-08-01T02:17:33.585Z",
       "shopLng": 114.507968,
       "shopLat": 36.861038,
       "shopMapAddress": "河北省邢台市沙河市褡裢街道建设路美家美户墙布窗帘软装工作室",
-      "shopRating": 5
+      "shopRating": 5,
+      "shopInstanceId": "legacy:%E6%9D%8E%E8%AE%B0%E6%9D%BF%E9%9D%A2",
+      "brandNotes": ""
     },
     {
       "id": "mrn4te7yad77cb",
@@ -1928,5 +1930,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-08-01T02:14:36.785Z"
+  "syncedAt": "2026-08-01T02:17:35.837Z"
 }
