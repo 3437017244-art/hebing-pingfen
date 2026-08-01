@@ -1939,6 +1939,28 @@
       "notes": "",
       "createdAt": "2026-08-01T13:10:54.779Z",
       "updatedAt": "2026-08-01T13:10:54.779Z"
+    },
+    {
+      "id": "msae4t6kemzuzf",
+      "name": "孙家驴肉火烧",
+      "shopInstanceId": "msae2q7p2zld79",
+      "brand": "",
+      "flavor": "疙瘩汤",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 3,
+      "notes": "吃的还行。贵了",
+      "createdAt": "2026-08-01T13:11:56.348Z",
+      "updatedAt": "2026-08-01T13:11:56.348Z"
     }
   ],
   "shops": [
@@ -1977,5 +1999,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-08-01T13:11:09.844Z"
+  "syncedAt": "2026-08-01T13:12:03.175Z"
 }
