@@ -1905,9 +1905,9 @@
       "quantity": null,
       "shopName": "",
       "shopLocation": "",
-      "shopMapAddress": "",
-      "shopLng": null,
-      "shopLat": null,
+      "shopMapAddress": "河北省邢台市沙河市桥东街道孙家河间驴肉火烧店阳光凤凰苑",
+      "shopLng": 114.510069,
+      "shopLat": 36.863563,
       "price": null,
       "weight": null,
       "singleWeight": null,
@@ -1916,7 +1916,7 @@
       "notes": "",
       "brandNotes": "",
       "createdAt": "2026-08-01T13:10:19.189Z",
-      "updatedAt": "2026-08-01T13:10:19.189Z"
+      "updatedAt": "2026-08-01T13:10:38.995Z"
     }
   ],
   "shops": [
@@ -1955,5 +1955,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-08-01T13:10:28.887Z"
+  "syncedAt": "2026-08-01T13:10:53.213Z"
 }
