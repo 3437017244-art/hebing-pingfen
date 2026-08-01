@@ -1892,6 +1892,31 @@
       "updatedAt": "2026-07-31T07:11:36.035Z",
       "shopRating": 5,
       "brandNotes": ""
+    },
+    {
+      "id": "msae2q7pk9c3ay",
+      "name": "孙家驴肉火烧",
+      "shopInstanceId": "msae2q7p2zld79",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "brandNotes": "",
+      "createdAt": "2026-08-01T13:10:19.189Z",
+      "updatedAt": "2026-08-01T13:10:19.189Z"
     }
   ],
   "shops": [
@@ -1930,5 +1955,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-08-01T13:09:52.189Z"
+  "syncedAt": "2026-08-01T13:10:28.887Z"
 }
