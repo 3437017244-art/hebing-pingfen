@@ -1961,6 +1961,28 @@
       "notes": "吃的还行。贵了",
       "createdAt": "2026-08-01T13:11:56.348Z",
       "updatedAt": "2026-08-01T13:11:56.348Z"
+    },
+    {
+      "id": "msae586d7f6jhb",
+      "name": "孙家驴肉火烧",
+      "shopInstanceId": "msae2q7p2zld79",
+      "brand": "",
+      "flavor": "驴肉焖子火烧",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "notes": "",
+      "createdAt": "2026-08-01T13:12:15.781Z",
+      "updatedAt": "2026-08-01T13:12:15.781Z"
     }
   ],
   "shops": [
@@ -1999,5 +2021,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-08-01T13:12:03.175Z"
+  "syncedAt": "2026-08-01T13:22:20.675Z"
 }
