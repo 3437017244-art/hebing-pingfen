@@ -1912,11 +1912,11 @@
       "weight": null,
       "singleWeight": null,
       "rating": 0,
-      "shopRating": 0,
+      "shopRating": 3.5,
       "notes": "",
       "brandNotes": "",
       "createdAt": "2026-08-01T13:10:19.189Z",
-      "updatedAt": "2026-08-01T13:10:38.995Z"
+      "updatedAt": "2026-08-01T13:23:57.479Z"
     },
     {
       "id": "msae3hob723x52",
@@ -1938,7 +1938,9 @@
       "rating": 4,
       "notes": "",
       "createdAt": "2026-08-01T13:10:54.779Z",
-      "updatedAt": "2026-08-01T13:23:46.210Z"
+      "updatedAt": "2026-08-01T13:23:57.479Z",
+      "shopRating": 3.5,
+      "brandNotes": ""
     },
     {
       "id": "msae4t6kemzuzf",
@@ -1960,7 +1962,9 @@
       "rating": 3,
       "notes": "吃的还行。贵了",
       "createdAt": "2026-08-01T13:11:56.348Z",
-      "updatedAt": "2026-08-01T13:11:56.348Z"
+      "updatedAt": "2026-08-01T13:23:57.479Z",
+      "shopRating": 3.5,
+      "brandNotes": ""
     },
     {
       "id": "msae586d7f6jhb",
@@ -1982,7 +1986,9 @@
       "rating": 3.5,
       "notes": "贵了",
       "createdAt": "2026-08-01T13:12:15.781Z",
-      "updatedAt": "2026-08-01T13:23:25.119Z"
+      "updatedAt": "2026-08-01T13:23:57.479Z",
+      "shopRating": 3.5,
+      "brandNotes": ""
     }
   ],
   "shops": [
@@ -2021,5 +2027,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-08-01T13:23:51.581Z"
+  "syncedAt": "2026-08-01T13:24:02.514Z"
 }
