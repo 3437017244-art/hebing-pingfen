@@ -2101,10 +2101,10 @@
       "price": null,
       "weight": null,
       "singleWeight": null,
-      "rating": 0,
+      "rating": 3,
       "notes": "",
       "createdAt": "2026-08-02T00:16:04.013Z",
-      "updatedAt": "2026-08-02T00:16:04.013Z"
+      "updatedAt": "2026-08-02T00:19:28.719Z"
     },
     {
       "id": "msb1x85qo0ub7w",
@@ -2165,5 +2165,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-08-02T00:19:11.655Z"
+  "syncedAt": "2026-08-02T00:19:32.934Z"
 }
