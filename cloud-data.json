@@ -2061,6 +2061,28 @@
       "brandNotes": "",
       "createdAt": "2026-08-02T00:15:30.364Z",
       "updatedAt": "2026-08-02T00:15:45.658Z"
+    },
+    {
+      "id": "msb1upc89dpw4q",
+      "name": "英姐三餐",
+      "shopInstanceId": "msb1u5vgiq6e9c",
+      "brand": "",
+      "flavor": "豆腐脑",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "notes": "",
+      "createdAt": "2026-08-02T00:15:55.592Z",
+      "updatedAt": "2026-08-02T00:15:55.592Z"
     }
   ],
   "shops": [
@@ -2099,5 +2121,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-08-02T00:15:49.230Z"
+  "syncedAt": "2026-08-02T00:15:58.998Z"
 }
