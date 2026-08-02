@@ -2058,11 +2058,11 @@
       "weight": null,
       "singleWeight": null,
       "rating": 0,
-      "shopRating": 0,
+      "shopRating": 3.5,
       "notes": "",
       "brandNotes": "",
       "createdAt": "2026-08-02T00:15:30.364Z",
-      "updatedAt": "2026-08-02T00:15:45.658Z"
+      "updatedAt": "2026-08-02T00:23:59.498Z"
     },
     {
       "id": "msb1upc89dpw4q",
@@ -2084,7 +2084,9 @@
       "rating": 0,
       "notes": "",
       "createdAt": "2026-08-02T00:15:55.592Z",
-      "updatedAt": "2026-08-02T00:15:55.592Z"
+      "updatedAt": "2026-08-02T00:23:59.498Z",
+      "shopRating": 3.5,
+      "brandNotes": ""
     },
     {
       "id": "msb1uvu5hggx9p",
@@ -2106,7 +2108,9 @@
       "rating": 3,
       "notes": "",
       "createdAt": "2026-08-02T00:16:04.013Z",
-      "updatedAt": "2026-08-02T00:19:28.719Z"
+      "updatedAt": "2026-08-02T00:23:59.498Z",
+      "shopRating": 3.5,
+      "brandNotes": ""
     },
     {
       "id": "msb1x85qo0ub7w",
@@ -2128,7 +2132,9 @@
       "rating": 3,
       "notes": "",
       "createdAt": "2026-08-02T00:17:53.294Z",
-      "updatedAt": "2026-08-02T00:17:53.294Z"
+      "updatedAt": "2026-08-02T00:23:59.498Z",
+      "shopRating": 3.5,
+      "brandNotes": ""
     }
   ],
   "shops": [
@@ -2167,5 +2173,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-08-02T00:23:29.240Z"
+  "syncedAt": "2026-08-02T00:24:01.632Z"
 }
