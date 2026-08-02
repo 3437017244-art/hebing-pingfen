@@ -2009,11 +2009,11 @@
       "weight": null,
       "singleWeight": null,
       "rating": 0,
-      "shopRating": 0,
+      "shopRating": 3.5,
       "notes": "",
       "brandNotes": "",
       "createdAt": "2026-08-02T00:08:00.706Z",
-      "updatedAt": "2026-08-02T00:09:17.827Z"
+      "updatedAt": "2026-08-02T00:23:27.387Z"
     },
     {
       "id": "msb1libha9hbaa",
@@ -2035,7 +2035,9 @@
       "rating": 0,
       "notes": "",
       "createdAt": "2026-08-02T00:08:46.589Z",
-      "updatedAt": "2026-08-02T00:09:17.827Z"
+      "updatedAt": "2026-08-02T00:23:27.387Z",
+      "shopRating": 3.5,
+      "brandNotes": ""
     },
     {
       "id": "msb1u5vgku295y",
@@ -2165,5 +2167,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-08-02T00:22:52.549Z"
+  "syncedAt": "2026-08-02T00:23:29.240Z"
 }
