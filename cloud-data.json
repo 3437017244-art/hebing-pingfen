@@ -2105,6 +2105,28 @@
       "notes": "",
       "createdAt": "2026-08-02T00:16:04.013Z",
       "updatedAt": "2026-08-02T00:16:04.013Z"
+    },
+    {
+      "id": "msb1x85qo0ub7w",
+      "name": "英姐三餐",
+      "shopInstanceId": "msb1u5vgiq6e9c",
+      "brand": "",
+      "flavor": "猪肉大葱水煎包",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": 1.5,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 3,
+      "notes": "",
+      "createdAt": "2026-08-02T00:17:53.294Z",
+      "updatedAt": "2026-08-02T00:17:53.294Z"
     }
   ],
   "shops": [
@@ -2143,5 +2165,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-08-02T00:16:07.550Z"
+  "syncedAt": "2026-08-02T00:17:56.834Z"
 }
