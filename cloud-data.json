@@ -2014,6 +2014,28 @@
       "brandNotes": "",
       "createdAt": "2026-08-02T00:08:00.706Z",
       "updatedAt": "2026-08-02T00:08:21.296Z"
+    },
+    {
+      "id": "msb1libha9hbaa",
+      "name": "石头饼摊",
+      "shopInstanceId": "msb1kiwxrq91su",
+      "brand": "",
+      "flavor": "石头饼",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "notes": "",
+      "createdAt": "2026-08-02T00:08:46.589Z",
+      "updatedAt": "2026-08-02T00:08:46.589Z"
     }
   ],
   "shops": [
@@ -2052,5 +2074,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-08-02T00:08:23.209Z"
+  "syncedAt": "2026-08-02T00:08:50.095Z"
 }
