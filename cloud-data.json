@@ -2083,6 +2083,28 @@
       "notes": "",
       "createdAt": "2026-08-02T00:15:55.592Z",
       "updatedAt": "2026-08-02T00:15:55.592Z"
+    },
+    {
+      "id": "msb1uvu5hggx9p",
+      "name": "英姐三餐",
+      "shopInstanceId": "msb1u5vgiq6e9c",
+      "brand": "",
+      "flavor": "糖糕",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "notes": "",
+      "createdAt": "2026-08-02T00:16:04.013Z",
+      "updatedAt": "2026-08-02T00:16:04.013Z"
     }
   ],
   "shops": [
@@ -2121,5 +2143,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-08-02T00:15:58.998Z"
+  "syncedAt": "2026-08-02T00:16:07.550Z"
 }
