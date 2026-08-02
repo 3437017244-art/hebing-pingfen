@@ -2002,9 +2002,9 @@
       "quantity": null,
       "shopName": "",
       "shopLocation": "",
-      "shopMapAddress": "",
-      "shopLng": null,
-      "shopLat": null,
+      "shopMapAddress": "河北省邢台市沙河市褡裢街道冶金路美家美户墙布窗帘软装工作室",
+      "shopLng": 114.511734,
+      "shopLat": 36.861292,
       "price": null,
       "weight": null,
       "singleWeight": null,
@@ -2013,7 +2013,7 @@
       "notes": "",
       "brandNotes": "",
       "createdAt": "2026-08-02T00:08:00.706Z",
-      "updatedAt": "2026-08-02T00:08:21.296Z"
+      "updatedAt": "2026-08-02T00:09:17.827Z"
     },
     {
       "id": "msb1libha9hbaa",
@@ -2026,16 +2026,16 @@
       "quantity": null,
       "shopName": "",
       "shopLocation": "",
-      "shopMapAddress": "",
-      "shopLng": null,
-      "shopLat": null,
+      "shopMapAddress": "河北省邢台市沙河市褡裢街道冶金路美家美户墙布窗帘软装工作室",
+      "shopLng": 114.511734,
+      "shopLat": 36.861292,
       "price": null,
       "weight": null,
       "singleWeight": null,
       "rating": 0,
       "notes": "",
       "createdAt": "2026-08-02T00:08:46.589Z",
-      "updatedAt": "2026-08-02T00:08:46.589Z"
+      "updatedAt": "2026-08-02T00:09:17.827Z"
     }
   ],
   "shops": [
@@ -2074,5 +2074,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-08-02T00:08:50.095Z"
+  "syncedAt": "2026-08-02T00:14:31.332Z"
 }
