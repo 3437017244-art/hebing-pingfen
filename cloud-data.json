@@ -2036,6 +2036,31 @@
       "notes": "",
       "createdAt": "2026-08-02T00:08:46.589Z",
       "updatedAt": "2026-08-02T00:09:17.827Z"
+    },
+    {
+      "id": "msb1u5vgku295y",
+      "name": "英姐三餐",
+      "shopInstanceId": "msb1u5vgiq6e9c",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "brandNotes": "",
+      "createdAt": "2026-08-02T00:15:30.364Z",
+      "updatedAt": "2026-08-02T00:15:30.364Z"
     }
   ],
   "shops": [
@@ -2074,5 +2099,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-08-02T00:14:31.332Z"
+  "syncedAt": "2026-08-02T00:15:36.483Z"
 }
