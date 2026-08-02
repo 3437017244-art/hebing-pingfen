@@ -1992,7 +1992,7 @@
     },
     {
       "id": "msb1kiwymzsdlj",
-      "name": "石头饼",
+      "name": "石头饼摊",
       "shopInstanceId": "msb1kiwxrq91su",
       "isBrandPlaceholder": true,
       "brand": "",
@@ -2013,7 +2013,7 @@
       "notes": "",
       "brandNotes": "",
       "createdAt": "2026-08-02T00:08:00.706Z",
-      "updatedAt": "2026-08-02T00:08:00.706Z"
+      "updatedAt": "2026-08-02T00:08:21.296Z"
     }
   ],
   "shops": [
@@ -2052,5 +2052,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-08-02T00:08:04.199Z"
+  "syncedAt": "2026-08-02T00:08:23.209Z"
 }
