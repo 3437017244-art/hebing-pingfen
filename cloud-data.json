@@ -2155,11 +2155,11 @@
       "weight": null,
       "singleWeight": null,
       "rating": 0,
-      "shopRating": 0,
+      "shopRating": 2,
       "notes": "",
       "brandNotes": "",
       "createdAt": "2026-08-03T01:50:08.877Z",
-      "updatedAt": "2026-08-03T01:50:08.877Z"
+      "updatedAt": "2026-08-03T01:56:01.732Z"
     },
     {
       "id": "msckuycd6kmv77",
@@ -2181,7 +2181,9 @@
       "rating": 2,
       "notes": "扎一些鱼丸火腿肠，还可以。 但是真的用来做一些鸡肉牛肉。效果很差，非常差。不知道是不是空气炸锅本身就这样，我感觉空气炸锅效果不好。",
       "createdAt": "2026-08-03T01:55:46.141Z",
-      "updatedAt": "2026-08-03T01:55:46.141Z"
+      "updatedAt": "2026-08-03T01:56:01.732Z",
+      "shopRating": 2,
+      "brandNotes": ""
     }
   ],
   "shops": [
@@ -2220,5 +2222,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-08-03T01:55:54.806Z"
+  "syncedAt": "2026-08-03T01:56:09.821Z"
 }
