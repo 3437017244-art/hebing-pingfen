@@ -2197,9 +2197,9 @@
       "quantity": null,
       "shopName": "",
       "shopLocation": "",
-      "shopMapAddress": "",
-      "shopLng": null,
-      "shopLat": null,
+      "shopMapAddress": "114.509026, 36.858265",
+      "shopLng": 114.509026,
+      "shopLat": 36.858265,
       "price": null,
       "weight": null,
       "singleWeight": null,
@@ -2208,7 +2208,7 @@
       "notes": "",
       "brandNotes": "",
       "createdAt": "2026-08-03T05:56:37.472Z",
-      "updatedAt": "2026-08-03T05:56:37.472Z"
+      "updatedAt": "2026-08-03T05:57:34.128Z"
     }
   ],
   "shops": [
@@ -2247,5 +2247,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-08-03T05:56:51.378Z"
+  "syncedAt": "2026-08-03T05:57:38.696Z"
 }
