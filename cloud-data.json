@@ -2282,6 +2282,28 @@
       "brandNotes": "",
       "createdAt": "2026-08-03T06:34:07.914Z",
       "updatedAt": "2026-08-03T06:34:29.158Z"
+    },
+    {
+      "id": "mscwbsl4htv88q",
+      "name": "鑫盛达五金电料",
+      "shopInstanceId": "mscusxih7cxubn",
+      "brand": "",
+      "flavor": "四分内丝堵帽",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": 2,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 2.5,
+      "notes": "网上买更便宜。老板人还是非常不错的。",
+      "createdAt": "2026-08-03T07:16:47.608Z",
+      "updatedAt": "2026-08-03T07:16:47.608Z"
     }
   ],
   "shops": [
@@ -2320,5 +2342,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-08-03T07:15:44.753Z"
+  "syncedAt": "2026-08-03T07:16:51.480Z"
 }
