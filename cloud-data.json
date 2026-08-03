@@ -2227,10 +2227,10 @@
       "price": null,
       "weight": null,
       "singleWeight": null,
-      "rating": 0,
+      "rating": 5,
       "notes": "",
       "createdAt": "2026-08-03T05:58:37.895Z",
-      "updatedAt": "2026-08-03T05:58:37.895Z"
+      "updatedAt": "2026-08-03T06:08:37.853Z"
     },
     {
       "id": "msctjgbyrfjdk0",
@@ -2291,5 +2291,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-08-03T06:08:02.535Z"
+  "syncedAt": "2026-08-03T06:16:44.128Z"
 }
