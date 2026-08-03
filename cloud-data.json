@@ -2270,9 +2270,9 @@
       "quantity": null,
       "shopName": "",
       "shopLocation": "",
-      "shopMapAddress": "",
-      "shopLng": null,
-      "shopLat": null,
+      "shopMapAddress": "河北省邢台市沙河市褡裢街道聚英路398号",
+      "shopLng": 114.507271,
+      "shopLat": 36.858349,
       "price": null,
       "weight": null,
       "singleWeight": null,
@@ -2281,7 +2281,7 @@
       "notes": "",
       "brandNotes": "",
       "createdAt": "2026-08-03T06:34:07.914Z",
-      "updatedAt": "2026-08-03T06:34:07.914Z"
+      "updatedAt": "2026-08-03T06:34:29.158Z"
     }
   ],
   "shops": [
@@ -2320,5 +2320,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-08-03T06:34:22.269Z"
+  "syncedAt": "2026-08-03T06:34:36.340Z"
 }
