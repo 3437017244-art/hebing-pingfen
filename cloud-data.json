@@ -2257,6 +2257,31 @@
       "updatedAt": "2026-08-03T06:17:32.543Z",
       "shopRating": 4,
       "brandNotes": ""
+    },
+    {
+      "id": "mscusxii5l545t",
+      "name": "鑫盛达五金电料",
+      "shopInstanceId": "mscusxih7cxubn",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "brandNotes": "",
+      "createdAt": "2026-08-03T06:34:07.914Z",
+      "updatedAt": "2026-08-03T06:34:07.914Z"
     }
   ],
   "shops": [
@@ -2295,5 +2320,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-08-03T06:33:47.047Z"
+  "syncedAt": "2026-08-03T06:34:22.269Z"
 }
