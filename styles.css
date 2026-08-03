@@ -1377,6 +1377,8 @@ button.editing {
 .item-card.brand-card .item-header-rating {
   grid-column: 3;
   justify-self: end;
+  position: relative;
+  z-index: 1;
 }
 
 .brand-stock-preview {
@@ -1395,6 +1397,31 @@ button.editing {
   flex: unset;
   justify-content: flex-start;
   padding: 0;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* 电脑端长库存文案不得盖住右侧评分（与 905a5ed / 379240d 意图一致） */
+.item-card.brand-card .brand-stock-chip {
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.item-card.brand-card .brand-stock-name,
+.item-card.brand-card .brand-stock-qty,
+.item-card.brand-card .brand-stock-sep {
+  flex-shrink: 0;
+}
+
+.item-card.brand-card .brand-stock-location {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .item-card.no-stock .brand-stock-preview {
