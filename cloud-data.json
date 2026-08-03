@@ -2166,7 +2166,7 @@
       "name": "扬子",
       "shopInstanceId": "mscknq3xq5d6xg",
       "brand": "",
-      "flavor": "BW-2012   5升机械双旋钮款",
+      "flavor": "BW-2012   5升机械双旋钮款空气炸锅",
       "category": "",
       "storageLocation": "",
       "quantity": null,
@@ -2181,7 +2181,7 @@
       "rating": 2,
       "notes": "扎一些鱼丸火腿肠，还可以。 但是真的用来做一些鸡肉牛肉。效果很差，非常差。不知道是不是空气炸锅本身就这样，我感觉空气炸锅效果不好。",
       "createdAt": "2026-08-03T01:55:46.141Z",
-      "updatedAt": "2026-08-03T01:56:01.732Z",
+      "updatedAt": "2026-08-03T01:56:36.642Z",
       "shopRating": 2,
       "brandNotes": ""
     }
@@ -2222,5 +2222,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-08-03T01:56:09.821Z"
+  "syncedAt": "2026-08-03T01:56:42.595Z"
 }
