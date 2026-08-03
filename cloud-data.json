@@ -2306,6 +2306,31 @@
       "updatedAt": "2026-08-03T07:16:57.562Z",
       "shopRating": 3,
       "brandNotes": ""
+    },
+    {
+      "id": "msdayj93zo20nu",
+      "name": "CURSOR",
+      "shopInstanceId": "msdayj92q358lv",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "brandNotes": "",
+      "createdAt": "2026-08-03T14:06:23.223Z",
+      "updatedAt": "2026-08-03T14:06:23.223Z"
     }
   ],
   "shops": [
@@ -2344,5 +2369,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-08-03T14:06:11.828Z"
+  "syncedAt": "2026-08-03T14:06:33.985Z"
 }
