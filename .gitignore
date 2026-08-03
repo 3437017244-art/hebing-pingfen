@@ -6,3 +6,8 @@ extracted-backup.json
 extract-firefox-data.py
 inspect-firefox-data.py
 import-to-browser.js
+node_modules/
+dist-desktop/
+EXE/
+*.exe
+*.blockmap

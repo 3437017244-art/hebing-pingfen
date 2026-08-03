@@ -15,7 +15,7 @@
   <div class="page-shell">
     <header class="header">
       <h1>手机与电脑双向同步</h1>
-      <p class="subtitle">电脑和手机各保存一次 GitHub 令牌后，两边登记的数据会自动互相同步。</p>
+      <p class="subtitle">电脑和手机各保存一次 Gitee 令牌后，两边登记的数据会自动互相同步。</p>
       <nav class="page-nav" aria-label="功能导航">
         <a href="index.html">查一查</a>
         <span class="page-nav-sep" aria-hidden="true">·</span>
@@ -26,18 +26,17 @@
     </header>
 
     <div class="page-card" id="github-token-card">
-      <h2>第一步：保存 GitHub 令牌（每台设备做一次）</h2>
+      <h2>第一步：保存 Gitee 令牌（每台设备做一次）</h2>
       <p class="field-hint">令牌只保存在本机浏览器，不会写入网站代码。电脑、手机，以及本地调试地址（<code>127.0.0.1</code>）与线上网站，都要<strong>各保存一次</strong>；保存后打开页面、登记数据都会自动双向同步，一般不用再手动点同步。</p>
       <ol class="step-list">
-        <li>电脑浏览器打开 <a href="https://github.com/settings/tokens?type=beta" target="_blank" rel="noopener">GitHub 令牌设置</a>（需登录 GitHub）。</li>
-        <li>点 <strong>Generate new token</strong>，名称随意，过期时间选 <strong>No expiration</strong> 或 90 天。</li>
-        <li>Repository access 选 <strong>Only select repositories</strong> → 勾选 <strong>hebing-pingfen</strong>。</li>
-        <li>Permissions 里 <strong>Contents</strong> 选 <strong>Read and write</strong>，生成并复制令牌（只显示一次）。</li>
+        <li>电脑浏览器打开 <a href="https://gitee.com/profile/personal_access_tokens" target="_blank" rel="noopener">Gitee 私人令牌</a>（需登录 Gitee）。</li>
+        <li>点 <strong>生成新令牌</strong>，描述随意，勾选 <strong>projects</strong>（仓库读写）权限。</li>
+        <li>生成并复制令牌（只显示一次）。</li>
         <li>在下方粘贴并保存；手机打开本页同样操作一次。</li>
       </ol>
       <div class="form-row">
-        <label for="github-token-input">GitHub 令牌</label>
-        <input type="password" id="github-token-input" class="sync-code-input" placeholder="github_pat_..." autocomplete="off">
+        <label for="github-token-input">Gitee 令牌</label>
+        <input type="password" id="github-token-input" class="sync-code-input" placeholder="粘贴 Gitee 私人令牌" autocomplete="off">
       </div>
       <div class="page-actions">
         <button type="button" class="btn btn-primary" id="save-github-token-btn">保存令牌</button>
@@ -45,7 +44,7 @@
         <button type="button" class="btn btn-secondary" id="copy-github-token-btn">复制令牌</button>
       </div>
       <div id="saved-github-token-block" class="mt-md">
-        <p class="field-hint">本机最近一次保存的令牌（仅当前浏览器可见；本地文件与 GitHub 网页互不相通）：</p>
+        <p class="field-hint">本机最近一次保存的令牌（仅当前浏览器可见；本地文件与 Gitee 网页互不相通）：</p>
         <div class="sync-code-display" id="saved-github-token-display">尚未保存令牌</div>
       </div>
       <div id="github-token-result" class="result-box" hidden></div>
@@ -69,7 +68,7 @@
 
     <div class="page-card" id="site-sync-card" hidden>
       <h2>旧版 jsonblob 同步码（可忽略）</h2>
-      <p class="field-hint">当前使用 GitHub 云同步，一般无需再管同步码。</p>
+      <p class="field-hint">当前使用 Gitee 云同步，一般无需再管同步码。</p>
       <div class="sync-code-display" id="site-sync-code-display"></div>
     </div>
 
@@ -88,7 +87,7 @@
 
     <div class="page-card">
       <h2>第二步：立即同步</h2>
-      <p class="field-hint">合并云端与本机数据（相同记录保留较新修改），再上传回 GitHub。登记后约 2 秒也会自动同步。</p>
+      <p class="field-hint">合并云端与本机数据（相同记录保留较新修改），再上传回 Gitee。登记后约 2 秒也会自动同步。</p>
       <div class="page-actions">
         <button type="button" class="btn btn-primary" id="sync-now-btn">立即同步</button>
         <a class="btn btn-secondary" href="index.html">返回查一查</a>
@@ -106,7 +105,7 @@
     <div class="page-card">
       <h2>使用说明</h2>
       <ol class="step-list">
-        <li>电脑、手机各在本页保存一次 GitHub 令牌。</li>
+        <li>电脑、手机各在本页保存一次 Gitee 令牌。</li>
         <li>任意一端登记或修改后，约 2 秒自动上传；另一端打开或刷新网页即可看到。</li>
         <li>也可随时点「立即同步」手动拉取最新数据。</li>
         <li>令牌相当于钥匙，请勿分享给他人。</li>
@@ -152,7 +151,7 @@
 
       function formatSource(source) {
         if (window.HebingSync?.formatSyncSource) return HebingSync.formatSyncSource(source);
-        if (source === 'bundled') return 'GitHub 网页备份';
+        if (source === 'bundled') return 'Gitee 网页备份';
         if (source === 'jsonblob') return 'jsonblob 云端';
         return '云端';
       }
@@ -164,7 +163,7 @@
           (result.source ? '（来源：' + formatSource(result.source) + '）' : '');
         if (result.uploadWarning) {
           html += '<br><span class="field-hint">' + result.uploadWarning + '</span>';
-        } else if (window.HEBING_SITE?.syncMode === 'github-api') {
+        } else if (window.HEBING_SITE?.syncMode === 'gitee-api' || window.HEBING_SITE?.syncMode === 'github-api') {
           html += '<br><span class="field-hint">另一端打开或刷新网页即可看到最新登记。</span>';
         }
         return html;
@@ -183,8 +182,8 @@
 
         if (HebingSync.isGithubApiMode && HebingSync.isGithubApiMode()) {
           document.getElementById('sync-status-hint').textContent = HebingSync.hasGithubToken()
-            ? '已保存 GitHub 令牌，本机可登记并双向同步。'
-            : '尚未保存 GitHub 令牌，请先完成第一步。';
+            ? '已保存 Gitee 令牌，本机可登记并双向同步。'
+            : '尚未保存 Gitee 令牌，请先完成第一步。';
           return;
         }
 
@@ -219,11 +218,11 @@
       document.getElementById('save-github-token-btn').addEventListener('click', function () {
         const token = HebingSync.setGithubToken(githubTokenInput.value);
         if (!token) {
-          showBox(githubTokenResult, 'error', '请粘贴 GitHub 令牌。');
+          showBox(githubTokenResult, 'error', '请粘贴 Gitee 令牌。');
           return;
         }
         githubTokenInput.value = '';
-        showBox(githubTokenResult, '', 'GitHub 令牌已保存到本机。可点「立即同步」测试。');
+        showBox(githubTokenResult, '', 'Gitee 令牌已保存到本机。可点「立即同步」测试。');
         refreshSavedTokenDisplay();
         updateStats();
         updateRemoteStats();
@@ -232,7 +231,7 @@
       document.getElementById('clear-github-token-btn').addEventListener('click', function () {
         HebingSync.setGithubToken('');
         githubTokenInput.value = '';
-        showBox(githubTokenResult, 'info', '已清除本机 GitHub 令牌。');
+        showBox(githubTokenResult, 'info', '已清除本机 Gitee 令牌。');
         refreshSavedTokenDisplay();
         updateStats();
       });

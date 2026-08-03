@@ -3362,3 +3362,17 @@ body.amap-browse-open {
     height: min(94vh, 100dvh);
   }
 }
+
+/* 电脑版：隐藏滚动条，滚轮 / 触控板 / 键盘仍可滚动 */
+html.desktop-app,
+html.desktop-app * {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html.desktop-app::-webkit-scrollbar,
+html.desktop-app *::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none;
+}

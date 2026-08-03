@@ -60,7 +60,7 @@
             after.shops +
             ' 家店。' +
             (result?.needsToken
-              ? ' 尚未保存 GitHub 令牌：已能自动拉取，但本机新改动还不会上传；请到「云端同步」保存一次令牌。'
+              ? ' 尚未保存 Gitee 令牌：已能自动拉取，但本机新改动还不会上传；请到「云端同步」保存一次令牌。'
               : ' 已具备双向同步能力。');
         } catch (err) {
           status.textContent = '合并失败：' + (err && err.message ? err.message : err);

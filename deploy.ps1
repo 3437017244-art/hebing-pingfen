@@ -1,11 +1,10 @@
-# 一键上传网页到 GitHub Pages
+# 一键上传：网页 → GitHub Pages；同步数据仓库 → Gitee（覆盖旧数据）
 # 用法：.\deploy.ps1
 # 可选：.\deploy.ps1 -Message "修复搜索问题"
 #
 # 代理说明：会自动检测 127.0.0.1:33210
 # - 开着代理 → 走代理推送
-# - 没开代理 → 临时关闭 Git 里写死的 GitHub 代理再直连
-# 这样代理开/关都能方便部署（直连不通时仍需打开代理）
+# - 没开代理 → 临时关闭 Git 里写死的代理再直连
 
 param(
   [string]$Message = "更新在线版网页",
@@ -54,7 +53,7 @@ function Test-LocalProxyPort {
   }
 }
 
-function Invoke-GitHubPush {
+function Invoke-GitPush {
   param(
     [string]$Remote = "origin",
     [string]$Branch = "main"
@@ -66,14 +65,18 @@ function Invoke-GitHubPush {
     & git `
       -c "http.https://github.com.proxy=$proxyUrl" `
       -c "https.https://github.com.proxy=$proxyUrl" `
+      -c "http.https://gitee.com.proxy=$proxyUrl" `
+      -c "https.https://gitee.com.proxy=$proxyUrl" `
       push $Remote $Branch
     return $LASTEXITCODE
   }
 
-  Write-Host "未检测到本地代理，直连推送（忽略 Git 里写死的 GitHub 代理）…" -ForegroundColor Cyan
+  Write-Host "未检测到本地代理，直连推送（忽略 Git 里写死的代理）…" -ForegroundColor Cyan
   & git `
     -c "http.https://github.com.proxy=" `
     -c "https.https://github.com.proxy=" `
+    -c "http.https://gitee.com.proxy=" `
+    -c "https.https://gitee.com.proxy=" `
     -c "http.proxy=" `
     -c "https.proxy=" `
     push $Remote $Branch
@@ -141,6 +144,13 @@ function Update-CloudDataFile {
     return
   }
 
+  # gitee-api 模式下以仓库内 cloud-data.json 为准，禁止被失效的 jsonblob 覆盖
+  $syncMode = Get-SiteConfigValue "syncMode:\s*'([^']*)'"
+  if ($syncMode -eq "gitee-api" -or $syncMode -eq "github-api") {
+    Write-Host "当前为仓库云同步模式，保留现有 cloud-data.json（不覆盖登记数据）。" -ForegroundColor Cyan
+    return
+  }
+
   Write-Host "正在从 jsonblob 更新 cloud-data.json（UTF-8）…" -ForegroundColor Cyan
   & node $scriptPath
   if ($LASTEXITCODE -ne 0) {
@@ -152,6 +162,7 @@ Ensure-Git
 
 $remotes = @(git remote)
 $hasOrigin = $remotes -contains "origin"
+$hasGitee = $remotes -contains "gitee"
 
 Update-SiteVersion
 Update-CloudDataFile
@@ -163,18 +174,22 @@ if ($status) {
   git commit -m $Message
 } else {
   $aheadOnly = if ($hasOrigin) { Get-CommitsAheadOfOrigin } else { 0 }
-  if ($aheadOnly -le 0) {
+  if ($aheadOnly -le 0 -and -not $hasGitee) {
     Write-Host "没有需要上传的改动。" -ForegroundColor Yellow
     exit 0
   }
-  Write-Host "工作区无新改动，但本地还有 $aheadOnly 个提交未推送，继续上传…" -ForegroundColor Cyan
+  if ($aheadOnly -gt 0) {
+    Write-Host "工作区无新改动，但本地还有 $aheadOnly 个提交未推送，继续上传…" -ForegroundColor Cyan
+  } else {
+    Write-Host "工作区无新改动，仍会同步推送到已配置的远程仓库…" -ForegroundColor Cyan
+  }
 }
 
-$pushed = $false
+$pushedGithub = $false
 
 if ($hasOrigin) {
-  Write-Host "正在推送到 GitHub…" -ForegroundColor Cyan
-  $pushCode = Invoke-GitHubPush -Remote "origin" -Branch "main"
+  Write-Host "正在推送到 GitHub（网页 Pages）…" -ForegroundColor Cyan
+  $pushCode = Invoke-GitPush -Remote "origin" -Branch "main"
   if ($pushCode -ne 0) {
     Write-Host ""
     Write-Host "推送到 GitHub 失败。" -ForegroundColor Yellow
@@ -183,30 +198,45 @@ if ($hasOrigin) {
     Write-Host ""
     exit 1
   }
-  $pushed = $true
+  $pushedGithub = $true
 } else {
   Write-Host ""
-  Write-Host "尚未配置 GitHub 远程仓库。请按 在线部署.html 里的步骤执行：" -ForegroundColor Yellow
+  Write-Host "尚未配置 GitHub 远程仓库 origin。" -ForegroundColor Yellow
   Write-Host "  git remote add origin https://github.com/你的用户名/hebing-pingfen.git" -ForegroundColor Yellow
-  Write-Host "  git push -u origin main" -ForegroundColor Yellow
   Write-Host ""
 }
 
-if (-not $pushed) {
-  Write-Host "本地提交已完成，配置 origin 后再运行 .\deploy.ps1 即可上传。" -ForegroundColor Green
+if ($hasGitee) {
+  Write-Host "正在推送到 Gitee（覆盖旧同步数据）…" -ForegroundColor Cyan
+  # 用当前本地覆盖 Gitee，避免 22 天前旧数据留下
+  & git push gitee main --force
+  if ($LASTEXITCODE -ne 0) {
+    $giteeCode = Invoke-GitPush -Remote "gitee" -Branch "main"
+    if ($giteeCode -ne 0) {
+      Write-Host "推送到 Gitee 失败（网页已可走 GitHub；数据同步稍后再试）。" -ForegroundColor Yellow
+    }
+  } else {
+    Write-Host "Gitee 已用当前数据覆盖。" -ForegroundColor Green
+  }
+} else {
+  Write-Host "未配置 gitee 远程；登记数据同步仓库稍后可再加。" -ForegroundColor Yellow
+}
+
+if (-not $pushedGithub) {
+  Write-Host "本地提交已完成，配置 origin 后再运行 .\deploy.ps1 即可上传网页。" -ForegroundColor Green
   exit 0
 }
 
+$siteUrl = Get-SiteConfigValue "siteUrl:\s*'([^']*)'"
 $githubUser = Get-SiteConfigValue "githubUser:\s*'([^']*)'"
 $repoName = Get-SiteConfigValue "repoName:\s*'([^']*)'"
-$siteUrl = Get-SiteConfigValue "siteUrl:\s*'([^']*)'"
 
 Write-Host ""
-Write-Host "上传成功。约 1～2 分钟后访问：" -ForegroundColor Green
+Write-Host "上传成功。约 1～2 分钟后访问网页：" -ForegroundColor Green
 if ($siteUrl) {
   Write-Host "  $siteUrl" -ForegroundColor Green
 } elseif ($githubUser -and $repoName) {
   Write-Host "  https://$githubUser.github.io/$repoName/" -ForegroundColor Green
 }
-Write-Host "GitHub Actions 会自动发布到 Pages。" -ForegroundColor Green
+Write-Host "网页：GitHub Pages｜登记数据：Gitee 仓库同步。" -ForegroundColor Green
 Write-Host "电脑与手机 APP 会在打开时自动刷新到最新版（无需重装 APK）。" -ForegroundColor Green

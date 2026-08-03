@@ -30,7 +30,7 @@
     const site = global.HEBING_SITE;
     if (!site) return '';
     if (site.getSiteUrl) return site.getSiteUrl();
-    return site.siteUrl || (site.mirrors && site.mirrors.github) || '';
+    return site.siteUrl || (site.mirrors && (site.mirrors.gitee || site.mirrors.github)) || '';
   }
 
   function isRemoteCheckAvailable() {

@@ -5,6 +5,8 @@
   const SHOP_KEY = 'nearbyShops';
   const SYNC_CODE_KEY = 'hebing-sync-code';
   const SYNC_AUTO_KEY = 'hebing-sync-auto';
+  const GITEE_TOKEN_KEY = 'hebing-gitee-sync-token';
+  // 旧版 GitHub 令牌键：仅作兼容读取，不再用于上传
   const GITHUB_TOKEN_KEY = 'hebing-github-sync-token';
   const DELETED_IDS_KEY = 'hebing-deleted-ids';
   const SYNC_API = 'https://jsonblob.com/api/jsonBlob';
@@ -13,7 +15,7 @@
   let syncTimer = null;
   let syncInFlight = null;
   let lastPullSource = '';
-  let lastGithubSha = '';
+  let lastRepoSha = '';
 
   function normalizeShops(list) {
     return (list || []).map(function (shop) {
@@ -141,109 +143,141 @@
     return decodeURIComponent(escape(atob(base64.replace(/\s/g, ''))));
   }
 
-  function getGithubRepoConfig() {
+  function getRepoConfig() {
     const site = global.HEBING_SITE || {};
     return {
-      owner: site.githubUser || '',
+      owner: site.giteeUser || site.githubUser || '',
       repo: site.repoName || '',
       path: BUNDLED_CLOUD_FILE,
-      token: (localStorage.getItem(GITHUB_TOKEN_KEY) || '').trim(),
+      branch: site.syncBranch || 'main',
+      token: (localStorage.getItem(GITEE_TOKEN_KEY) || '').trim(),
     };
   }
 
+  function isRepoApiMode() {
+    const mode = global.HEBING_SITE?.syncMode;
+    return mode === 'gitee-api' || mode === 'github-api';
+  }
+
+  function isGiteeApiMode() {
+    return global.HEBING_SITE?.syncMode === 'gitee-api';
+  }
+
+  // 兼容旧调用名
   function isGithubApiMode() {
-    return global.HEBING_SITE?.syncMode === 'github-api';
+    return isRepoApiMode();
+  }
+
+  function canUseRepoApiSync() {
+    const cfg = getRepoConfig();
+    return isRepoApiMode() && Boolean(cfg.token && cfg.owner && cfg.repo);
   }
 
   function canUseGithubApiSync() {
-    const cfg = getGithubRepoConfig();
-    return isGithubApiMode() && Boolean(cfg.token && cfg.owner && cfg.repo);
+    return canUseRepoApiSync();
   }
 
-  function getGithubToken() {
-    return localStorage.getItem(GITHUB_TOKEN_KEY) || '';
+  function getGiteeToken() {
+    return localStorage.getItem(GITEE_TOKEN_KEY) || '';
   }
 
-  function setGithubToken(token) {
+  function setGiteeToken(token) {
     const value = (token || '').trim();
     if (!value) {
-      localStorage.removeItem(GITHUB_TOKEN_KEY);
+      localStorage.removeItem(GITEE_TOKEN_KEY);
       return '';
     }
-    localStorage.setItem(GITHUB_TOKEN_KEY, value);
+    localStorage.setItem(GITEE_TOKEN_KEY, value);
     return value;
   }
 
-  function hasGithubToken() {
-    return Boolean(getGithubToken());
+  function hasGiteeToken() {
+    return Boolean(getGiteeToken());
   }
 
-  function githubContentsUrl(cfg) {
+  function getGithubToken() {
+    return getGiteeToken();
+  }
+
+  function setGithubToken(token) {
+    return setGiteeToken(token);
+  }
+
+  function hasGithubToken() {
+    return hasGiteeToken();
+  }
+
+  function giteeContentsUrl(cfg) {
     return (
-      'https://api.github.com/repos/' +
+      'https://gitee.com/api/v5/repos/' +
       encodeURIComponent(cfg.owner) +
       '/' +
       encodeURIComponent(cfg.repo) +
       '/contents/' +
-      encodeURIComponent(cfg.path)
+      cfg.path.split('/').map(encodeURIComponent).join('/')
     );
   }
 
-  async function pullFromGithubApi() {
-    const cfg = getGithubRepoConfig();
+  async function pullFromGiteeApi() {
+    const cfg = getRepoConfig();
     if (!cfg.token || !cfg.owner || !cfg.repo) {
-      throw new Error('未配置 GitHub 令牌');
+      throw new Error('未配置 Gitee 令牌');
     }
 
-    const result = await requestJson(
-      githubContentsUrl(cfg) + '?_=' + Date.now(),
-      {
-        headers: {
-          Accept: 'application/vnd.github+json',
-          Authorization: 'Bearer ' + cfg.token,
-        },
-        cache: 'no-store',
-      },
-    );
+    const url =
+      giteeContentsUrl(cfg) +
+      '?access_token=' +
+      encodeURIComponent(cfg.token) +
+      '&ref=' +
+      encodeURIComponent(cfg.branch) +
+      '&_=' +
+      Date.now();
+
+    const result = await requestJson(url, {
+      headers: { Accept: 'application/json' },
+      cache: 'no-store',
+    });
 
     if (result.notFound) return null;
 
     const entry = result.data;
     if (!entry || !entry.content) return null;
 
-    lastGithubSha = entry.sha || '';
+    lastRepoSha = entry.sha || '';
     return JSON.parse(base64ToUtf8(entry.content));
   }
 
-  async function pushToGithubApi(payload) {
-    const cfg = getGithubRepoConfig();
+  async function pushToGiteeApi(payload) {
+    const cfg = getRepoConfig();
     if (!cfg.token || !cfg.owner || !cfg.repo) {
-      throw new Error('请先在「云端同步」保存 GitHub 令牌');
+      throw new Error('请先在「云端同步」保存 Gitee 令牌');
     }
 
     const body = {
+      access_token: cfg.token,
       message: '网页自动同步 cloud-data.json',
       content: utf8ToBase64(JSON.stringify(payload, null, 2) + '\n'),
+      branch: cfg.branch,
     };
 
-    if (lastGithubSha) {
-      body.sha = lastGithubSha;
+    if (lastRepoSha) {
+      body.sha = lastRepoSha;
     } else {
       try {
-        const existing = await pullFromGithubApi();
-        if (existing && lastGithubSha) {
-          body.sha = lastGithubSha;
+        const existing = await pullFromGiteeApi();
+        if (existing && lastRepoSha) {
+          body.sha = lastRepoSha;
         }
-      } catch (err) {
+      } catch (_err) {
         /* 文件不存在时直接创建 */
       }
     }
 
-    const response = await fetch(githubContentsUrl(cfg), {
-      method: 'PUT',
+    const method = body.sha ? 'PUT' : 'POST';
+    const response = await fetch(giteeContentsUrl(cfg), {
+      method: method,
       headers: {
-        Accept: 'application/vnd.github+json',
-        Authorization: 'Bearer ' + cfg.token,
+        Accept: 'application/json',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
@@ -251,11 +285,11 @@
 
     if (!response.ok) {
       const text = await response.text().catch(function () { return ''; });
-      throw new Error('GitHub 上传失败（' + response.status + '）' + (text ? '：' + text.slice(0, 120) : ''));
+      throw new Error('Gitee 上传失败（' + response.status + '）' + (text ? '：' + text.slice(0, 120) : ''));
     }
 
     const data = await response.json();
-    lastGithubSha = data?.content?.sha || lastGithubSha;
+    lastRepoSha = data?.content?.sha || data?.sha || lastRepoSha;
     return data;
   }
 
@@ -305,16 +339,44 @@
     return best;
   }
 
+  // 云端整包比本机旧时：只合并两边都有的 ID，丢掉旧云端多出来的条目，避免历史仓库污染
+  function sanitizeStaleRemote(local, remote) {
+    const localSynced = String(local && local.syncedAt || '');
+    const remoteSynced = String(remote && remote.syncedAt || '');
+    if (!remoteSynced || !localSynced || remoteSynced >= localSynced) {
+      return remote;
+    }
+
+    const productIds = new Set((local.products || []).map(function (item) {
+      return item && item.id != null ? String(item.id) : '';
+    }).filter(Boolean));
+    const shopIds = new Set((local.shops || []).map(function (item) {
+      return item && item.id != null ? String(item.id) : '';
+    }).filter(Boolean));
+
+    return {
+      products: (remote.products || []).filter(function (item) {
+        return item && item.id != null && productIds.has(String(item.id));
+      }),
+      shops: (remote.shops || []).filter(function (item) {
+        return item && item.id != null && shopIds.has(String(item.id));
+      }),
+      deletedIds: remote.deletedIds,
+      syncedAt: remote.syncedAt,
+    };
+  }
+
   function buildMergedPayload(local, remote) {
-    const mergedDeletedIds = mergeDeletedIdMaps(local.deletedIds, remote.deletedIds);
+    const safeRemote = sanitizeStaleRemote(local, remote || {});
+    const mergedDeletedIds = mergeDeletedIdMaps(local.deletedIds, safeRemote.deletedIds);
     return {
       products: applyDeletions(
-        mergeByIdNewer(local.products, remote.products),
+        mergeByIdNewer(local.products, safeRemote.products),
         mergedDeletedIds,
         'products',
       ),
       shops: applyDeletions(
-        normalizeShops(mergeByIdNewer(local.shops, remote.shops)),
+        normalizeShops(mergeByIdNewer(local.shops, safeRemote.shops)),
         mergedDeletedIds,
         'shops',
       ),
@@ -372,19 +434,19 @@
   async function pullRemote(syncCode) {
     let lastError = null;
 
-    if (canUseGithubApiSync()) {
+    if (canUseRepoApiSync()) {
       try {
-        const githubData = await pullFromGithubApi();
-        if (githubData) {
-          lastPullSource = 'github-api';
-          return githubData;
+        const repoData = await pullFromGiteeApi();
+        if (repoData) {
+          lastPullSource = 'gitee-api';
+          return repoData;
         }
       } catch (err) {
         lastError = err;
       }
     }
 
-    if (!isGithubApiMode()) {
+    if (!isRepoApiMode()) {
       try {
         const result = await requestJson(SYNC_API + '/' + encodeURIComponent(syncCode), {
           headers: { Accept: 'application/json' },
@@ -415,8 +477,8 @@
   }
 
   function formatSyncSource(source) {
-    if (source === 'github-api') return 'GitHub 云同步';
-    if (source === 'bundled') return 'GitHub 网页备份';
+    if (source === 'gitee-api' || source === 'github-api') return 'Gitee 云同步';
+    if (source === 'bundled') return 'Gitee 网页备份';
     if (source === 'jsonblob') return 'jsonblob 云端';
     return '云端';
   }
@@ -433,13 +495,13 @@
   }
 
   async function pushCloudPayload(syncCode, payload) {
-    if (canUseGithubApiSync()) {
-      await pushToGithubApi(payload);
-      return { source: 'github-api' };
+    if (canUseRepoApiSync()) {
+      await pushToGiteeApi(payload);
+      return { source: 'gitee-api' };
     }
 
-    if (isGithubApiMode()) {
-      throw new Error('请先在「云端同步」保存 GitHub 令牌，手机与电脑各保存一次即可双向同步');
+    if (isRepoApiMode()) {
+      throw new Error('请先在「云端同步」保存 Gitee 令牌，手机与电脑各保存一次即可双向同步');
     }
 
     const code = (syncCode || getSyncCode() || '').trim();
@@ -451,16 +513,16 @@
   }
 
   async function syncNow(syncCode) {
-    if (!canUseGithubApiSync() && !isGithubApiMode() && !(syncCode || getSyncCode())) {
+    if (!canUseRepoApiSync() && !isRepoApiMode() && !(syncCode || getSyncCode())) {
       throw new Error('请先设置同步码');
     }
 
     const code = (syncCode || getSyncCode() || '').trim();
     const local = getLocalPayload();
-    const canPush = canUseGithubApiSync() || (!isGithubApiMode() && Boolean(code));
+    const canPush = canUseRepoApiSync() || (!isRepoApiMode() && Boolean(code));
 
-    // 未保存 GitHub 令牌时：仍自动拉取云端/备份并与本机合并，只是不上传
-    if (isGithubApiMode() && !canUseGithubApiSync()) {
+    // 未保存 Gitee 令牌时：仍自动拉取云端/备份并与本机合并，只是不上传
+    if (isRepoApiMode() && !canUseRepoApiSync()) {
       const remote = await pullRemote(code);
       if (!remote) {
         const localStats = countPayload(local);
@@ -498,7 +560,7 @@
         throw new Error('无法获取云端数据，且本机也没有可上传的记录');
       }
       if (!canPush) {
-        throw new Error('请先在「云端同步」保存 GitHub 令牌，手机与电脑各保存一次即可双向同步');
+        throw new Error('请先在「云端同步」保存 Gitee 令牌，手机与电脑各保存一次即可双向同步');
       }
       const pushResult = await pushCloudPayload(code, local);
       if (code) localStorage.setItem(SYNC_CODE_KEY, code);
@@ -529,9 +591,25 @@
   }
 
   async function peekRemote(syncCode) {
-    if (isGithubApiMode() && !canUseGithubApiSync()) {
+    if (isRepoApiMode() && !canUseRepoApiSync()) {
+      // 无令牌时仍可从网页备份探测，避免假红
+      try {
+        const bundled = await pullBundledCloudData();
+        if (bundled) {
+          const stats = countPayload(bundled);
+          return {
+            products: stats.products,
+            shops: stats.shops,
+            source: 'bundled',
+            syncedAt: bundled.syncedAt || '',
+            needsToken: true,
+          };
+        }
+      } catch (_err) {
+        /* ignore */
+      }
       return {
-        error: '尚未保存 GitHub 令牌',
+        error: '尚未保存 Gitee 令牌',
         products: 0,
         shops: 0,
         source: 'none',
@@ -539,7 +617,7 @@
     }
 
     const code = (syncCode || getSyncCode() || '').trim();
-    if (!isGithubApiMode() && !code) {
+    if (!isRepoApiMode() && !code) {
       return { error: '未配置同步码', products: 0, shops: 0, source: 'none' };
     }
 
@@ -572,7 +650,7 @@
   }
 
   function isSiteAutoSyncConfigured() {
-    if (isGithubApiMode()) return global.HEBING_SITE?.autoSync !== false;
+    if (isRepoApiMode()) return global.HEBING_SITE?.autoSync !== false;
     return Boolean(getConfiguredSyncCode()) && global.HEBING_SITE?.autoSync !== false;
   }
 
@@ -584,7 +662,7 @@
     if (global.HEBING_SITE?.autoSync !== false) {
       localStorage.setItem(SYNC_AUTO_KEY, '1');
     }
-    return Boolean(configured || isGithubApiMode());
+    return Boolean(configured || isRepoApiMode());
   }
 
   function getSyncCode() {
@@ -618,7 +696,7 @@
   async function tryAutoSync() {
     ensureSyncSetup();
     if (!isAutoSyncEnabled()) return null;
-    if (!isGithubApiMode() && !getSyncCode()) {
+    if (!isRepoApiMode() && !getSyncCode()) {
       return null;
     }
     try {
@@ -631,8 +709,8 @@
   function scheduleCloudSync(delayMs) {
     if (!isAutoSyncEnabled()) return;
     // 无令牌时改动无法上传；启动时的 bootstrap 会负责拉取合并
-    if (isGithubApiMode()) {
-      if (!canUseGithubApiSync()) return;
+    if (isRepoApiMode()) {
+      if (!canUseRepoApiSync()) return;
     } else if (!getSyncCode()) {
       return;
     }
@@ -647,7 +725,7 @@
   async function bootstrap() {
     ensureSyncSetup();
     if (!isAutoSyncEnabled()) return null;
-    if (!isGithubApiMode() && !getSyncCode()) {
+    if (!isRepoApiMode() && !getSyncCode()) {
       return null;
     }
     if (syncInFlight) return syncInFlight;
@@ -661,15 +739,22 @@
     PRODUCT_KEY: PRODUCT_KEY,
     SHOP_KEY: SHOP_KEY,
     SYNC_CODE_KEY: SYNC_CODE_KEY,
+    GITEE_TOKEN_KEY: GITEE_TOKEN_KEY,
     GITHUB_TOKEN_KEY: GITHUB_TOKEN_KEY,
     createSyncCode: createSyncCode,
     syncNow: syncNow,
     getSyncCode: getSyncCode,
     setSyncCode: setSyncCode,
+    getGiteeToken: getGiteeToken,
+    setGiteeToken: setGiteeToken,
+    hasGiteeToken: hasGiteeToken,
     getGithubToken: getGithubToken,
     setGithubToken: setGithubToken,
     hasGithubToken: hasGithubToken,
+    canUseRepoApiSync: canUseRepoApiSync,
     canUseGithubApiSync: canUseGithubApiSync,
+    isRepoApiMode: isRepoApiMode,
+    isGiteeApiMode: isGiteeApiMode,
     isGithubApiMode: isGithubApiMode,
     getConfiguredSyncCode: getConfiguredSyncCode,
     isSiteAutoSyncConfigured: isSiteAutoSyncConfigured,

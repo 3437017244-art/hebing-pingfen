@@ -2,16 +2,20 @@
   'use strict';
 
   global.HEBING_SITE = {
-    version: '1.0.57',
+    version: '1.0.58',
     repoName: 'hebing-pingfen',
-    updatedAt: '2026-07-25',
-    buildId: '20260725-212500',
+    updatedAt: '2026-08-04',
+    buildId: '20260804-002218',
+    // 网页托管：GitHub Pages（Gitee Pages 已停）
     githubUser: '3437017244-art',
-    // 云端数据同步码（jsonblob）。部署后所有设备自动使用，无需手动复制。
+    // 登记数据同步：Gitee 仓库 cloud-data.json
+    giteeUser: 'zsp950309',
+    // 云端数据同步码（jsonblob，备用）。gitee-api 模式下以 Gitee 仓库文件为准。
     defaultSyncCode: '019f58bc-163f-7878-9ee6-4066a48180ee',
     autoSync: true,
-    // github-api：手机与电脑通过 GitHub 令牌双向同步（各设备保存一次令牌）
-    syncMode: 'github-api',
+    // gitee-api：手机与电脑通过 Gitee 私人令牌双向同步（各设备保存一次令牌）
+    syncMode: 'gitee-api',
+    syncBranch: 'main',
     siteUrl: 'https://3437017244-art.github.io/hebing-pingfen/',
     mirrors: {
       github: 'https://3437017244-art.github.io/hebing-pingfen/',

@@ -1,0 +1,73 @@
+{
+  "name": "hebing-pingfen-desktop",
+  "version": "1.0.57",
+  "description": "购物与商店评分（电脑版）",
+  "main": "electron/main.js",
+  "author": "3437017244-art",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --win",
+    "dist:portable": "electron-builder --win portable"
+  },
+  "build": {
+    "appId": "com.hebing.pingfen",
+    "productName": "购物与商店评分",
+    "directories": {
+      "output": "dist-desktop"
+    },
+    "files": [
+      "index.html",
+      "styles.css",
+      "mobile.css",
+      "app.js",
+      "amap-picker.js",
+      "app-update.js",
+      "mobile-bridge.js",
+      "site-config.js",
+      "sync-service.js",
+      "cloud-data.json",
+      "同步.html",
+      "恢复数据.html",
+      "迁移数据.html",
+      "合并云端.html",
+      "在线部署.html",
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "购物与商店评分"
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-便携版.${ext}"
+    }
+  },
+  "devDependencies": {
+    "electron": "^37.2.0",
+    "electron-builder": "^26.0.12"
+  },
+  "allowScripts": {}
+}
