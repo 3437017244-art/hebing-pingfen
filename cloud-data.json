@@ -2231,6 +2231,28 @@
       "notes": "",
       "createdAt": "2026-08-03T05:58:37.895Z",
       "updatedAt": "2026-08-03T05:58:37.895Z"
+    },
+    {
+      "id": "msctjgbyrfjdk0",
+      "name": "梅姐饺子",
+      "shopInstanceId": "msctgp2874js0l",
+      "brand": "",
+      "flavor": "猪肉野菜",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "notes": "",
+      "createdAt": "2026-08-03T05:58:46.126Z",
+      "updatedAt": "2026-08-03T05:58:46.126Z"
     }
   ],
   "shops": [
@@ -2269,5 +2291,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-08-03T05:58:45.152Z"
+  "syncedAt": "2026-08-03T06:08:02.535Z"
 }
