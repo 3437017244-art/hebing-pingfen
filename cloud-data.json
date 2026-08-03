@@ -2204,11 +2204,11 @@
       "weight": null,
       "singleWeight": null,
       "rating": 0,
-      "shopRating": 0,
+      "shopRating": 4,
       "notes": "",
       "brandNotes": "",
       "createdAt": "2026-08-03T05:56:37.472Z",
-      "updatedAt": "2026-08-03T05:58:00.272Z"
+      "updatedAt": "2026-08-03T06:17:32.543Z"
     },
     {
       "id": "msctj9zbfungdm",
@@ -2230,7 +2230,9 @@
       "rating": 5,
       "notes": "",
       "createdAt": "2026-08-03T05:58:37.895Z",
-      "updatedAt": "2026-08-03T06:08:37.853Z"
+      "updatedAt": "2026-08-03T06:17:32.543Z",
+      "shopRating": 4,
+      "brandNotes": ""
     },
     {
       "id": "msctjgbyrfjdk0",
@@ -2252,7 +2254,9 @@
       "rating": 4,
       "notes": "",
       "createdAt": "2026-08-03T05:58:46.126Z",
-      "updatedAt": "2026-08-03T06:17:17.737Z"
+      "updatedAt": "2026-08-03T06:17:32.543Z",
+      "shopRating": 4,
+      "brandNotes": ""
     }
   ],
   "shops": [
@@ -2291,5 +2295,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-08-03T06:17:22.018Z"
+  "syncedAt": "2026-08-03T06:17:35.857Z"
 }
