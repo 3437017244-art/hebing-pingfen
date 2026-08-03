@@ -150,7 +150,7 @@
       repo: site.repoName || '',
       path: BUNDLED_CLOUD_FILE,
       branch: site.syncBranch || 'main',
-      token: (localStorage.getItem(GITEE_TOKEN_KEY) || '').trim(),
+      token: getGiteeToken(),
     };
   }
 
@@ -178,16 +178,27 @@
   }
 
   function getGiteeToken() {
-    return localStorage.getItem(GITEE_TOKEN_KEY) || '';
+    const current = (localStorage.getItem(GITEE_TOKEN_KEY) || '').trim();
+    if (current) return current;
+    // 兼容：旧页面可能写到 GitHub 令牌键
+    const legacy = (localStorage.getItem(GITHUB_TOKEN_KEY) || '').trim();
+    if (legacy) {
+      localStorage.setItem(GITEE_TOKEN_KEY, legacy);
+      localStorage.removeItem(GITHUB_TOKEN_KEY);
+      return legacy;
+    }
+    return '';
   }
 
   function setGiteeToken(token) {
     const value = (token || '').trim();
     if (!value) {
       localStorage.removeItem(GITEE_TOKEN_KEY);
+      localStorage.removeItem(GITHUB_TOKEN_KEY);
       return '';
     }
     localStorage.setItem(GITEE_TOKEN_KEY, value);
+    localStorage.removeItem(GITHUB_TOKEN_KEY);
     return value;
   }
 
@@ -339,8 +350,16 @@
     return best;
   }
 
-  // 云端整包比本机旧时：只合并两边都有的 ID，丢掉旧云端多出来的条目，避免历史仓库污染
+  // 云端整包比本机旧时：只合并两边都有的 ID，丢掉旧云端多出来的条目，避免历史仓库污染。
+  // 注意：本机为空时必须完整接受云端——getLocalPayload 的 syncedAt 是“现在”，
+  // 若仍按时间戳过滤，会把云端 102 条误杀成 0。
   function sanitizeStaleRemote(local, remote) {
+    const localCount =
+      ((local && local.products) || []).length + ((local && local.shops) || []).length;
+    if (localCount === 0) {
+      return remote;
+    }
+
     const localSynced = String(local && local.syncedAt || '');
     const remoteSynced = String(remote && remote.syncedAt || '');
     if (!remoteSynced || !localSynced || remoteSynced >= localSynced) {
