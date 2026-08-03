@@ -2209,6 +2209,28 @@
       "brandNotes": "",
       "createdAt": "2026-08-03T05:56:37.472Z",
       "updatedAt": "2026-08-03T05:58:00.272Z"
+    },
+    {
+      "id": "msctj9zbfungdm",
+      "name": "梅姐饺子",
+      "shopInstanceId": "msctgp2874js0l",
+      "brand": "",
+      "flavor": "大骨头",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "notes": "",
+      "createdAt": "2026-08-03T05:58:37.895Z",
+      "updatedAt": "2026-08-03T05:58:37.895Z"
     }
   ],
   "shops": [
@@ -2247,5 +2269,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-08-03T05:58:08.100Z"
+  "syncedAt": "2026-08-03T05:58:45.152Z"
 }
