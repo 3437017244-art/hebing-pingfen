@@ -2135,6 +2135,31 @@
       "updatedAt": "2026-08-02T00:23:59.498Z",
       "shopRating": 3.5,
       "brandNotes": ""
+    },
+    {
+      "id": "mscknq3x2kunbo",
+      "name": "扬子",
+      "shopInstanceId": "mscknq3xq5d6xg",
+      "isBrandPlaceholder": true,
+      "brand": "",
+      "flavor": "",
+      "category": "",
+      "storageLocation": "",
+      "quantity": null,
+      "shopName": "",
+      "shopLocation": "",
+      "shopMapAddress": "",
+      "shopLng": null,
+      "shopLat": null,
+      "price": null,
+      "weight": null,
+      "singleWeight": null,
+      "rating": 0,
+      "shopRating": 0,
+      "notes": "",
+      "brandNotes": "",
+      "createdAt": "2026-08-03T01:50:08.877Z",
+      "updatedAt": "2026-08-03T01:50:08.877Z"
     }
   ],
   "shops": [
@@ -2173,5 +2198,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-08-03T01:49:30.112Z"
+  "syncedAt": "2026-08-03T01:53:33.334Z"
 }
