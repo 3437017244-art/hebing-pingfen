@@ -1352,15 +1352,21 @@ button.editing {
   margin-bottom: 6px;
 }
 
+/* 使用你在 mobile.css / APP 里定好的分行布局：店名+评分一行，库存条第二行，避免互相覆盖 */
 .item-card.brand-card .item-header {
   display: grid;
-  grid-template-columns: 7.5rem minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'title rating'
+    'stock stock';
+  column-gap: 8px;
+  row-gap: 8px;
   align-items: center;
-  column-gap: 12px;
   justify-content: stretch;
 }
 
 .item-card.brand-card .item-title-wrap {
+  grid-area: title;
   min-width: 0;
 }
 
@@ -1375,8 +1381,10 @@ button.editing {
 }
 
 .item-card.brand-card .item-header-rating {
-  grid-column: 3;
+  grid-area: rating;
+  grid-column: auto;
   justify-self: end;
+  z-index: 1;
 }
 
 .brand-stock-preview {
@@ -1391,10 +1399,42 @@ button.editing {
 }
 
 .item-card.brand-card .brand-stock-preview {
-  grid-column: 2;
+  grid-area: stock;
+  grid-column: auto;
   flex: unset;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  margin-top: 0;
   justify-content: flex-start;
   padding: 0;
+  flex-wrap: wrap;
+}
+
+.item-card.brand-card.no-stock .item-header {
+  grid-template-areas: 'title rating';
+  row-gap: 0;
+}
+
+.item-card.brand-card .brand-stock-chip {
+  max-width: 100%;
+  width: fit-content;
+  box-sizing: border-box;
+  white-space: normal;
+  flex-wrap: wrap;
+  align-items: baseline;
+  row-gap: 2px;
+  overflow: visible;
+  border-radius: 16px;
+  line-height: 1.35;
+}
+
+.item-card.brand-card .brand-stock-name,
+.item-card.brand-card .brand-stock-qty,
+.item-card.brand-card .brand-stock-location,
+.item-card.brand-card .brand-stock-sep {
+  white-space: normal;
+  word-break: break-word;
 }
 
 .item-card.no-stock .brand-stock-preview {
