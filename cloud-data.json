@@ -2326,11 +2326,11 @@
       "weight": null,
       "singleWeight": null,
       "rating": 0,
-      "shopRating": 0,
+      "shopRating": 1,
       "notes": "",
-      "brandNotes": "",
+      "brandNotes": "可选的模型额度太少。两天就用完。默认的模型不好用。用到后面真的很笨。前面感觉还可以，越用越感觉垃圾。价格和cloud code，还有code 差不多。但是能力却差了很多。还是想办法用cloud code和cold X吧！",
       "createdAt": "2026-08-03T14:06:23.223Z",
-      "updatedAt": "2026-08-03T14:06:23.223Z"
+      "updatedAt": "2026-08-03T14:07:41.079Z"
     }
   ],
   "shops": [
@@ -2369,5 +2369,5 @@
     },
     "shops": {}
   },
-  "syncedAt": "2026-08-03T14:06:33.985Z"
+  "syncedAt": "2026-08-03T14:07:48.623Z"
 }
