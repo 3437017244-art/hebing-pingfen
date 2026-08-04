@@ -258,12 +258,13 @@
     return JSON.parse(base64ToUtf8(entry.content));
   }
 
-  async function pushToGiteeApi(payload) {
+  async function pushToGiteeApi(payload, retryCount) {
     const cfg = getRepoConfig();
     if (!cfg.token || !cfg.owner || !cfg.repo) {
       throw new Error('请先在「云端同步」保存 Gitee 令牌');
     }
 
+    const attempt = retryCount || 0;
     const body = {
       access_token: cfg.token,
       message: '网页自动同步 cloud-data.json',
@@ -296,6 +297,31 @@
 
     if (!response.ok) {
       const text = await response.text().catch(function () { return ''; });
+      const conflict =
+        response.status === 400 ||
+        response.status === 409 ||
+        response.status === 422;
+      // 两端同时上传时 SHA 会冲突：重新拉取合并后再推一次
+      if (conflict && attempt < 2) {
+        lastRepoSha = '';
+        let remote = null;
+        try {
+          remote = await pullFromGiteeApi();
+        } catch (_err) {
+          remote = null;
+        }
+        const remapped = buildMergedPayload(
+          {
+            products: payload.products || [],
+            shops: payload.shops || [],
+            deletedIds: payload.deletedIds,
+            syncedAt: '',
+          },
+          remote || { products: [], shops: [], deletedIds: normalizeDeletedIds(null) },
+        );
+        saveLocalPayload(remapped);
+        return pushToGiteeApi(remapped, attempt + 1);
+      }
       throw new Error('Gitee 上传失败（' + response.status + '）' + (text ? '：' + text.slice(0, 120) : ''));
     }
 
@@ -350,52 +376,19 @@
     return best;
   }
 
-  // 云端整包比本机旧时：只合并两边都有的 ID，丢掉旧云端多出来的条目，避免历史仓库污染。
-  // 注意：本机为空时必须完整接受云端——getLocalPayload 的 syncedAt 是“现在”，
-  // 若仍按时间戳过滤，会把云端 102 条误杀成 0。
-  function sanitizeStaleRemote(local, remote) {
-    const localCount =
-      ((local && local.products) || []).length + ((local && local.shops) || []).length;
-    if (localCount === 0) {
-      return remote;
-    }
-
-    const localSynced = String(local && local.syncedAt || '');
-    const remoteSynced = String(remote && remote.syncedAt || '');
-    if (!remoteSynced || !localSynced || remoteSynced >= localSynced) {
-      return remote;
-    }
-
-    const productIds = new Set((local.products || []).map(function (item) {
-      return item && item.id != null ? String(item.id) : '';
-    }).filter(Boolean));
-    const shopIds = new Set((local.shops || []).map(function (item) {
-      return item && item.id != null ? String(item.id) : '';
-    }).filter(Boolean));
-
-    return {
-      products: (remote.products || []).filter(function (item) {
-        return item && item.id != null && productIds.has(String(item.id));
-      }),
-      shops: (remote.shops || []).filter(function (item) {
-        return item && item.id != null && shopIds.has(String(item.id));
-      }),
-      deletedIds: remote.deletedIds,
-      syncedAt: remote.syncedAt,
-    };
-  }
-
+  // 多端同步只按记录 ID + 较新时间合并；不再用整包 syncedAt 过滤，
+  // 否则 getLocalPayload 里「当前时间」会把另一端刚上传的新记录误判成旧云端而丢掉。
   function buildMergedPayload(local, remote) {
-    const safeRemote = sanitizeStaleRemote(local, remote || {});
-    const mergedDeletedIds = mergeDeletedIdMaps(local.deletedIds, safeRemote.deletedIds);
+    const remoteSafe = remote || {};
+    const mergedDeletedIds = mergeDeletedIdMaps(local.deletedIds, remoteSafe.deletedIds);
     return {
       products: applyDeletions(
-        mergeByIdNewer(local.products, safeRemote.products),
+        mergeByIdNewer(local.products, remoteSafe.products),
         mergedDeletedIds,
         'products',
       ),
       shops: applyDeletions(
-        normalizeShops(mergeByIdNewer(local.shops, safeRemote.shops)),
+        normalizeShops(mergeByIdNewer(local.shops, remoteSafe.shops)),
         mergedDeletedIds,
         'shops',
       ),
@@ -453,16 +446,11 @@
   async function pullRemote(syncCode) {
     let lastError = null;
 
+    // 已配置 Gitee 令牌时：只认 Gitee 仓库，避免失败后回落到 GitHub Pages 旧备份再误上传覆盖
     if (canUseRepoApiSync()) {
-      try {
-        const repoData = await pullFromGiteeApi();
-        if (repoData) {
-          lastPullSource = 'gitee-api';
-          return repoData;
-        }
-      } catch (err) {
-        lastError = err;
-      }
+      const repoData = await pullFromGiteeApi();
+      lastPullSource = 'gitee-api';
+      return repoData;
     }
 
     if (!isRepoApiMode()) {
@@ -497,7 +485,7 @@
 
   function formatSyncSource(source) {
     if (source === 'gitee-api' || source === 'github-api') return 'Gitee 云同步';
-    if (source === 'bundled') return 'Gitee 网页备份';
+    if (source === 'bundled') return '网页备份';
     if (source === 'jsonblob') return 'jsonblob 云端';
     return '云端';
   }
@@ -735,9 +723,25 @@
     }
     clearTimeout(syncTimer);
     syncTimer = setTimeout(function () {
-      syncNow().catch(function () {
-        /* 后台同步失败时不打断使用 */
-      });
+      syncNow()
+        .then(function (result) {
+          try {
+            global.dispatchEvent(new CustomEvent('hebing-sync-done', { detail: result || null }));
+          } catch (_err) {
+            /* ignore */
+          }
+        })
+        .catch(function (err) {
+          try {
+            global.dispatchEvent(
+              new CustomEvent('hebing-sync-done', {
+                detail: { error: String(err && err.message ? err.message : err) },
+              }),
+            );
+          } catch (_err) {
+            /* ignore */
+          }
+        });
     }, delayMs == null ? SYNC_DEBOUNCE_MS : delayMs);
   }
 

@@ -359,6 +359,20 @@
     setupNativeBackNavigation();
     setupEdgeSwipeBack();
 
+    // APP 从后台回到前台时主动同步，和电脑端保持一致
+    try {
+      const App = window.Capacitor?.Plugins?.App;
+      if (isNativeApp && App?.addListener) {
+        App.addListener('appStateChange', function (state) {
+          if (state?.isActive) {
+            window.dispatchEvent(new Event('focus'));
+          }
+        });
+      }
+    } catch (_err) {
+      /* ignore */
+    }
+
     const exportBtn = document.getElementById('export-btn');
     if (!exportBtn || exportBtn.dataset.mobileBridgeBound) return;
     exportBtn.dataset.mobileBridgeBound = '1';

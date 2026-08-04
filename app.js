@@ -2757,6 +2757,24 @@
     }
   }
 
+  async function refreshCloudDataToUi(options = {}) {
+    if (!window.HebingSync?.bootstrap) return null;
+    const silent = options.silent !== false;
+    try {
+      const result = await HebingSync.bootstrap();
+      items = loadItems();
+      loadShops();
+      updateSyncStatusBanner(result);
+      if (typeof renderBrowse === 'function') renderBrowse();
+      return result;
+    } catch (err) {
+      if (!silent) {
+        updateSyncStatusBanner({ error: String(err && err.message ? err.message : err) });
+      }
+      return { error: String(err && err.message ? err.message : err) };
+    }
+  }
+
   /* ========== Init ========== */
   async function init() {
     tryRecoverPendingData();
@@ -2764,14 +2782,35 @@
 
     let bootstrapResult = null;
     if (window.HebingSync?.bootstrap) {
-      bootstrapResult = await HebingSync.bootstrap();
-      items = loadItems();
-      loadShops();
-      updateSyncStatusBanner(bootstrapResult);
+      await refreshCloudDataToUi({ silent: true });
     } else if (window.HebingSync?.isGithubApiMode?.() && !HebingSync.hasGithubToken?.()) {
       const setupBanner = $('#sync-setup-banner');
       if (setupBanner) setupBanner.hidden = false;
     }
+
+    // APP/电脑回到前台时再拉一次，避免两边令牌相同却看到旧数据
+    let resumeSyncTimer = null;
+    function scheduleResumeSync() {
+      clearTimeout(resumeSyncTimer);
+      resumeSyncTimer = setTimeout(function () {
+        refreshCloudDataToUi({ silent: true });
+      }, 400);
+    }
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible') scheduleResumeSync();
+    });
+    window.addEventListener('focus', scheduleResumeSync);
+    window.addEventListener('hebing-sync-done', function (event) {
+      const detail = event?.detail;
+      if (!detail || detail.error) {
+        if (detail?.error) updateSyncStatusBanner(detail);
+        return;
+      }
+      items = loadItems();
+      loadShops();
+      updateSyncStatusBanner(detail);
+      if (typeof renderBrowse === 'function') renderBrowse();
+    });
 
     productEls.dialogClose.addEventListener('click', () => {
       handleDetailLayerBack();
