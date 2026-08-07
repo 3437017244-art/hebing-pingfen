@@ -12,6 +12,11 @@
   let searchAddPendingQuery = null;
   let appMessageResolver = null;
   let appMessageIsConfirm = false;
+  let stockRemindHiddenThisSession = false;
+  let stockRemindDialogShownThisSession = false;
+  let stockRemindModalDismissedThisSession = false;
+  let stockRemindShowTimer = null;
+  let stockRemindDueIds = [];
 
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => document.querySelectorAll(sel);
@@ -610,6 +615,10 @@
           <label for="dialog-storage-location">所在位置</label>
           <input type="text" id="dialog-storage-location" value="${escapeHtml(item.storageLocation || '')}" placeholder="请输入所在位置">
         </div>
+        <div class="form-row form-row-key form-row-key-remind" id="dialog-remind-at-row"${showStockFields ? '' : ' hidden'}>
+          <label for="dialog-remind-at">提醒日期</label>
+          ${renderRemindAtFieldHtml({ id: 'dialog-remind-at', value: item.remindAt })}
+        </div>
         <div class="form-row form-row-key form-row-key-notes">
           <label for="dialog-notes">备注</label>
           <textarea id="dialog-notes" rows="3" placeholder="可选，仅本商品备注">${escapeHtml(item.notes || '')}</textarea>
@@ -674,6 +683,10 @@
           <label>所在位置</label>
           <input type="text" class="extra-storage-location" value="${escapeHtml(item.storageLocation || '')}" placeholder="请输入所在位置">
         </div>
+        <div class="form-row form-row-key form-row-key-remind extra-remind-at-row"${showStockFields ? '' : ' hidden'}>
+          <label>提醒日期</label>
+          ${renderRemindAtFieldHtml({ className: 'extra-remind-at', value: item.remindAt })}
+        </div>
         <div class="form-row form-row-key form-row-key-notes">
           <label>备注</label>
           <textarea class="extra-notes" rows="2" placeholder="可选，仅本商品备注">${escapeHtml(item.notes || '')}</textarea>
@@ -695,7 +708,9 @@
       row.querySelector('.extra-quantity'),
       row.querySelector('.extra-category-row'),
       row.querySelector('.extra-storage-location-row'),
+      row.querySelector('.extra-remind-at-row'),
     );
+    bindRemindAtInput(row.querySelector('.extra-remind-at'));
     row.querySelector('.extra-product-remove')?.addEventListener('click', () => {
       row.remove();
       refreshProductNameLabels();
@@ -736,6 +751,7 @@
           flavor: (row.querySelector('.extra-flavor')?.value || '').trim(),
           category: (row.querySelector('.extra-category')?.value || '').trim(),
           storageLocation: (row.querySelector('.extra-storage-location')?.value || '').trim(),
+          remindAt: readRemindAtFromInput(row.querySelector('.extra-remind-at')),
           quantity:
             row.querySelector('.extra-quantity')?.value !== ''
               ? parseInt(row.querySelector('.extra-quantity').value, 10)
@@ -760,6 +776,7 @@
       flavor: extra.flavor,
       category: hasStockQuantity(extra) ? (extra.category || '').trim() : '',
       storageLocation: hasStockQuantity(extra) ? (extra.storageLocation || '').trim() : '',
+      remindAt: hasStockQuantity(extra) ? normalizeRemindAt(extra.remindAt) : '',
       quantity: extra.quantity,
       shopName: '',
       shopLocation: baseData.shopLocation || '',
@@ -794,6 +811,7 @@
     if (group) showBrandDetail(group);
     else closeDetailDialog();
     renderBrowse();
+    maybeShowStockReminders();
   }
 
   function bindDialogProductEdit(item) {
@@ -810,7 +828,9 @@
       $('#dialog-quantity'),
       $('#dialog-category-row'),
       $('#dialog-storage-location-row'),
+      $('#dialog-remind-at-row'),
     );
+    bindRemindAtInput($('#dialog-remind-at'));
     $('#dialog-add-extra-product')?.addEventListener('click', () => addExtraProductRow());
   }
 
@@ -836,6 +856,7 @@
       flavor: ($('#dialog-flavor')?.value || '').trim(),
       category: ($('#dialog-category')?.value || '').trim(),
       storageLocation: ($('#dialog-storage-location')?.value || '').trim(),
+      remindAt: readRemindAtFromInput($('#dialog-remind-at')),
       quantity: $('#dialog-quantity')?.value !== '' ? parseInt($('#dialog-quantity').value, 10) : null,
       shopName: '',
       shopLocation: shopInfo?.shopLocation || '',
@@ -914,7 +935,15 @@
 
     if (selectedDetail.isNew) {
       if (hasMainProductContent(data)) {
-        items.push({ id: generateId(), ...data, shopInstanceId, createdAt: now, updatedAt: now });
+        const created = {
+          id: generateId(),
+          ...data,
+          shopInstanceId,
+          isBrandPlaceholder: false,
+          createdAt: now,
+          updatedAt: now,
+        };
+        items.push(created);
       }
       extras.forEach((extra) => {
         items.push(buildAdditionalProductData({ ...data, shopInstanceId }, extra, now));
@@ -922,22 +951,47 @@
       saveItems();
       searchAddPendingQuery = null;
       finishProductSave(brand, shopInstanceId);
+      if (normalizeRemindAt(data.remindAt)) {
+        await showAppAlert(
+          `已保存提醒日期：${formatRemindAtDisplay(data.remindAt)}。回到首页可看到提醒。`,
+          '提醒已保存',
+        );
+      }
       return;
     }
 
     let idx = items.findIndex((i) => i.id === selectedDetail.id);
     if (idx === -1) {
       if (hasMainProductContent(data)) {
-        items.push({ id: generateId(), ...data, shopInstanceId, createdAt: now, updatedAt: now });
+        items.push({
+          id: generateId(),
+          ...data,
+          shopInstanceId,
+          isBrandPlaceholder: false,
+          createdAt: now,
+          updatedAt: now,
+        });
       }
     } else {
-      items[idx] = { ...items[idx], ...data, shopInstanceId, updatedAt: now };
+      items[idx] = {
+        ...items[idx],
+        ...data,
+        shopInstanceId,
+        isBrandPlaceholder: false,
+        updatedAt: now,
+      };
     }
     extras.forEach((extra) => {
       items.push(buildAdditionalProductData({ ...data, shopInstanceId }, extra, now));
     });
     saveItems();
     finishProductSave(brand, shopInstanceId);
+    if (normalizeRemindAt(data.remindAt)) {
+      await showAppAlert(
+        `已保存提醒日期：${formatRemindAtDisplay(data.remindAt)}。回到首页可看到提醒。`,
+        '提醒已保存',
+      );
+    }
   }
 
   function renderShopEditForm(shop) {
@@ -1063,6 +1117,10 @@
             <label for="dialog-storage-location">所在位置</label>
             <input type="text" id="dialog-storage-location" value="${escapeHtml(primaryProduct?.storageLocation || '')}" placeholder="请输入所在位置">
           </div>
+          <div class="form-row form-row-key form-row-key-remind" id="dialog-remind-at-row"${showStockFields ? '' : ' hidden'}>
+            <label for="dialog-remind-at">提醒日期</label>
+            ${renderRemindAtFieldHtml({ id: 'dialog-remind-at', value: primaryProduct?.remindAt })}
+          </div>
           <div class="form-row form-row-key form-row-key-notes">
             <label for="dialog-brand-notes">备注</label>
             <textarea id="dialog-brand-notes" rows="3" placeholder="可选，仅本品牌备注">${escapeHtml(getBrandNotes(group) || '')}</textarea>
@@ -1079,7 +1137,9 @@
       $('#dialog-quantity'),
       $('#dialog-category-row'),
       $('#dialog-storage-location-row'),
+      $('#dialog-remind-at-row'),
     );
+    bindRemindAtInput($('#dialog-remind-at'));
     productEls.dialogEditBtn.textContent = '保存';
     productEls.dialogEditBtn.className = 'btn btn-primary';
     productEls.dialogEditBtn.hidden = false;
@@ -1106,8 +1166,9 @@
       quantityRaw != null && quantityRaw !== '' ? parseInt(quantityRaw, 10) : null;
     const category = ($('#dialog-category')?.value || '').trim();
     const storageLocation = ($('#dialog-storage-location')?.value || '').trim();
+    const remindAt = readRemindAtFromInput($('#dialog-remind-at'));
     const brandNotes = ($('#dialog-brand-notes')?.value || '').trim();
-    const stockData = { quantity, category, storageLocation };
+    const stockData = sanitizeProductStockFields({ quantity, category, storageLocation, remindAt });
     if (hasStockQuantity(stockData) && !(await validateMainProductStockFields(stockData))) {
       return;
     }
@@ -1130,9 +1191,13 @@
         next.shopName = newName;
       }
       if (primaryProductId != null && item.id === primaryProductId) {
-        next.quantity = quantity;
-        next.category = category;
-        next.storageLocation = storageLocation;
+        next.quantity = stockData.quantity;
+        next.category = stockData.category;
+        next.storageLocation = stockData.storageLocation;
+        next.remindAt = stockData.remindAt;
+        if (hasStockQuantity(stockData) || (item.flavor || '').trim()) {
+          next.isBrandPlaceholder = false;
+        }
       }
       return next;
     });
@@ -1141,12 +1206,13 @@
         id: generateId(),
         name: newName,
         shopInstanceId: shopInstanceId || generateId(),
-        isBrandPlaceholder: true,
+        isBrandPlaceholder: !hasStockQuantity(stockData),
         brand: '',
         flavor: '',
-        category,
-        storageLocation,
-        quantity,
+        category: stockData.category,
+        storageLocation: stockData.storageLocation,
+        remindAt: stockData.remindAt,
+        quantity: stockData.quantity,
         shopName: '',
         shopLocation: '',
         shopMapAddress: '',
@@ -1500,6 +1566,150 @@
     return !Number.isNaN(quantity) && quantity > 0;
   }
 
+  function getLocalDateString(date = new Date()) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  function normalizeRemindAt(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    // 兼容 2026-08-07 / 2026/08/07 / 2026.08.07
+    const normalized = raw.replace(/[/.]/g, '-');
+    const match = normalized.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (!match) return '';
+    const y = Number(match[1]);
+    const m = Number(match[2]);
+    const d = Number(match[3]);
+    const dt = new Date(y, m - 1, d);
+    if (dt.getFullYear() !== y || dt.getMonth() !== m - 1 || dt.getDate() !== d) return '';
+    return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  }
+
+  function renderRemindAtFieldHtml({ id = '', className = '', value = '' } = {}) {
+    const normalized = normalizeRemindAt(value);
+    const display = normalized ? formatRemindAtDisplay(normalized) : '点击选择提醒日期';
+    const idAttr = id ? ` id="${escapeHtml(id)}"` : '';
+    const classes = ['remind-date-input', className].filter(Boolean).join(' ');
+    return `
+      <div class="remind-date-field${normalized ? ' has-value' : ''}" data-remind-field>
+        <input type="date"${idAttr} class="${escapeHtml(classes)}" value="${escapeHtml(normalized)}" inputmode="none" autocomplete="off">
+        <span class="remind-date-display">${escapeHtml(display)}</span>
+        <span class="remind-date-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" focusable="false">
+            <path fill="currentColor" d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1.5A2.5 2.5 0 0 1 22 6.5v13A2.5 2.5 0 0 1 19.5 22h-15A2.5 2.5 0 0 1 2 19.5v-13A2.5 2.5 0 0 1 4.5 4H6V3a1 1 0 0 1 1-1zm12.5 8.5h-15v9c0 .28.22.5.5.5h14a.5.5 0 0 0 .5-.5v-9zM4.5 6a.5.5 0 0 0-.5.5V9h16V6.5a.5.5 0 0 0-.5-.5h-15z"/>
+          </svg>
+        </span>
+      </div>`;
+  }
+
+  function readRemindAtFromInput(input) {
+    if (!input) return '';
+    const fromValue = normalizeRemindAt(input.value);
+    if (fromValue) return fromValue;
+    // 部分环境下 date 输入显示了日期但 .value 短暂为空，改读 valueAsDate
+    try {
+      if (input.valueAsDate instanceof Date && !Number.isNaN(input.valueAsDate.getTime())) {
+        return getLocalDateString(input.valueAsDate);
+      }
+    } catch (_) {
+      /* ignore */
+    }
+    return normalizeRemindAt(input.getAttribute('data-remind-at') || '');
+  }
+
+  function bindRemindAtInput(input) {
+    if (!input || input.dataset.remindInputBound === '1') return;
+    input.dataset.remindInputBound = '1';
+    const field = input.closest('[data-remind-field]') || input.parentElement;
+    const displayEl = field?.querySelector('.remind-date-display');
+
+    const sync = () => {
+      const normalized = readRemindAtFromInput(input);
+      if (normalized) {
+        input.setAttribute('data-remind-at', normalized);
+        if (input.value !== normalized) input.value = normalized;
+        if (field) field.classList.add('has-value');
+        if (displayEl) displayEl.textContent = formatRemindAtDisplay(normalized);
+      } else {
+        input.removeAttribute('data-remind-at');
+        if (field) field.classList.remove('has-value');
+        if (displayEl) displayEl.textContent = '点击选择提醒日期';
+      }
+    };
+
+    const openPicker = (event) => {
+      event?.preventDefault?.();
+      try {
+        if (typeof input.showPicker === 'function') {
+          input.showPicker();
+          return;
+        }
+      } catch (_) {
+        /* 部分环境要求用户手势，失败则退回 focus */
+      }
+      input.focus();
+      input.click();
+    };
+
+    // 禁止手输年月日，只能点选
+    input.addEventListener('keydown', (event) => {
+      if (event.key === 'Tab' || event.key === 'Escape') return;
+      if (event.key === 'Enter' || event.key === ' ' || event.key === 'ArrowDown') {
+        event.preventDefault();
+        openPicker(event);
+        return;
+      }
+      event.preventDefault();
+    });
+    input.addEventListener('paste', (event) => event.preventDefault());
+    input.addEventListener('beforeinput', (event) => {
+      if (event.inputType && event.inputType.startsWith('insert')) event.preventDefault();
+    });
+
+    if (field) {
+      field.addEventListener('click', (event) => {
+        if (event.target === input) {
+          // 点到透明 input 也统一走 showPicker，避免只露出系统小图标
+          openPicker(event);
+          return;
+        }
+        openPicker(event);
+      });
+    }
+
+    input.addEventListener('change', sync);
+    input.addEventListener('input', sync);
+    input.addEventListener('blur', sync);
+    sync();
+  }
+
+  function getItemRemindAt(item) {
+    if (!hasStockQuantity(item)) return '';
+    return normalizeRemindAt(item.remindAt);
+  }
+
+  function isRemindAtDue(item, today = getLocalDateString()) {
+    const remindAt = getItemRemindAt(item);
+    return Boolean(remindAt && remindAt <= today);
+  }
+
+  function formatRemindAtShort(remindAt) {
+    const normalized = normalizeRemindAt(remindAt);
+    if (!normalized) return '';
+    const [, m, d] = normalized.split('-');
+    return `${Number(m)}/${Number(d)}`;
+  }
+
+  function formatRemindAtDisplay(remindAt) {
+    const normalized = normalizeRemindAt(remindAt);
+    if (!normalized) return '';
+    const [y, m, d] = normalized.split('-');
+    return `${y}年${Number(m)}月${Number(d)}日`;
+  }
+
   function bindStockDependentFields(quantityInput, ...dependentRows) {
     if (!quantityInput || !dependentRows.length) return;
     const update = () => {
@@ -1536,9 +1746,11 @@
     if (!hasStockQuantity(sanitized)) {
       sanitized.storageLocation = '';
       sanitized.category = '';
+      sanitized.remindAt = '';
     } else {
       sanitized.storageLocation = (sanitized.storageLocation || '').trim();
       sanitized.category = (sanitized.category || '').trim();
+      sanitized.remindAt = normalizeRemindAt(sanitized.remindAt);
     }
     return sanitized;
   }
@@ -1595,7 +1807,8 @@
       const next = sanitizeProductStockFields(item);
       if (
         next.storageLocation !== (item.storageLocation || '') ||
-        next.category !== (item.category || '')
+        next.category !== (item.category || '') ||
+        next.remindAt !== normalizeRemindAt(item.remindAt)
       ) {
         changed = true;
       }
@@ -1646,15 +1859,28 @@
     return escapeHtml(location);
   }
 
+  function getProductDisplayName(item) {
+    const flavor = (item?.flavor || '').trim();
+    if (flavor) return flavor;
+    const brand = getBrandName(item);
+    if (brand) return brand;
+    return '未命名商品';
+  }
+
   function renderBrandStockPreviewChip(item) {
-    const label = item.flavor || '未命名商品';
+    const label = getProductDisplayName(item);
     const location = getItemStorageLocation(item);
+    const remindAt = getItemRemindAt(item);
+    const remindShort = formatRemindAtShort(remindAt);
     const parts = [
       `<span class="brand-stock-name">${escapeHtml(label)}</span>`,
       `<span class="brand-stock-qty">×${item.quantity}</span>`,
     ];
     if (location) {
       parts.push(`<span class="brand-stock-location">${escapeHtml(location)}</span>`);
+    }
+    if (remindShort) {
+      parts.push(`<span class="brand-stock-remind">${escapeHtml(remindShort)}</span>`);
     }
     return `<span class="brand-stock-chip">${parts.join('<span class="brand-stock-sep">·</span>')}</span>`;
   }
@@ -1805,9 +2031,10 @@
     return [
       ['评分', renderStarsDisplay(item.rating, isLow)],
       ['名称', escapeHtml(getBrandName(item))],
-      ['商品名', escapeHtml(item.flavor) || '—'],
+      ['商品名', escapeHtml(getProductDisplayName(item)) || '—'],
       ['分类', escapeHtml(getItemCategory(item)) || '—'],
       ['所在位置', escapeHtml(getItemStorageLocation(item)) || '—'],
+      ['提醒日期', escapeHtml(formatRemindAtDisplay(getItemRemindAt(item))) || '—'],
       ['数量', item.quantity != null && item.quantity > 0 ? String(item.quantity) : '—'],
       ['店铺名称', escapeHtml(shopName) || '—'],
       ['店铺位置', formatLocationWithGeo(shopLocation, shopLng, shopLat)],
@@ -1973,11 +2200,14 @@
   }
 
   function renderBrandDetailBody(group) {
-    const products = group.products.filter((item) => !isBrandPlaceholder(item));
+    // 有库存的占位品牌也要列出，否则提醒点进去看不到「健康证」这类记录
+    const products = group.products.filter(
+      (item) => !isBrandPlaceholder(item) || hasStockQuantity(item),
+    );
     const brandNotes = getBrandNotes(group);
     const rows = products
       .map((item) => {
-        const label = item.flavor || '未命名商品';
+        const label = getProductDisplayName(item);
         const isLow = isLowRating(item.rating);
         const unitPrice = formatUnitPrice(item.price, item.weight);
         const metaParts = [
@@ -1996,6 +2226,7 @@
               ${renderStarsDisplay(item.rating, isLow)}
             </div>
             ${getItemStorageLocation(item) ? `<div class="brand-product-row-location">${renderStorageLocationHtml(getItemStorageLocation(item))}</div>` : ''}
+            ${getItemRemindAt(item) ? `<div class="brand-product-row-remind">提醒 ${escapeHtml(formatRemindAtDisplay(getItemRemindAt(item)))}</div>` : ''}
             ${metaParts.length ? `<div class="brand-product-row-meta">${metaParts.join(' · ')}</div>` : ''}
           </button>`;
       })
@@ -2651,6 +2882,7 @@
     }
 
     updateUnifiedSuggestions();
+    renderStockRemindBanner();
   }
 
   function updateUnifiedSuggestions() {
@@ -2766,6 +2998,7 @@
       loadShops();
       updateSyncStatusBanner(result);
       if (typeof renderBrowse === 'function') renderBrowse();
+      maybeShowStockReminders();
       return result;
     } catch (err) {
       if (!silent) {
@@ -2775,10 +3008,317 @@
     }
   }
 
+  function collectDueStockRemindItems() {
+    const today = getLocalDateString();
+    // 含品牌占位项：很多库存/提醒是直接写在品牌占位记录上的
+    return items
+      .filter((item) => isRemindAtDue(item, today))
+      .sort((a, b) => {
+        const dateDiff = getItemRemindAt(a).localeCompare(getItemRemindAt(b));
+        if (dateDiff !== 0) return dateDiff;
+        return (a.flavor || getBrandName(a)).localeCompare(b.flavor || getBrandName(b), 'zh');
+      });
+  }
+
+  function getStockRemindItemTitle(item) {
+    const brand = getBrandName(item);
+    const flavor = (item.flavor || '').trim();
+    if (flavor) {
+      return brand && brand !== flavor ? `${brand} · ${flavor}` : flavor;
+    }
+    return brand || '未命名商品';
+  }
+
+  function renderStockRemindListHtml(dueItems) {
+    return dueItems
+      .map((item) => {
+        const title = getStockRemindItemTitle(item);
+        const brand = getBrandName(item);
+        const meta = [
+          brand && brand !== title && !title.startsWith(brand) ? `所属：${brand}` : '',
+          `数量 ×${item.quantity}`,
+          getItemCategory(item) ? `分类：${getItemCategory(item)}` : '',
+          getItemStorageLocation(item) ? `位置：${getItemStorageLocation(item)}` : '',
+          `提醒：${formatRemindAtDisplay(getItemRemindAt(item))}`,
+        ].filter(Boolean);
+        return `
+          <li>
+            <button type="button" class="stock-remind-item" data-product-id="${escapeHtml(item.id)}" aria-label="查看 ${escapeHtml(title)}">
+              <span class="stock-remind-item-title">${escapeHtml(title)}</span>
+              <span class="stock-remind-item-meta">${escapeHtml(meta.join(' · '))}</span>
+            </button>
+          </li>`;
+      })
+      .join('');
+  }
+
+  function openStockRemindItem(productId) {
+    const id = String(productId || '').trim();
+    if (!id) return false;
+    const item = items.find((entry) => String(entry.id) === id) || resolveEditItem({ id });
+    if (!item) return false;
+
+    // 用户主动点进详情：本会话不再自动把提醒弹窗盖回来（首页提醒条仍可保留）
+    stockRemindModalDismissedThisSession = true;
+    closeStockRemindDialog();
+
+    const brand = getBrandName(item);
+    const shopInstanceId = getShopInstanceId(item);
+    const group = findBrandGroup(brand, shopInstanceId);
+    if (group) {
+      showBrandDetail(group);
+      requestAnimationFrame(() => {
+        const row = productEls.dialogBody?.querySelector(
+          `.brand-product-row[data-product-id="${CSS.escape(String(item.id))}"]`,
+        );
+        if (row) {
+          row.scrollIntoView?.({ block: 'nearest' });
+          row.classList.add('stock-remind-target');
+          setTimeout(() => row.classList.remove('stock-remind-target'), 1600);
+        }
+      });
+      return true;
+    }
+
+    showProductDetail(item);
+    return true;
+  }
+
+  function closeStockRemindDialog() {
+    if (stockRemindShowTimer) {
+      clearTimeout(stockRemindShowTimer);
+      stockRemindShowTimer = null;
+    }
+    const dialog = $('#stock-remind-dialog');
+    if (dialog?.open) dialog.close();
+  }
+
+  function hideStockRemindersForSession() {
+    stockRemindHiddenThisSession = true;
+    stockRemindModalDismissedThisSession = true;
+    stockRemindDialogShownThisSession = true;
+    stockRemindDueIds = [];
+    closeStockRemindDialog();
+    renderStockRemindBanner();
+  }
+
+  function confirmDismissStockReminders() {
+    if (!stockRemindDueIds.length) {
+      stockRemindDueIds = collectDueStockRemindItems().map((item) => item.id);
+    }
+    if (!stockRemindDueIds.length) {
+      hideStockRemindersForSession();
+      return;
+    }
+    const idSet = new Set(stockRemindDueIds.map(String));
+    const now = new Date().toISOString();
+    let changed = false;
+    try {
+      items = items.map((item) => {
+        if (!idSet.has(String(item.id))) return item;
+        if (!normalizeRemindAt(item.remindAt)) return item;
+        changed = true;
+        return { ...item, remindAt: '', updatedAt: now };
+      });
+      if (changed) {
+        saveItems();
+        if (typeof renderBrowse === 'function') renderBrowse();
+      }
+      stockRemindDueIds = [];
+      stockRemindHiddenThisSession = true;
+      stockRemindModalDismissedThisSession = true;
+      stockRemindDialogShownThisSession = true;
+      closeStockRemindDialog();
+      renderStockRemindBanner();
+    } catch (err) {
+      showAppAlert('无法保存「不再提醒」状态，请稍后重试：' + String(err?.message || err));
+    }
+  }
+
+  function renderStockRemindBanner() {
+    const banner = $('#stock-remind-banner');
+    if (!banner) return;
+    if (stockRemindHiddenThisSession) {
+      banner.hidden = true;
+      return;
+    }
+    const dueItems = collectDueStockRemindItems();
+    if (!dueItems.length) {
+      banner.hidden = true;
+      return;
+    }
+    stockRemindDueIds = dueItems.map((item) => item.id);
+    const titleEl = $('#stock-remind-banner-title');
+    const listEl = $('#stock-remind-banner-list');
+    if (titleEl) {
+      if (dueItems.length === 1) {
+        titleEl.textContent = `提醒日期已到：${getStockRemindItemTitle(dueItems[0])}`;
+      } else {
+        titleEl.textContent = `提醒日期已到：有 ${dueItems.length} 件库存物品`;
+      }
+    }
+    if (listEl) {
+      listEl.innerHTML = dueItems
+        .slice(0, 8)
+        .map((item) => {
+          const title = getStockRemindItemTitle(item);
+          const loc = getItemStorageLocation(item);
+          const dateText = formatRemindAtDisplay(getItemRemindAt(item));
+          const parts = [title, `×${item.quantity}`, loc, dateText].filter(Boolean);
+          return `<li>
+            <button type="button" class="stock-remind-banner-item" data-product-id="${escapeHtml(item.id)}" aria-label="查看 ${escapeHtml(title)}">
+              <span class="stock-remind-banner-item-text">${escapeHtml(parts.join(' · '))}</span>
+            </button>
+          </li>`;
+        })
+        .join('');
+      if (dueItems.length > 8) {
+        listEl.innerHTML += `<li class="stock-remind-banner-more">…还有 ${dueItems.length - 8} 件</li>`;
+      }
+    }
+    banner.hidden = false;
+  }
+
+  function ensureStockRemindDialog() {
+    let dialog = $('#stock-remind-dialog');
+    if (dialog) return dialog;
+    dialog = document.createElement('dialog');
+    dialog.id = 'stock-remind-dialog';
+    dialog.className = 'dialog dialog-prompt dialog-stock-remind';
+    dialog.innerHTML = `
+      <div class="dialog-header">
+        <h2 id="stock-remind-dialog-title">提醒日期已到</h2>
+        <button type="button" class="dialog-close" id="stock-remind-dialog-close" aria-label="关闭">&times;</button>
+      </div>
+      <div class="dialog-body">
+        <p id="stock-remind-dialog-lead" class="stock-remind-lead" hidden></p>
+        <ul id="stock-remind-dialog-list" class="stock-remind-list"></ul>
+      </div>
+      <div class="dialog-actions dialog-prompt-actions stock-remind-actions">
+        <button type="button" class="btn btn-secondary" id="stock-remind-dialog-hide">隐藏</button>
+        <button type="button" class="btn btn-primary" id="stock-remind-dialog-dismiss">确认不再提醒</button>
+      </div>`;
+    document.body.appendChild(dialog);
+    bindStockRemindDialog();
+    return dialog;
+  }
+
+  function openStockRemindDialog(dueItems) {
+    const dialog = ensureStockRemindDialog();
+    if (!dialog || stockRemindHiddenThisSession || stockRemindModalDismissedThisSession) return;
+    // 详情已打开时不要盖回来，避免点进健康证后又被提醒弹窗顶走
+    if (productEls.detailDialog?.open) return;
+    stockRemindDueIds = dueItems.map((item) => item.id);
+    const listEl = $('#stock-remind-dialog-list');
+    const leadEl = $('#stock-remind-dialog-lead');
+    if (listEl) listEl.innerHTML = renderStockRemindListHtml(dueItems);
+    if (leadEl) {
+      leadEl.hidden = true;
+      leadEl.textContent = '';
+    }
+    stockRemindDialogShownThisSession = true;
+    dialog.dataset.remindOpenedAt = String(Date.now());
+
+    const tryShow = () => {
+      if (stockRemindHiddenThisSession || stockRemindModalDismissedThisSession) return;
+      if (productEls.detailDialog?.open) return;
+      if (!dialog.isConnected || dialog.open) return;
+      try {
+        dialog.showModal();
+      } catch (err) {
+        console.error('打开库存提醒弹窗失败', err);
+      }
+    };
+    if (stockRemindShowTimer) {
+      clearTimeout(stockRemindShowTimer);
+      stockRemindShowTimer = null;
+    }
+    tryShow();
+    stockRemindShowTimer = setTimeout(() => {
+      stockRemindShowTimer = null;
+      tryShow();
+    }, 600);
+  }
+
+  function maybeShowStockReminders() {
+    if (stockRemindHiddenThisSession) {
+      renderStockRemindBanner();
+      return;
+    }
+    const dueItems = collectDueStockRemindItems();
+    renderStockRemindBanner();
+    if (!dueItems.length) {
+      stockRemindDueIds = [];
+      closeStockRemindDialog();
+      return;
+    }
+    // 已点进详情，或详情层正在看：只保留首页提醒条，不再自动弹出提醒窗
+    if (stockRemindModalDismissedThisSession || productEls.detailDialog?.open) {
+      return;
+    }
+    const dialog = ensureStockRemindDialog();
+    if (dialog?.open) {
+      stockRemindDueIds = dueItems.map((item) => item.id);
+      const listEl = $('#stock-remind-dialog-list');
+      const leadEl = $('#stock-remind-dialog-lead');
+      if (listEl) listEl.innerHTML = renderStockRemindListHtml(dueItems);
+      if (leadEl) {
+        leadEl.hidden = true;
+        leadEl.textContent = '';
+      }
+      return;
+    }
+    openStockRemindDialog(dueItems);
+  }
+
+  function bindStockRemindDialog() {
+    const dialog = $('#stock-remind-dialog');
+    if (dialog && dialog.dataset.remindBound !== '1') {
+      dialog.dataset.remindBound = '1';
+      $('#stock-remind-dialog-hide')?.addEventListener('click', hideStockRemindersForSession);
+      $('#stock-remind-dialog-close')?.addEventListener('click', hideStockRemindersForSession);
+      $('#stock-remind-dialog-dismiss')?.addEventListener('click', confirmDismissStockReminders);
+      dialog.addEventListener('cancel', (event) => {
+        event.preventDefault();
+        const openedAt = Number(dialog.dataset.remindOpenedAt || 0);
+        if (openedAt && Date.now() - openedAt < 800) return;
+        hideStockRemindersForSession();
+      });
+      $('#stock-remind-dialog-list')?.addEventListener('click', (event) => {
+        const target = event.target.closest('.stock-remind-item[data-product-id]');
+        if (!target) return;
+        openStockRemindItem(target.dataset.productId);
+      });
+    }
+
+    const banner = $('#stock-remind-banner');
+    const bannerHide = $('#stock-remind-banner-hide');
+    const bannerDismiss = $('#stock-remind-banner-dismiss');
+    if (bannerHide && bannerHide.dataset.remindBound !== '1') {
+      bannerHide.dataset.remindBound = '1';
+      bannerHide.addEventListener('click', hideStockRemindersForSession);
+    }
+    if (bannerDismiss && bannerDismiss.dataset.remindBound !== '1') {
+      bannerDismiss.dataset.remindBound = '1';
+      bannerDismiss.addEventListener('click', confirmDismissStockReminders);
+    }
+    if (banner && banner.dataset.remindListBound !== '1') {
+      banner.dataset.remindListBound = '1';
+      banner.addEventListener('click', (event) => {
+        const target = event.target.closest('.stock-remind-banner-item[data-product-id]');
+        if (!target) return;
+        openStockRemindItem(target.dataset.productId);
+      });
+    }
+  }
+
   /* ========== Init ========== */
   async function init() {
     tryRecoverPendingData();
     ensureUnifiedFormat();
+    bindStockRemindDialog();
+    // 先用本机数据弹一次，避免等云端合并时提醒被拖没或字段被整条覆盖
+    maybeShowStockReminders();
 
     let bootstrapResult = null;
     if (window.HebingSync?.bootstrap) {
@@ -2810,6 +3350,7 @@
       loadShops();
       updateSyncStatusBanner(detail);
       if (typeof renderBrowse === 'function') renderBrowse();
+      maybeShowStockReminders();
     });
 
     productEls.dialogClose.addEventListener('click', () => {
@@ -3012,6 +3553,8 @@
     });
 
     renderBrowse();
+    // 无云端 bootstrap 时也要扫本地到期项；有 bootstrap 时 refreshCloudDataToUi 已扫过
+    maybeShowStockReminders();
   }
 
   init().catch(function (err) {

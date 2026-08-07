@@ -2,10 +2,10 @@
   'use strict';
 
   global.HEBING_SITE = {
-    version: '1.0.60',
+    version: '1.0.61',
     repoName: 'hebing-pingfen',
-    updatedAt: '2026-08-04',
-    buildId: '20260804-003418',
+    updatedAt: '2026-08-07',
+    buildId: '20260807-160512',
     // 网页托管：GitHub Pages（Gitee Pages 已停）
     githubUser: '3437017244-art',
     // 登记数据同步：Gitee 仓库 cloud-data.json

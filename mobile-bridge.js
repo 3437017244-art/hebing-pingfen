@@ -30,7 +30,7 @@
     if (window.AmapPicker?.isPickerOverlayOpen?.() || window.AmapPicker?.isOpen?.()) {
       return true;
     }
-    return ['app-message-dialog', 'search-add-confirm-dialog', 'detail-dialog'].some(function (id) {
+    return ['stock-remind-dialog', 'app-message-dialog', 'search-add-confirm-dialog', 'detail-dialog'].some(function (id) {
       return Boolean(document.getElementById(id)?.open);
     });
   }
@@ -175,6 +175,7 @@
       );
     }
 
+    if (closePromptDialogById('stock-remind-dialog')) return true;
     if (closePromptDialogById('app-message-dialog')) return true;
     if (closePromptDialogById('search-add-confirm-dialog')) return true;
 

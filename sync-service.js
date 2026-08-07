@@ -89,6 +89,25 @@
   function mergeByIdNewer(existing, incoming) {
     const map = new Map();
 
+    function mergePair(prev, item) {
+      const itemNewer = itemTimestamp(item) >= itemTimestamp(prev);
+      const newer = itemNewer ? item : prev;
+      const older = itemNewer ? prev : item;
+      const merged = { ...older, ...newer };
+      const olderRemind = String((older && older.remindAt) || '').trim();
+      const newerRemind = String((newer && newer.remindAt) || '').trim();
+      // 较新记录若根本没带 remindAt，或只是空字符串且时间戳并不更新，保留对侧已有提醒日期
+      if (!newerRemind && olderRemind) {
+        const newerHasKey = newer != null && Object.prototype.hasOwnProperty.call(newer, 'remindAt');
+        if (!newerHasKey || newer.remindAt == null) {
+          merged.remindAt = older.remindAt;
+        } else if (itemTimestamp(newer) <= itemTimestamp(older)) {
+          merged.remindAt = older.remindAt;
+        }
+      }
+      return merged;
+    }
+
     function addItem(item) {
       if (!item || item.id == null) return;
       const id = String(item.id);
@@ -97,7 +116,7 @@
         map.set(id, item);
         return;
       }
-      map.set(id, itemTimestamp(item) >= itemTimestamp(prev) ? item : prev);
+      map.set(id, mergePair(prev, item));
     }
 
     (existing || []).forEach(addItem);
@@ -525,26 +544,27 @@
     }
 
     const code = (syncCode || getSyncCode() || '').trim();
-    const local = getLocalPayload();
     const canPush = canUseRepoApiSync() || (!isRepoApiMode() && Boolean(code));
 
     // 未保存 Gitee 令牌时：仍自动拉取云端/备份并与本机合并，只是不上传
     if (isRepoApiMode() && !canUseRepoApiSync()) {
       const remote = await pullRemote(code);
+      // await 期间用户可能已保存新记录（如提醒日期），合并前必须重读本机
+      const localNow = getLocalPayload();
       if (!remote) {
-        const localStats = countPayload(local);
+        const localStats = countPayload(localNow);
         return {
           action: 'none',
           syncCode: code,
           products: localStats.products,
           shops: localStats.shops,
-          syncedAt: local.syncedAt,
+          syncedAt: localNow.syncedAt,
           source: 'none',
           pullOnly: true,
           needsToken: true,
         };
       }
-      const merged = buildMergedPayload(local, remote);
+      const merged = buildMergedPayload(localNow, remote);
       saveLocalPayload(merged);
       const stats = countPayload(merged);
       return {
@@ -560,28 +580,30 @@
     }
 
     const remote = await pullRemote(code);
+    // 拉取等待期间本机可能已有新改动，禁止用过期快照覆盖
+    const localNow = getLocalPayload();
 
     if (!remote) {
-      const localStats = countPayload(local);
+      const localStats = countPayload(localNow);
       if (localStats.products === 0 && localStats.shops === 0) {
         throw new Error('无法获取云端数据，且本机也没有可上传的记录');
       }
       if (!canPush) {
         throw new Error('请先在「云端同步」保存 Gitee 令牌，手机与电脑各保存一次即可双向同步');
       }
-      const pushResult = await pushCloudPayload(code, local);
+      const pushResult = await pushCloudPayload(code, localNow);
       if (code) localStorage.setItem(SYNC_CODE_KEY, code);
       return {
         action: 'uploaded',
         syncCode: code,
         products: localStats.products,
         shops: localStats.shops,
-        syncedAt: local.syncedAt,
+        syncedAt: localNow.syncedAt,
         source: pushResult.source,
       };
     }
 
-    const merged = buildMergedPayload(local, remote);
+    const merged = buildMergedPayload(localNow, remote);
     saveLocalPayload(merged);
     const pushResult = await pushCloudPayload(code, merged);
     if (code) localStorage.setItem(SYNC_CODE_KEY, code);

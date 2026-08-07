@@ -1256,6 +1256,17 @@ button.editing {
   color: var(--stock-accent, var(--primary));
 }
 
+.brand-product-row-remind {
+  margin-top: 4px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #b45309;
+}
+
+.brand-product-row.stock-remind-target {
+  box-shadow: 0 0 0 2px #ea580c, 0 8px 20px rgba(194, 65, 12, 0.22);
+}
+
 .brand-stock-chip {
   display: inline-flex;
   align-items: center;
@@ -1280,7 +1291,8 @@ button.editing {
 }
 
 .brand-stock-qty,
-.brand-stock-location {
+.brand-stock-location,
+.brand-stock-remind {
   font-size: 1.12rem;
   font-weight: 800;
   letter-spacing: 0.02em;
@@ -1432,6 +1444,7 @@ button.editing {
 .item-card.brand-card .brand-stock-name,
 .item-card.brand-card .brand-stock-qty,
 .item-card.brand-card .brand-stock-location,
+.item-card.brand-card .brand-stock-remind,
 .item-card.brand-card .brand-stock-sep {
   white-space: normal;
   word-break: break-word;
@@ -2136,6 +2149,92 @@ body.amap-browse-open #detail-dialog::backdrop {
   --field-bg: rgba(61, 155, 143, 0.18);
 }
 
+.dialog-edit-form .form-row-key-remind {
+  --field-accent: #ea580c;
+  --field-bg: rgba(234, 88, 12, 0.16);
+}
+
+.remind-date-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 2px solid var(--field-accent, #ea580c);
+  background:
+    linear-gradient(180deg, rgba(255, 247, 237, 0.14), rgba(255, 237, 213, 0.08)),
+    var(--bg);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease;
+}
+
+.remind-date-field:hover,
+.remind-date-field:focus-within {
+  border-color: #f97316;
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.16),
+    0 0 0 5px color-mix(in srgb, #ea580c 28%, transparent);
+}
+
+.remind-date-field.has-value {
+  background:
+    linear-gradient(180deg, rgba(255, 237, 213, 0.22), rgba(254, 215, 170, 0.1)),
+    var(--bg);
+}
+
+.remind-date-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  z-index: 2;
+  color-scheme: dark;
+}
+
+.remind-date-display {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  pointer-events: none;
+}
+
+.remind-date-field:not(.has-value) .remind-date-display {
+  color: color-mix(in srgb, var(--text) 62%, transparent);
+  font-weight: 700;
+}
+
+.remind-date-icon {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  color: #fff7ed;
+  background: linear-gradient(180deg, #fb923c, #ea580c);
+  box-shadow: 0 4px 10px rgba(234, 88, 12, 0.35);
+  pointer-events: none;
+}
+
 .dialog-edit-form .form-row-key-notes {
   --field-accent: #8b6bb0;
   --field-bg: rgba(139, 107, 176, 0.18);
@@ -2303,6 +2402,198 @@ body.amap-browse-open #detail-dialog::backdrop {
 .dialog-prompt .dialog-close {
   font-size: 1.85rem;
   padding: 0 6px;
+}
+
+.dialog-stock-remind {
+  max-width: min(94vw, 580px);
+  border: 2px solid #b45309;
+}
+
+.dialog-stock-remind .dialog-header {
+  background: linear-gradient(180deg, #fff7ed 0%, #fff 100%);
+  border-bottom: 1px solid #fed7aa;
+}
+
+.dialog-stock-remind .dialog-header h2 {
+  color: #9a3412;
+  font-size: 1.55rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.stock-remind-lead {
+  display: none !important;
+  margin: 0;
+}
+
+.stock-remind-item-label {
+  display: none !important;
+}
+
+.stock-remind-item-title {
+  display: block;
+  margin: 0 0 8px;
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.35;
+  color: #7c2d12;
+}
+
+.stock-remind-banner {
+  margin: 0 0 14px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 2px solid #ea580c;
+  background: linear-gradient(180deg, #fff7ed 0%, #ffedd5 100%);
+  color: #9a3412;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  align-items: flex-start;
+  justify-content: space-between;
+  box-shadow: 0 8px 24px rgba(194, 65, 12, 0.18);
+}
+
+.stock-remind-banner[hidden] {
+  display: none !important;
+}
+
+.stock-remind-banner-main {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.stock-remind-banner-title {
+  margin: 0 0 8px;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.stock-remind-banner-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stock-remind-banner-list li {
+  font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1.45;
+  color: #7c2d12;
+}
+
+.stock-remind-banner-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.55);
+  color: #7c2d12;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.stock-remind-banner-item:hover,
+.stock-remind-banner-item:focus-visible {
+  border-color: #ea580c;
+  background: #fff;
+  outline: none;
+}
+
+.stock-remind-banner-item-hint {
+  flex: 0 0 auto;
+  color: #c2410c;
+  font-size: 0.86rem;
+}
+
+.stock-remind-banner-item-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.stock-remind-banner-more {
+  opacity: 0.8;
+}
+
+.stock-remind-banner-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.stock-remind-banner-actions .btn {
+  min-height: 40px;
+}
+
+.stock-remind-banner-actions #stock-remind-banner-dismiss {
+  background: #c2410c;
+  border-color: #c2410c;
+  color: #fff;
+}
+
+.stock-remind-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: min(48vh, 420px);
+  overflow: auto;
+}
+
+.stock-remind-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+  color: inherit;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+}
+
+.stock-remind-item:hover,
+.stock-remind-item:focus-visible {
+  border-color: #ea580c;
+  box-shadow: 0 6px 16px rgba(194, 65, 12, 0.18);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.stock-remind-item-meta {
+  display: block;
+  margin: 0;
+  font-size: 0.98rem;
+  line-height: 1.55;
+  color: #9a3412;
+}
+
+.stock-remind-actions .btn {
+  flex: 1;
+}
+
+.stock-remind-actions #stock-remind-dialog-dismiss {
+  background: #c2410c;
+  border-color: #c2410c;
+}
+
+.stock-remind-actions #stock-remind-dialog-dismiss:hover {
+  background: #9a3412;
+  border-color: #9a3412;
 }
 
 .search-add-confirm-text {

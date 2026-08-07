@@ -8,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260804-005100">
-  <link rel="stylesheet" href="mobile.css?v=20260723-075500">
+  <link rel="stylesheet" href="styles.css?v=20260807-160500">
+  <link rel="stylesheet" href="mobile.css?v=20260807-160500">
 </head>
 <body>
   <div class="app">
@@ -52,6 +52,16 @@
         <a href="同步.html">点此设置令牌</a>
       </div>
       <div id="sync-status-banner" class="form-banner form-banner-status" hidden></div>
+      <div id="stock-remind-banner" class="stock-remind-banner" hidden>
+        <div class="stock-remind-banner-main">
+          <div class="stock-remind-banner-title" id="stock-remind-banner-title">提醒日期已到</div>
+          <ul class="stock-remind-banner-list" id="stock-remind-banner-list"></ul>
+        </div>
+        <div class="stock-remind-banner-actions">
+          <button type="button" class="btn btn-secondary btn-sm" id="stock-remind-banner-hide">隐藏</button>
+          <button type="button" class="btn btn-primary btn-sm" id="stock-remind-banner-dismiss">确认不再提醒</button>
+        </div>
+      </div>
 
       <div id="browse-results">
         <ul class="item-list" id="unified-list"></ul>
@@ -99,6 +109,21 @@
     </div>
   </dialog>
 
+  <dialog id="stock-remind-dialog" class="dialog dialog-prompt dialog-stock-remind">
+    <div class="dialog-header">
+      <h2 id="stock-remind-dialog-title">提醒日期已到</h2>
+      <button type="button" class="dialog-close" id="stock-remind-dialog-close" aria-label="关闭">&times;</button>
+    </div>
+    <div class="dialog-body">
+        <p id="stock-remind-dialog-lead" class="stock-remind-lead" hidden></p>
+      <ul id="stock-remind-dialog-list" class="stock-remind-list"></ul>
+    </div>
+    <div class="dialog-actions dialog-prompt-actions stock-remind-actions">
+      <button type="button" class="btn btn-secondary" id="stock-remind-dialog-hide">隐藏</button>
+      <button type="button" class="btn btn-primary" id="stock-remind-dialog-dismiss">确认不再提醒</button>
+    </div>
+  </dialog>
+
   <!-- 详情弹层（商品与商店共用） -->
   <dialog id="detail-dialog" class="dialog">
     <div class="dialog-header">
@@ -124,12 +149,12 @@
     </div>
   </dialog>
 
-  <script src="site-config.js?v=20260804-101300"></script>
-  <script src="mobile-bridge.js?v=20260804-101300"></script>
-  <script src="app-update.js?v=20260804-101300"></script>
-  <script src="sync-service.js?v=20260804-101300"></script>
+  <script src="site-config.js?v=20260807-160500"></script>
+  <script src="mobile-bridge.js?v=20260807-160500"></script>
+  <script src="app-update.js?v=20260807-160500"></script>
+  <script src="sync-service.js?v=20260807-160500"></script>
   <script src="amap-picker.js?v=20260804-101300"></script>
-  <script src="app.js?v=20260804-101300"></script>
+  <script src="app.js?v=20260807-160500"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       const versionLine = document.getElementById('site-version-line');

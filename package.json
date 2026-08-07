@@ -1,6 +1,6 @@
 {
   "name": "hebing-pingfen-desktop",
-  "version": "1.0.57",
+  "version": "1.0.58",
   "description": "购物与商店评分（电脑版）",
   "main": "electron/main.js",
   "author": "3437017244-art",
@@ -15,6 +15,9 @@
   "build": {
     "appId": "com.hebing.pingfen",
     "productName": "购物与商店评分",
+    "electronDownload": {
+      "mirror": "https://npmmirror.com/mirrors/electron/"
+    },
     "directories": {
       "output": "dist-desktop"
     },
@@ -38,6 +41,7 @@
       "package.json"
     ],
     "win": {
+      "signAndEditExecutable": false,
       "target": [
         {
           "target": "portable",
